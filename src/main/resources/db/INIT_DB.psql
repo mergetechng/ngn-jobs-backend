@@ -1,5 +1,5 @@
 
-CREATE TABLE "job_application.user" (
+CREATE TABLE public.user (
   "user_id" VARCHAR(36),
   "username" VARCHAR(36) NOT NULL,
   "password" timestamp with time zone NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE "job_application.user" (
   PRIMARY KEY ("user_id")
 );
 
-CREATE TABLE "job_application.user_cv" (
+CREATE TABLE public.user_cv (
   "user_cv_id" VARCHAR(36),
   "firstname" VARCHAR(36) NOT NULL,
   "lastname" timestamp with time zone NOT NULL,
@@ -38,11 +38,11 @@ CREATE TABLE "job_application.user_cv" (
   PRIMARY KEY ("user_cv_id"),
   CONSTRAINT "FK_user_cv.user_id"
     FOREIGN KEY ("user_id")
-      REFERENCES "job_application.user"("user_id")
+      REFERENCES public.user("user_id")
 );
 
 
-CREATE TABLE "job_application.certification" (
+CREATE TABLE public.certification (
   "certification_id" VARCHAR(36) NOT NULL,
   "granting_organization" VARCHAR(250) NOT NULL,
   "start_date" timestamp with time zone NOT NULL,
@@ -59,14 +59,14 @@ CREATE TABLE "job_application.certification" (
   PRIMARY KEY ("certification_id"),
   CONSTRAINT "FK_certification.user_cv_id"
     FOREIGN KEY ("user_cv_id")
-      REFERENCES "job_application.user_cv"("user_cv_id"),
+      REFERENCES public.user_cv("user_cv_id"),
   CONSTRAINT "FK_certification.user_id"
     FOREIGN KEY ("user_cv_id")
-      REFERENCES "job_application.user"("user_id")
+      REFERENCES public.user("user_id")
 );
 
 
-CREATE TABLE "job_application.publication" (
+CREATE TABLE public.publication (
   "publication_id" VARCHAR(36) ,
   "user_id" VARCHAR(36) NOT NULL,
   "date_published" timestamp with time zone NOT NULL,
@@ -83,13 +83,13 @@ CREATE TABLE "job_application.publication" (
   PRIMARY KEY ("publication_id"),
   CONSTRAINT "FK_publication.user_cv_id"
     FOREIGN KEY ("user_cv_id")
-      REFERENCES "job_application.user_cv"("user_cv_id"),
+      REFERENCES public.user_cv("user_cv_id"),
   CONSTRAINT "FK_publication.user_id"
     FOREIGN KEY ("user_id")
-      REFERENCES "job_application.user"("user_id")
+      REFERENCES public.user("user_id")
 );
 
-CREATE TABLE "job_application.skill" (
+CREATE TABLE public.skill (
   "skill_id" VARCHAR(36) ,
   "skill_area" VARCHAR(36) NOT NULL,
   "skill_description" text,
@@ -103,13 +103,13 @@ CREATE TABLE "job_application.skill" (
   PRIMARY KEY ("skill_id"),
   CONSTRAINT "FK_skill.user_id"
     FOREIGN KEY ("user_id")
-      REFERENCES "job_application.user"("user_id"),
+      REFERENCES public.user("user_id"),
   CONSTRAINT "FK_skill.user_cv_id"
     FOREIGN KEY ("user_cv_id")
-      REFERENCES "job_application.user_cv"("user_cv_id")
+      REFERENCES public.user_cv("user_cv_id")
 );
 
-CREATE TABLE "job_application.refree"(
+CREATE TABLE public.refree(
    "refree_id" VARCHAR(36),
    "refree_full_name" VARCHAR(250) NOT NULL,
    "refree_phone" VARCHAR(15),
@@ -123,10 +123,10 @@ CREATE TABLE "job_application.refree"(
    PRIMARY KEY ("refree_id"),
    CONSTRAINT "FK_refree.user_cv_id"
       FOREIGN KEY ("user_cv_id")
-      REFERENCES "job_application.user_cv"("user_cv_id")
+      REFERENCES public.user_cv("user_cv_id")
 );
 
-CREATE TABLE "job_application.reference" (
+CREATE TABLE public.reference (
   "reference_id" VARCHAR(36) ,
   "user_id" VARCHAR(36) NOT NULL,
   "refree_id" VARCHAR(36) NOT NULL,
@@ -138,16 +138,16 @@ CREATE TABLE "job_application.reference" (
   PRIMARY KEY ("reference_id"),
   CONSTRAINT "FK_reference.user_id"
       FOREIGN KEY ("user_id")
-        REFERENCES "job_application.user"("user_id"),
+        REFERENCES public.user("user_id"),
   CONSTRAINT "FK_reference.user_cv_id"
       FOREIGN KEY ("user_cv_id")
-      REFERENCES "job_application.user_cv"("user_cv_id"),
+      REFERENCES public.user_cv("user_cv_id"),
   CONSTRAINT "FK_reference.refree_id"
       FOREIGN KEY ("refree_id")
-      REFERENCES "job_application.refree"("refree_id")
+      REFERENCES public.refree("refree_id")
 );
 
-CREATE TABLE "job_application.location" (
+CREATE TABLE public.location (
   "location_id" VARCHAR(36),
   "city" VARCHAR(36) NOT NULL,
   "state" timestamp with time zone NOT NULL,
@@ -159,7 +159,7 @@ CREATE TABLE "job_application.location" (
   PRIMARY KEY ("location_id")
 );
 
-CREATE TABLE "job_application.user_location_interest"(
+CREATE TABLE public.user_location_interest(
    "user_location_interest_id" VARCHAR(36),
    "location_id" VARCHAR(36) NOT NULL,
    "user_id" VARCHAR(36) NOT NULL,
@@ -170,13 +170,13 @@ CREATE TABLE "job_application.user_location_interest"(
    PRIMARY KEY ("user_location_interest_id"),
    CONSTRAINT "FK_user_location_interest.user_id"
        FOREIGN KEY ("user_id")
-       REFERENCES "job_application.user"("user_id"),
+       REFERENCES public.user("user_id"),
    CONSTRAINT "FK_user_location_interest.location_id"
         FOREIGN KEY ("location_id")
-          REFERENCES "job_application.location"("location_id")
+          REFERENCES public.location("location_id")
 );
 
-CREATE TABLE "job_application.education" (
+CREATE TABLE public.education (
   "education_id" VARCHAR(36) ,
   "date_earned" timestamp with time zone NOT NULL,
   "institution" VARCHAR(500) NOT NULL,
@@ -193,14 +193,14 @@ CREATE TABLE "job_application.education" (
   PRIMARY KEY ("education_id"),
   CONSTRAINT "FK_education.user_cv_id"
     FOREIGN KEY ("user_cv_id")
-      REFERENCES "job_application.user_cv"("user_cv_id"),
+      REFERENCES public.user_cv("user_cv_id"),
   CONSTRAINT "FK_education.user_id"
         FOREIGN KEY ("user_id")
-          REFERENCES "job_application.user"("user_id")
+          REFERENCES public.user("user_id")
 );
 
 
-CREATE TABLE "job_application.hobby" (
+CREATE TABLE public.hobby (
   "hobby_id" VARCHAR(36) NOT NULL,
   "hobby_name" VARCHAR(250) NOT NULL,
   "description" VARCHAR(250) NOT NULL,
@@ -213,13 +213,13 @@ CREATE TABLE "job_application.hobby" (
   PRIMARY KEY ("hobby_id"),
   CONSTRAINT "FK_hobby.user_cv_id"
     FOREIGN KEY ("user_cv_id")
-      REFERENCES "job_application.user_cv"("user_cv_id"),
+      REFERENCES public.user_cv("user_cv_id"),
   CONSTRAINT "FK_hobby.user_id"
     FOREIGN KEY ("user_id")
-      REFERENCES "job_application.user"("user_id")
+      REFERENCES public.user("user_id")
 );
 
-CREATE TABLE "job_application.organization" (
+CREATE TABLE public.organization (
   "organization_id" VARCHAR(36) ,
   "date_start" timestamp with time zone NOT NULL,
   "date_end" timestamp with time zone NOT NULL,
@@ -237,13 +237,13 @@ CREATE TABLE "job_application.organization" (
   PRIMARY KEY ("organization_id"),
   CONSTRAINT "FK_organization.user_cv_id"
     FOREIGN KEY ("user_cv_id")
-      REFERENCES "job_application.user_cv"("user_cv_id"),
+      REFERENCES public.user_cv("user_cv_id"),
   CONSTRAINT "FK_organization.user_id"
     FOREIGN KEY ("user_id")
-      REFERENCES "job_application.user"("user_id")
+      REFERENCES public.user("user_id")
 );
 
-CREATE TABLE "job_application.job_applicant" (
+CREATE TABLE public.job_applicant (
   "job_applicant_id" VARCHAR(36) ,
   "user_id" VARCHAR(36) NOT NULL,
   "job_capaign_id" VARCHAR(36) NOT NULL,
@@ -254,10 +254,10 @@ CREATE TABLE "job_application.job_applicant" (
   PRIMARY KEY ("job_applicant_id"),
   CONSTRAINT "FK_job_applicant.user_id"
     FOREIGN KEY ("user_id")
-      REFERENCES "job_application.user"("user_id")
+      REFERENCES public.user("user_id")
 );
 
-CREATE TABLE "job_application.activity_log" (
+CREATE TABLE public.activity_log (
   "activity_log_id" VARCHAR(36),
   "activity_description" text,
   "activity_action" VARCHAR(100),
@@ -267,11 +267,11 @@ CREATE TABLE "job_application.activity_log" (
   PRIMARY KEY ("activity_log_id"),
   CONSTRAINT "FK_activity_log.user_id"
     FOREIGN KEY ("user_id")
-      REFERENCES "job_application.user"("user_id")
+      REFERENCES public.user("user_id")
 );
 
 
-CREATE TABLE "job_application.work_experience" (
+CREATE TABLE public.work_experience (
   "work_experience_id" VARCHAR(36) NOT NULL,
   "is_current_job" VARCHAR(250) NOT NULL,
   "job_title" VARCHAR(250) NOT NULL,
@@ -291,13 +291,13 @@ CREATE TABLE "job_application.work_experience" (
   PRIMARY KEY ("work_experience_id"),
   CONSTRAINT "FK_work_experience.user_cv_id"
     FOREIGN KEY ("user_cv_id ")
-      REFERENCES "job_application.user_cv"("user_cv_id"),
+      REFERENCES public.user_cv("user_cv_id"),
   CONSTRAINT "FK_work_experience.user_id"
     FOREIGN KEY ("user_id")
-      REFERENCES "job_application.user"("user_id")
+      REFERENCES public.user("user_id")
 );
 
-CREATE TABLE "job_application.job_alert_subcription" (
+CREATE TABLE public.job_alert_subcription (
   "job_subscription_id" VARCHAR(36) ,
   "location_id" VARCHAR(36) NOT NULL ,
   "subscription_date" timestamp with time zone,
@@ -309,13 +309,13 @@ CREATE TABLE "job_application.job_alert_subcription" (
   PRIMARY KEY ("job_subscription_id"),
   CONSTRAINT "FK_job_alert_subcription.location_id"
     FOREIGN KEY ("location_id")
-      REFERENCES "job_application.location"("location_id"),
+      REFERENCES public.location("location_id"),
   CONSTRAINT "FK_job_alert_subcription.user_id"
     FOREIGN KEY ("user_id")
-      REFERENCES "job_application.user"("user_id")
+      REFERENCES public.user("user_id")
 );
 
-CREATE TABLE "job_application.account_settings" (
+CREATE TABLE public.account_settings (
   "account_setting_id" VARCHAR(36) ,
   "last_login_info" TEXT,
   "receive_job_alert" boolean,
@@ -328,12 +328,12 @@ CREATE TABLE "job_application.account_settings" (
   PRIMARY KEY ("account_setting_id"),
   CONSTRAINT "FK_account_settings.user_id"
     FOREIGN KEY ("user_id")
-      REFERENCES "job_application.user"("user_id")
+      REFERENCES public.user("user_id")
 );
 
 
 --
---CREATE TABLE "job_application.profile_image" (
+--CREATE TABLE "public.profile_image" (
 --  "profile_image_id" VARCHAR(36),
 --  "date_created" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
 --  "created_by" VARCHAR(250) NOT NULL,
@@ -344,5 +344,5 @@ CREATE TABLE "job_application.account_settings" (
 --  PRIMARY KEY ("profile_image_id"),
 --  CONSTRAINT "FK_profile_image.user_id"
 --    FOREIGN KEY ("user_id")
---      REFERENCES "job_application.user"("user_id")
+--      REFERENCES "public.user"("user_id")
 --);
