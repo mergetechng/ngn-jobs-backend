@@ -1,7 +1,7 @@
 package com.mergetechng.jobs.controllers.admin;
 
 
-import com.mergetechng.jobs.common.dto.ApiResponse;
+import com.mergetechng.jobs.common.dto.ApiResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -23,12 +23,12 @@ public class AdminLoginController {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(
                     responseCode = "200",
                     description = "Login was successful",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse.class))
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ), @io.swagger.v3.oas.annotations.responses.ApiResponse(
             responseCode = "400",
             description = "You are not authorized to use this endpoint",
-            content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponse[].class))
+            content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto[].class))
             }
     )})
     public ResponseEntity<Map<String, String>> login(@RequestBody(required = false) Map<String, String> loginBody) {

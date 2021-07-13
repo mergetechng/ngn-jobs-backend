@@ -1,5 +1,4 @@
 package com.mergetechng.jobs.common.dto;
 
-public class JobAlertSubscription {
-
+public class AdminProfileDto {
 }

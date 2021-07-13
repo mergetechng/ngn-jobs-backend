@@ -3,16 +3,16 @@ package com.mergetechng.jobs.common.dto;
 
 import java.util.Objects;
 
-public class ApiResponse {
+public class ApiResponseDto {
     private String message;
     private String statusCode;
     private String requestDate;
     private String requestType;
     private Object data;
 
-    public ApiResponse(){}
+    public ApiResponseDto(){}
 
-    public ApiResponse(String message, String statusCode, String requestDate, String requestType, Object data) {
+    public ApiResponseDto(String message, String statusCode, String requestDate, String requestType, Object data) {
         this.message = message;
         this.statusCode = statusCode;
         this.requestDate = requestDate;

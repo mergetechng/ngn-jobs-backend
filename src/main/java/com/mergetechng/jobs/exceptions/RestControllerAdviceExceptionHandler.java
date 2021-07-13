@@ -1,7 +1,7 @@
 package com.mergetechng.jobs.exceptions;
 
 
-import com.mergetechng.jobs.common.dto.RestErrorMessage;
+import com.mergetechng.jobs.common.dto.RestErrorMessageDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -13,8 +13,8 @@ public class RestControllerAdviceExceptionHandler {
 
     @ExceptionHandler(ResourceNotFoundException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
-    public RestErrorMessage resourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
-        RestErrorMessage message = new RestErrorMessage(
+    public RestErrorMessageDto resourceNotFoundException(ResourceNotFoundException ex, WebRequest request) {
+        RestErrorMessageDto message = new RestErrorMessageDto(
                 "Resource Not Found and",
                 HttpStatus.NOT_FOUND.value(),
                 "Failed to get the resource requested"
@@ -24,8 +24,8 @@ public class RestControllerAdviceExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    public RestErrorMessage globalExceptionHandler(Exception ex, WebRequest request) {
-        RestErrorMessage message = new RestErrorMessage(
+    public RestErrorMessageDto globalExceptionHandler(Exception ex, WebRequest request) {
+        RestErrorMessageDto message = new RestErrorMessageDto(
                 "Server failed to process your request",
                 HttpStatus.NOT_FOUND.value(),
                 "Internal server error occurred."

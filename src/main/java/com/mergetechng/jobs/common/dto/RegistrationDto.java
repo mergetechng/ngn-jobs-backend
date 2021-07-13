@@ -1,4 +1,4 @@
 package com.mergetechng.jobs.common.dto;
 
-public class CV {
+public class RegistrationDto {
 }
