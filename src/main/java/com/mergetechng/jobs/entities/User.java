@@ -23,7 +23,7 @@ import javax.persistence.UniqueConstraint;
 
 /**
  *
- * @author Integral
+ * @author @keemsisi
  */
 @Entity
 @Table(catalog = "ngn_jobs", schema = "POSTGRES", uniqueConstraints = {

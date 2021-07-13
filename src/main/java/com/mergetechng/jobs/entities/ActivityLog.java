@@ -7,7 +7,7 @@ package com.mergetechng.jobs.entities;
 
 /**
  *
- * @author Integral
+ * @author @keemsisi
  */
 public class ActivityLog {
     

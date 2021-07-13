@@ -25,7 +25,7 @@ import javax.persistence.TemporalType;
 
 /**
  *
- * @author Integral
+ * @author @keemsisi
  */
 @Entity
 @Table(name = "user_cv", catalog = "ngn_jobs", schema = "POSTGRES")
