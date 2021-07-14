@@ -6,7 +6,7 @@
 package com.mergetechng.jobs.entities;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -68,7 +68,7 @@ public class Refree implements Serializable {
     @Column(name = "modified_by", length = 250)
     private String modifiedBy;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "refreeId")
-    private Collection<Reference> referenceCollection;
+    private List<Reference> referenceCollection;
     @JoinColumn(name = "user_cv_id", referencedColumnName = "user_cv_id", nullable = false)
     @ManyToOne(optional = false)
     private UserCv userCvId;
@@ -160,11 +160,11 @@ public class Refree implements Serializable {
         this.modifiedBy = modifiedBy;
     }
 
-    public Collection<Reference> getReferenceCollection() {
+    public List<Reference> getReferenceCollection() {
         return referenceCollection;
     }
 
-    public void setReferenceCollection(Collection<Reference> referenceCollection) {
+    public void setReferenceCollection(List<Reference> referenceCollection) {
         this.referenceCollection = referenceCollection;
     }
 

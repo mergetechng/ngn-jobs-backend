@@ -6,7 +6,7 @@
 package com.mergetechng.jobs.entities;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -90,26 +90,26 @@ public class UserCv implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModified;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private Collection<Education> educationCollection;
+    private List<Education> educationCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId1")
-    private Collection<Certification> certificationCollection;
+    private List<Certification> certificationCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private Collection<Reference> referenceCollection;
+    private List<Reference> referenceCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private Collection<Organization> organizationCollection;
+    private List<Organization> organizationCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private Collection<Publication> publicationCollection;
+    private List<Publication> publicationCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private Collection<Skill> skillCollection;
+    private List<Skill> skillCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private Collection<Refree> refreeCollection;
+    private List<Refree> refreeCollection;
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     @ManyToOne(optional = false)
     private User userId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private Collection<WorkExperience> workExperienceCollection;
+    private List<WorkExperience> workExperienceCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private Collection<Hobby> hobbyCollection;
+    private List<Hobby> hobbyCollection;
 
     public UserCv() {
     }
@@ -257,59 +257,59 @@ public class UserCv implements Serializable {
         this.dateModified = dateModified;
     }
 
-    public Collection<Education> getEducationCollection() {
+    public List<Education> getEducationCollection() {
         return educationCollection;
     }
 
-    public void setEducationCollection(Collection<Education> educationCollection) {
+    public void setEducationCollection(List<Education> educationCollection) {
         this.educationCollection = educationCollection;
     }
 
-    public Collection<Certification> getCertificationCollection() {
+    public List<Certification> getCertificationCollection() {
         return certificationCollection;
     }
 
-    public void setCertificationCollection(Collection<Certification> certificationCollection) {
+    public void setCertificationCollection(List<Certification> certificationCollection) {
         this.certificationCollection = certificationCollection;
     }
 
-    public Collection<Reference> getReferenceCollection() {
+    public List<Reference> getReferenceCollection() {
         return referenceCollection;
     }
 
-    public void setReferenceCollection(Collection<Reference> referenceCollection) {
+    public void setReferenceCollection(List<Reference> referenceCollection) {
         this.referenceCollection = referenceCollection;
     }
 
-    public Collection<Organization> getOrganizationCollection() {
+    public List<Organization> getOrganizationCollection() {
         return organizationCollection;
     }
 
-    public void setOrganizationCollection(Collection<Organization> organizationCollection) {
+    public void setOrganizationCollection(List<Organization> organizationCollection) {
         this.organizationCollection = organizationCollection;
     }
 
-    public Collection<Publication> getPublicationCollection() {
+    public List<Publication> getPublicationCollection() {
         return publicationCollection;
     }
 
-    public void setPublicationCollection(Collection<Publication> publicationCollection) {
+    public void setPublicationCollection(List<Publication> publicationCollection) {
         this.publicationCollection = publicationCollection;
     }
 
-    public Collection<Skill> getSkillCollection() {
+    public List<Skill> getSkillCollection() {
         return skillCollection;
     }
 
-    public void setSkillCollection(Collection<Skill> skillCollection) {
+    public void setSkillCollection(List<Skill> skillCollection) {
         this.skillCollection = skillCollection;
     }
 
-    public Collection<Refree> getRefreeCollection() {
+    public List<Refree> getRefreeCollection() {
         return refreeCollection;
     }
 
-    public void setRefreeCollection(Collection<Refree> refreeCollection) {
+    public void setRefreeCollection(List<Refree> refreeCollection) {
         this.refreeCollection = refreeCollection;
     }
 
@@ -321,19 +321,19 @@ public class UserCv implements Serializable {
         this.userId = userId;
     }
 
-    public Collection<WorkExperience> getWorkExperienceCollection() {
+    public List<WorkExperience> getWorkExperienceCollection() {
         return workExperienceCollection;
     }
 
-    public void setWorkExperienceCollection(Collection<WorkExperience> workExperienceCollection) {
+    public void setWorkExperienceCollection(List<WorkExperience> workExperienceCollection) {
         this.workExperienceCollection = workExperienceCollection;
     }
 
-    public Collection<Hobby> getHobbyCollection() {
+    public List<Hobby> getHobbyCollection() {
         return hobbyCollection;
     }
 
-    public void setHobbyCollection(Collection<Hobby> hobbyCollection) {
+    public void setHobbyCollection(List<Hobby> hobbyCollection) {
         this.hobbyCollection = hobbyCollection;
     }
 

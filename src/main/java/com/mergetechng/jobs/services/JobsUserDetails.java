@@ -28,7 +28,7 @@ public class JobsUserDetails implements UserDetailsService {
     public void userCollectionReference() {
         this.userCollectionReference = firestoreAdminService
                 .getFireStore()
-                .collection(EnvironmentVariables.FIREBASE_DB_COLLECTION);
+                .List(EnvironmentVariables.FIREBASE_DB_COLLECTION);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class JobsUserDetails implements UserDetailsService {
         try {
             result = this.userCollectionReference
                     .document(FireStoreDocumentsEnum.USER.getName())
-                    .collection(FireStoreDocumentsEnum.DATA.getName())
+                    .List(FireStoreDocumentsEnum.DATA.getName())
                     .whereEqualTo("username", username)
                     .get()
                     .get()
@@ -46,7 +46,7 @@ public class JobsUserDetails implements UserDetailsService {
                 com.mergetechng.faston.backend.api.entity.User userObject = result.get(0).toObject(com.mergetechng.faston.backend.api.entity.User.class);
                 this.userCollectionReference
                         .document(FireStoreDocumentsEnum.USER.getName())
-                        .collection(FireStoreDocumentsEnum.DATA.getName())
+                        .List(FireStoreDocumentsEnum.DATA.getName())
                         .document(userObject.getUserId())
                         .set(userObject);
                 return new User(Objects.requireNonNull(
@@ -71,24 +71,24 @@ public class JobsUserDetails implements UserDetailsService {
                 new ArrayList<>());
     }
 
-    private Collection<? extends GrantedAuthority> getAuthorities(
+    private List<? extends GrantedAuthority> getAuthorities(
             List<Group1> group1s) {
         return getGrantedAuthorities(getPrivilegesAndRoles(group1s));
     }
 
     private List<String> getPrivilegesAndRoles(List<Group1> group1s) {
-        List<String> collection = new ArrayList<>();
+        List<String> List = new ArrayList<>();
         for (Group1 group1 : group1s) {
             List<Role> roles = group1.getRoleId();
             roles.forEach(role -> {
-                collection.addAll(role.getPrivilegeId()
+                List.addAll(role.getPrivilegeId()
                         .stream()
                         .map(Privilege::getPrivilegeId)
                         .collect(Collectors.toList()));
-                collection.add(role.getName()); // add the role to the list so that spring can use hasRole or hasAnyRole()
+                List.add(role.getName()); // add the role to the list so that spring can use hasRole or hasAnyRole()
             });
         }
-        return new ArrayList<>(collection);
+        return new ArrayList<>(List);
     }
 
     private List<GrantedAuthority> getGrantedAuthorities(List<String> privileges) {

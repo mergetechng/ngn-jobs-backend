@@ -6,7 +6,7 @@
 package com.mergetechng.jobs.entities;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -66,9 +66,9 @@ public class Location implements Serializable {
     @Column(name = "created_by", nullable = false, length = 250)
     private String createdBy;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "locationId")
-    private Collection<JobAlertSubcription> jobAlertSubcriptionCollection;
+    private List<JobAlertSubcription> jobAlertSubcriptionCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "locationId")
-    private Collection<UserLocationInterest> userLocationInterestCollection;
+    private List<UserLocationInterest> userLocationInterestCollection;
 
     public Location() {
     }
@@ -150,19 +150,19 @@ public class Location implements Serializable {
         this.createdBy = createdBy;
     }
 
-    public Collection<JobAlertSubcription> getJobAlertSubcriptionCollection() {
+    public List<JobAlertSubcription> getJobAlertSubcriptionCollection() {
         return jobAlertSubcriptionCollection;
     }
 
-    public void setJobAlertSubcriptionCollection(Collection<JobAlertSubcription> jobAlertSubcriptionCollection) {
+    public void setJobAlertSubcriptionCollection(List<JobAlertSubcription> jobAlertSubcriptionCollection) {
         this.jobAlertSubcriptionCollection = jobAlertSubcriptionCollection;
     }
 
-    public Collection<UserLocationInterest> getUserLocationInterestCollection() {
+    public List<UserLocationInterest> getUserLocationInterestCollection() {
         return userLocationInterestCollection;
     }
 
-    public void setUserLocationInterestCollection(Collection<UserLocationInterest> userLocationInterestCollection) {
+    public void setUserLocationInterestCollection(List<UserLocationInterest> userLocationInterestCollection) {
         this.userLocationInterestCollection = userLocationInterestCollection;
     }
 

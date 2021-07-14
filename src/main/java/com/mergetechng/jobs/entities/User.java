@@ -6,7 +6,7 @@
 package com.mergetechng.jobs.entities;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.List;
 import java.util.Date;
 import javax.persistence.Basic;
 import javax.persistence.CascadeType;
@@ -88,33 +88,33 @@ public class User implements Serializable {
     @Column(nullable = false, length = 250)
     private String email;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<JobApplicant> jobApplicantCollection;
+    private List<JobApplicant> jobApplicantCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<Education> educationCollection;
+    private List<Education> educationCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<JobAlertSubcription> jobAlertSubcriptionCollection;
+    private List<JobAlertSubcription> jobAlertSubcriptionCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<AccountSettings> accountSettingsCollection;
+    private List<AccountSettings> accountSettingsCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<ActivityLog> activityLogCollection;
+    private List<ActivityLog> activityLogCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private Collection<Certification> certificationCollection;
+    private List<Certification> certificationCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<Reference> referenceCollection;
+    private List<Reference> referenceCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<UserLocationInterest> userLocationInterestCollection;
+    private List<UserLocationInterest> userLocationInterestCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<Organization> organizationCollection;
+    private List<Organization> organizationCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<Publication> publicationCollection;
+    private List<Publication> publicationCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<Skill> skillCollection;
+    private List<Skill> skillCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<UserCv> userCvCollection;
+    private List<UserCv> userCvCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<WorkExperience> workExperienceCollection;
+    private List<WorkExperience> workExperienceCollection;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
-    private Collection<Hobby> hobbyCollection;
+    private List<Hobby> hobbyCollection;
 
     public User() {
     }
@@ -239,115 +239,115 @@ public class User implements Serializable {
         this.email = email;
     }
 
-    public Collection<JobApplicant> getJobApplicantCollection() {
+    public List<JobApplicant> getJobApplicantCollection() {
         return jobApplicantCollection;
     }
 
-    public void setJobApplicantCollection(Collection<JobApplicant> jobApplicantCollection) {
+    public void setJobApplicantCollection(List<JobApplicant> jobApplicantCollection) {
         this.jobApplicantCollection = jobApplicantCollection;
     }
 
-    public Collection<Education> getEducationCollection() {
+    public List<Education> getEducationCollection() {
         return educationCollection;
     }
 
-    public void setEducationCollection(Collection<Education> educationCollection) {
+    public void setEducationCollection(List<Education> educationCollection) {
         this.educationCollection = educationCollection;
     }
 
-    public Collection<JobAlertSubcription> getJobAlertSubcriptionCollection() {
+    public List<JobAlertSubcription> getJobAlertSubcriptionCollection() {
         return jobAlertSubcriptionCollection;
     }
 
-    public void setJobAlertSubcriptionCollection(Collection<JobAlertSubcription> jobAlertSubcriptionCollection) {
+    public void setJobAlertSubcriptionCollection(List<JobAlertSubcription> jobAlertSubcriptionCollection) {
         this.jobAlertSubcriptionCollection = jobAlertSubcriptionCollection;
     }
 
-    public Collection<AccountSettings> getAccountSettingsCollection() {
+    public List<AccountSettings> getAccountSettingsCollection() {
         return accountSettingsCollection;
     }
 
-    public void setAccountSettingsCollection(Collection<AccountSettings> accountSettingsCollection) {
+    public void setAccountSettingsCollection(List<AccountSettings> accountSettingsCollection) {
         this.accountSettingsCollection = accountSettingsCollection;
     }
 
-    public Collection<ActivityLog> getActivityLogCollection() {
+    public List<ActivityLog> getActivityLogCollection() {
         return activityLogCollection;
     }
 
-    public void setActivityLogCollection(Collection<ActivityLog> activityLogCollection) {
+    public void setActivityLogCollection(List<ActivityLog> activityLogCollection) {
         this.activityLogCollection = activityLogCollection;
     }
 
-    public Collection<Certification> getCertificationCollection() {
+    public List<Certification> getCertificationCollection() {
         return certificationCollection;
     }
 
-    public void setCertificationCollection(Collection<Certification> certificationCollection) {
+    public void setCertificationCollection(List<Certification> certificationCollection) {
         this.certificationCollection = certificationCollection;
     }
 
-    public Collection<Reference> getReferenceCollection() {
+    public List<Reference> getReferenceCollection() {
         return referenceCollection;
     }
 
-    public void setReferenceCollection(Collection<Reference> referenceCollection) {
+    public void setReferenceCollection(List<Reference> referenceCollection) {
         this.referenceCollection = referenceCollection;
     }
 
-    public Collection<UserLocationInterest> getUserLocationInterestCollection() {
+    public List<UserLocationInterest> getUserLocationInterestCollection() {
         return userLocationInterestCollection;
     }
 
-    public void setUserLocationInterestCollection(Collection<UserLocationInterest> userLocationInterestCollection) {
+    public void setUserLocationInterestCollection(List<UserLocationInterest> userLocationInterestCollection) {
         this.userLocationInterestCollection = userLocationInterestCollection;
     }
 
-    public Collection<Organization> getOrganizationCollection() {
+    public List<Organization> getOrganizationCollection() {
         return organizationCollection;
     }
 
-    public void setOrganizationCollection(Collection<Organization> organizationCollection) {
+    public void setOrganizationCollection(List<Organization> organizationCollection) {
         this.organizationCollection = organizationCollection;
     }
 
-    public Collection<Publication> getPublicationCollection() {
+    public List<Publication> getPublicationCollection() {
         return publicationCollection;
     }
 
-    public void setPublicationCollection(Collection<Publication> publicationCollection) {
+    public void setPublicationCollection(List<Publication> publicationCollection) {
         this.publicationCollection = publicationCollection;
     }
 
-    public Collection<Skill> getSkillCollection() {
+    public List<Skill> getSkillCollection() {
         return skillCollection;
     }
 
-    public void setSkillCollection(Collection<Skill> skillCollection) {
+    public void setSkillCollection(List<Skill> skillCollection) {
         this.skillCollection = skillCollection;
     }
 
-    public Collection<UserCv> getUserCvCollection() {
+    public List<UserCv> getUserCvCollection() {
         return userCvCollection;
     }
 
-    public void setUserCvCollection(Collection<UserCv> userCvCollection) {
+    public void setUserCvCollection(List<UserCv> userCvCollection) {
         this.userCvCollection = userCvCollection;
     }
 
-    public Collection<WorkExperience> getWorkExperienceCollection() {
+    public List<WorkExperience> getWorkExperienceCollection() {
         return workExperienceCollection;
     }
 
-    public void setWorkExperienceCollection(Collection<WorkExperience> workExperienceCollection) {
+    public void setWorkExperienceCollection(List<WorkExperience> workExperienceCollection) {
         this.workExperienceCollection = workExperienceCollection;
     }
 
-    public Collection<Hobby> getHobbyCollection() {
+    public List<Hobby> getHobbyCollection() {
         return hobbyCollection;
     }
 
-    public void setHobbyCollection(Collection<Hobby> hobbyCollection) {
+    public void setHobbyCollection(List<Hobby> hobbyCollection) {
         this.hobbyCollection = hobbyCollection;
     }
 
