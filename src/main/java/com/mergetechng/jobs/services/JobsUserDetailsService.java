@@ -43,8 +43,8 @@ public class JobsUserDetailsService implements UserDetailsService {
                 "Anonymous",
                 "Anonymous",
                 true,
-                false,
-                false,
+                true,
+                true,
                 true,
                 new ArrayList<>());
     }
