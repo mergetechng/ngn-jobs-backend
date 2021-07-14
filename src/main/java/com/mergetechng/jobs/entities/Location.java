@@ -66,9 +66,9 @@ public class Location implements Serializable {
     @Column(name = "created_by", nullable = false, length = 250)
     private String createdBy;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "locationId")
-    private List<JobAlertSubcription> jobAlertSubcriptionCollection;
+    private List<JobAlertSubcription> jobAlertSubcriptionList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "locationId")
-    private List<UserLocationInterest> userLocationInterestCollection;
+    private List<UserLocationInterest> userLocationInterestList;
 
     public Location() {
     }
@@ -150,20 +150,20 @@ public class Location implements Serializable {
         this.createdBy = createdBy;
     }
 
-    public List<JobAlertSubcription> getJobAlertSubcriptionCollection() {
-        return jobAlertSubcriptionCollection;
+    public List<JobAlertSubcription> getJobAlertSubcriptionList() {
+        return jobAlertSubcriptionList;
     }
 
-    public void setJobAlertSubcriptionCollection(List<JobAlertSubcription> jobAlertSubcriptionCollection) {
-        this.jobAlertSubcriptionCollection = jobAlertSubcriptionCollection;
+    public void setJobAlertSubcriptionList(List<JobAlertSubcription> jobAlertSubcriptionList) {
+        this.jobAlertSubcriptionList = jobAlertSubcriptionList;
     }
 
-    public List<UserLocationInterest> getUserLocationInterestCollection() {
-        return userLocationInterestCollection;
+    public List<UserLocationInterest> getUserLocationInterestList() {
+        return userLocationInterestList;
     }
 
-    public void setUserLocationInterestCollection(List<UserLocationInterest> userLocationInterestCollection) {
-        this.userLocationInterestCollection = userLocationInterestCollection;
+    public void setUserLocationInterestList(List<UserLocationInterest> userLocationInterestList) {
+        this.userLocationInterestList = userLocationInterestList;
     }
 
     @Override

@@ -2,11 +2,16 @@
 CREATE TABLE public.user (
   "user_id" VARCHAR(36),
   "username" VARCHAR(36) NOT NULL,
-  "password" timestamp with time zone NOT NULL,
+  "password" VARCHAR(255) NOT NULL,
+  "firstname" VARCHAR(255),
+  "lastname" VARCHAR(255),
   "date_registered" VARCHAR(250) NOT NULL,
   "last_login" timestamp with time zone,
   "last_login_info" timestamp with time zone NOT NULL,
-  "gender" VARCHAR(20) NOT NULL,
+  "gender" VARCHAR(20),
+  "nationality" VARCHAR(255),
+  "location" VARCHAR(255),
+  "former_job_role" VARCHAR(255) NOT NULL,
   "date_created" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "date_modified" timestamp with time zone,
   "modified_by" VARCHAR(250),
@@ -331,7 +336,55 @@ CREATE TABLE public.account_settings (
       REFERENCES public.user("user_id")
 );
 
+CREATE TABLE public.role(
+  role_id varchar(36),
+  "name" varchar(250),
+  date_created timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  date_modified timestamp with time zone,
+  modified_by varchar(60),
+  description varchar(250),
+  CONSTRAINT role_pk PRIMARY KEY ("role_id")
+);
 
+CREATE TABLE public.group (
+  group_id varchar(36),
+  group_name varchar(250),
+  created_by varchar(150),
+  date_created timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  date_modified timestamp with time zone NOT NULL,
+  modified_by varchar(150),
+      CONSTRAINT group_pk PRIMARY KEY ("group_id")
+);
+
+CREATE TABLE public.privilege (
+  privilege_id varchar(36),
+  "name" varchar(100),
+  description varchar(250),
+  date_created timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  date_modified boolean,
+  created_by varchar(150),
+  modifed_by timestamp with time zone ,
+        CONSTRAINT privilege_fk PRIMARY KEY ("privilege_id")
+);
+
+CREATE TABLE public.user_has_privilege (
+  user_id varchar(36),
+  privilege_id varchar(36) NOT NULL,
+  date_created timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+     CONSTRAINT user_has_privilege_pk PRIMARY KEY ("user_id" ,  "privilege_id"),
+     CONSTRAINT user_has_privilege_privilege_fk FOREIGN KEY (privilege_id) REFERENCES privilege(privilege_id),
+     CONSTRAINT user_has_privilege_user_fk FOREIGN KEY (user_id) REFERENCES "user"(user_id)
+);
+
+CREATE TABLE public.group_has_roles (
+  group_has_roles_id varchar(36),
+  privilege_id varchar(36),
+  created_by varchar(150) NOT NULL DEFAULT 'System',
+  date_created timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  group_id varchar(36),
+      CONSTRAINT group_has_roles_pk PRIMARY KEY (group_has_roles_id , privilege_id),
+      CONSTRAINT group_has_roles_privilege_fk FOREIGN KEY (privilege_id) REFERENCES privilege(privilege_id)
+);
 --
 --CREATE TABLE "public.profile_image" (
 --  "profile_image_id" VARCHAR(36),

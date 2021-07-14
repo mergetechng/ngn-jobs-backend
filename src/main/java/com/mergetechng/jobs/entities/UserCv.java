@@ -90,26 +90,26 @@ public class UserCv implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModified;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private List<Education> educationCollection;
+    private List<Education> educationList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId1")
-    private List<Certification> certificationCollection;
+    private List<Certification> certificationList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private List<Reference> referenceCollection;
+    private List<Reference> referenceList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private List<Organization> organizationCollection;
+    private List<Organization> organizationList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private List<Publication> publicationCollection;
+    private List<Publication> publicationList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private List<Skill> skillCollection;
+    private List<Skill> skillList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private List<Refree> refreeCollection;
+    private List<Refree> refreeList;
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     @ManyToOne(optional = false)
     private User userId;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private List<WorkExperience> workExperienceCollection;
+    private List<WorkExperience> workExperienceList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
-    private List<Hobby> hobbyCollection;
+    private List<Hobby> hobbyList;
 
     public UserCv() {
     }
@@ -257,60 +257,60 @@ public class UserCv implements Serializable {
         this.dateModified = dateModified;
     }
 
-    public List<Education> getEducationCollection() {
-        return educationCollection;
+    public List<Education> getEducationList() {
+        return educationList;
     }
 
-    public void setEducationCollection(List<Education> educationCollection) {
-        this.educationCollection = educationCollection;
+    public void setEducationList(List<Education> educationList) {
+        this.educationList = educationList;
     }
 
-    public List<Certification> getCertificationCollection() {
-        return certificationCollection;
+    public List<Certification> getCertificationList() {
+        return certificationList;
     }
 
-    public void setCertificationCollection(List<Certification> certificationCollection) {
-        this.certificationCollection = certificationCollection;
+    public void setCertificationList(List<Certification> certificationList) {
+        this.certificationList = certificationList;
     }
 
-    public List<Reference> getReferenceCollection() {
-        return referenceCollection;
+    public List<Reference> getReferenceList() {
+        return referenceList;
     }
 
-    public void setReferenceCollection(List<Reference> referenceCollection) {
-        this.referenceCollection = referenceCollection;
+    public void setReferenceList(List<Reference> referenceList) {
+        this.referenceList = referenceList;
     }
 
-    public List<Organization> getOrganizationCollection() {
-        return organizationCollection;
+    public List<Organization> getOrganizationList() {
+        return organizationList;
     }
 
-    public void setOrganizationCollection(List<Organization> organizationCollection) {
-        this.organizationCollection = organizationCollection;
+    public void setOrganizationList(List<Organization> organizationList) {
+        this.organizationList = organizationList;
     }
 
-    public List<Publication> getPublicationCollection() {
-        return publicationCollection;
+    public List<Publication> getPublicationList() {
+        return publicationList;
     }
 
-    public void setPublicationCollection(List<Publication> publicationCollection) {
-        this.publicationCollection = publicationCollection;
+    public void setPublicationList(List<Publication> publicationList) {
+        this.publicationList = publicationList;
     }
 
-    public List<Skill> getSkillCollection() {
-        return skillCollection;
+    public List<Skill> getSkillList() {
+        return skillList;
     }
 
-    public void setSkillCollection(List<Skill> skillCollection) {
-        this.skillCollection = skillCollection;
+    public void setSkillList(List<Skill> skillList) {
+        this.skillList = skillList;
     }
 
-    public List<Refree> getRefreeCollection() {
-        return refreeCollection;
+    public List<Refree> getRefreeList() {
+        return refreeList;
     }
 
-    public void setRefreeCollection(List<Refree> refreeCollection) {
-        this.refreeCollection = refreeCollection;
+    public void setRefreeList(List<Refree> refreeList) {
+        this.refreeList = refreeList;
     }
 
     public User getUserId() {
@@ -321,20 +321,20 @@ public class UserCv implements Serializable {
         this.userId = userId;
     }
 
-    public List<WorkExperience> getWorkExperienceCollection() {
-        return workExperienceCollection;
+    public List<WorkExperience> getWorkExperienceList() {
+        return workExperienceList;
     }
 
-    public void setWorkExperienceCollection(List<WorkExperience> workExperienceCollection) {
-        this.workExperienceCollection = workExperienceCollection;
+    public void setWorkExperienceList(List<WorkExperience> workExperienceList) {
+        this.workExperienceList = workExperienceList;
     }
 
-    public List<Hobby> getHobbyCollection() {
-        return hobbyCollection;
+    public List<Hobby> getHobbyList() {
+        return hobbyList;
     }
 
-    public void setHobbyCollection(List<Hobby> hobbyCollection) {
-        this.hobbyCollection = hobbyCollection;
+    public void setHobbyList(List<Hobby> hobbyList) {
+        this.hobbyList = hobbyList;
     }
 
     @Override

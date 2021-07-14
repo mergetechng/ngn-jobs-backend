@@ -1,7 +1,7 @@
 package com.mergetechng.jobs.controllers.admin;
 
 
-import com.mergetechng.jobs.common.dto.ApiResponseDto;
+import com.mergetechng.jobs.commons.dto.ApiResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;

@@ -1,7 +1,7 @@
 package com.mergetechng.jobs.exceptions;
 
 
-import com.mergetechng.jobs.common.dto.RestErrorMessageDto;
+import com.mergetechng.jobs.commons.dto.RestErrorMessageDto;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;

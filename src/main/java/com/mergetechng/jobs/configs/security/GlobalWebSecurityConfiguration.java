@@ -1,10 +1,10 @@
 package com.mergetechng.jobs.configs.security;
 
-import com.mergetechng.jobs.common.EnvironmentVariables;
-import com.mergetechng.jobs.common.filter.JWTRequestFilter;
+import com.mergetechng.jobs.commons.EnvironmentVariables;
+import com.mergetechng.jobs.commons.filter.JWTRequestFilter;
 import com.mergetechng.jobs.exceptions.AccessDeniedExceptionHandler;
 import com.mergetechng.jobs.exceptions.AuthenticationEntryPointExceptionHandling;
-import com.mergetechng.jobs.services.JobsUserDetails;
+import com.mergetechng.jobs.services.JobsUserDetailsService;
 import org.springframework.context.annotation.Configuration;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +25,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true,securedEnabled = true,jsr250Enabled = true)
+@EnableGlobalMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 @Order(0)
 public class GlobalWebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
-    private JobsUserDetails jobUserDetails;
+    private JobsUserDetailsService jobUserDetails;
     @Autowired
     private JWTRequestFilter jwtRequestFilter;
 
@@ -47,6 +47,10 @@ public class GlobalWebSecurityConfiguration extends WebSecurityConfigurerAdapter
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         super.configure(auth);
+//        auth.inMemoryAuthentication()
+//                .withUser("Anonymous")
+//                .password("{noop}Anonymous")
+//                .roles("USER");
     }
 
     @Bean
@@ -87,39 +91,22 @@ public class GlobalWebSecurityConfiguration extends WebSecurityConfigurerAdapter
                 .antMatchers("/admin/trip/payment/*")
                 .hasAnyRole("ADMIN_PAYMENT", "ADMIN_PAYMENT")
                 //users
-                .antMatchers("/user/delete/*").fullyAuthenticated()
-                .antMatchers("/user/update/*").fullyAuthenticated()
-                .antMatchers("/user/password/update/*").fullyAuthenticated()
-                .antMatchers("/user/disable/*").fullyAuthenticated()
-                .antMatchers("/user/filter-search/*").fullyAuthenticated()
-                .antMatchers("/user/exists/*").permitAll()
-                .antMatchers("/user/search/*").hasAnyAuthority("ADMIN_DASHBOARD")
+//                .antMatchers("/user/delete/*").fullyAuthenticated()
+//                .antMatchers("/user/update/*").fullyAuthenticated()
+//                .antMatchers("/user/password/update/*").fullyAuthenticated()
+//                .antMatchers("/user/disable/*").fullyAuthenticated()
+//                .antMatchers("/user/filter-search/*").fullyAuthenticated()
+//                .antMatchers("/user/exists/*").permitAll()
+//                .antMatchers("/user/search/*").hasAnyAuthority("ADMIN_DASHBOARD")
                 //contacts
-                .antMatchers("/user/contact/create/*")
-                .access("hasAuthority('RIDER_USER_ADD') or hasAuthority('ADMIN_DASHBOARD_ADD') or hasAuthority('DRIVER_USER_ADD')")
-                .antMatchers("/user/contact/delete/*").authenticated()
-                .antMatchers("/user/contact/update/*").authenticated()
-                .antMatchers("/user/contact/search/*").authenticated()
-                .antMatchers("/user/contact/exists/*").authenticated()
-                .antMatchers("/user/contacts/filter-search/*").authenticated()
+//                .antMatchers("/user/contact/create/*")
+//                .access("hasAuthority('RIDER_USER_ADD') or hasAuthority('ADMIN_DASHBOARD_ADD') or hasAuthority('DRIVER_USER_ADD')")
+//                .antMatchers("/user/contact/delete/*").authenticated()
+//                .antMatchers("/user/contact/update/*").authenticated()
+//                .antMatchers("/user/contact/search/*").authenticated()
+//                .antMatchers("/user/contact/exists/*").authenticated()
+//                .antMatchers("/user/contacts/filter-search/*").authenticated()
                 //trips
-                .antMatchers("/trip/status/*").fullyAuthenticated()
-                .antMatchers("/trip/delete/*").fullyAuthenticated()
-                .antMatchers("/trip/create/*").fullyAuthenticated()
-                .antMatchers("/trip/update/*").fullyAuthenticated()
-                .antMatchers("/trip/update/driver/*").fullyAuthenticated()
-                .antMatchers("/trip/update/tipping/*").fullyAuthenticated()
-                .antMatchers("/trip/search/*").fullyAuthenticated()
-                .antMatchers("/trip/filter-search/*").fullyAuthenticated()
-                .antMatchers("/trip/exists/*").fullyAuthenticated()
-                //driver vehicle registration
-                .antMatchers("/driver/vehicle/registration/create/*").hasAnyAuthority("ADMIN_DASHBOARD_ADD", "DRIVER_USER")
-                .antMatchers("/driver/vehicle/registration/update/*").fullyAuthenticated()
-                .antMatchers("/driver/vehicle/registration/delete/*").fullyAuthenticated()
-                .antMatchers("/driver/vehicle/registration/search/*").fullyAuthenticated()
-                .antMatchers("/driver/vehicle/registration/filter-search/*").fullyAuthenticated()
-                .antMatchers("/driver/vehicle/registration/verify/*").fullyAuthenticated()
-                .antMatchers("/driver/vehicle/registration/disable/*").fullyAuthenticated()
                 .anyRequest()
                 .permitAll()
                 .and()

@@ -68,7 +68,7 @@ public class Refree implements Serializable {
     @Column(name = "modified_by", length = 250)
     private String modifiedBy;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "refreeId")
-    private List<Reference> referenceCollection;
+    private List<Reference> referenceList;
     @JoinColumn(name = "user_cv_id", referencedColumnName = "user_cv_id", nullable = false)
     @ManyToOne(optional = false)
     private UserCv userCvId;
@@ -160,12 +160,12 @@ public class Refree implements Serializable {
         this.modifiedBy = modifiedBy;
     }
 
-    public List<Reference> getReferenceCollection() {
-        return referenceCollection;
+    public List<Reference> getReferenceList() {
+        return referenceList;
     }
 
-    public void setReferenceCollection(List<Reference> referenceCollection) {
-        this.referenceCollection = referenceCollection;
+    public void setReferenceList(List<Reference> referenceList) {
+        this.referenceList = referenceList;
     }
 
     public UserCv getUserCvId() {
