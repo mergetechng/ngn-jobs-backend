@@ -43,7 +43,7 @@ public class LoginAuthenticationController {
 
     @Operation(description = "Authenticate a user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "400", description = "Invalid username or password", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Bad Credentials", content = @Content),
             @ApiResponse(
                     responseCode = "200",
                     description = "Authentication Successful",

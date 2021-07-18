@@ -39,7 +39,7 @@ public class User implements Serializable {
     @Column(name = "user_id", nullable = false, length = 36)
     private String userId;
     @Basic(optional = false)
-    @Column(nullable = false, length = 36)
+    @Column(nullable = false, length = 36 , name = "username")
     private String username;
     @Basic(optional = false)
     @Column(nullable = false, name = "password")
@@ -64,8 +64,7 @@ public class User implements Serializable {
     private Date lastLogin;
     @Basic(optional = false)
     @Column(name = "last_login_info", nullable = false)
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastLoginInfo;
+    private String lastLoginInfo;
     @Basic(optional = false)
     @Column(name = "date_created", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -111,18 +110,33 @@ public class User implements Serializable {
     private List<WorkExperience> workExperienceList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
     private List<Hobby> hobbyList;
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "online", nullable = false)
     private boolean online;
     @Column(name = "account_non_expired", nullable = false)
     private boolean accountNonExpired;
     @Column(name = "user_id", nullable = false)
     private boolean isEnabled;
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified;
     @Column(name = "credential_non_expired", nullable = false)
     private boolean getCredentialNonExpired;
     @Column(name = "account_non_locked", nullable = false)
     private boolean accountNonLocked;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId", fetch = FetchType.LAZY)
     private List<Group1> groupId;
+    @Basic(optional = false)
+    @Column(nullable = false, length = 250)
+    private String accountType; // Job Seeker | Employer or Admin
+    @Basic(optional = false)
+    @Column(nullable = false, length = 250)
+    private String registrationMode;
+    @Basic(optional = false)
+    @Column(nullable = false, length = 250)
+    private String status;
+    @Basic(optional = false)
+    @Column(nullable = false, length = 250)
+    private String phone;
+
 
 
     public User() {
@@ -132,7 +146,7 @@ public class User implements Serializable {
         this.userId = userId;
     }
 
-    public User(String userId, String username, String password, String firstName, String lastName, String gender, String nationality, String location, String formerJobRole, String dateRegistered, Date lastLogin, Date lastLoginInfo, Date dateCreated, Date dateModified, String modifiedBy, String createdBy, String userImageUrl, String email, boolean online, boolean accountNonExpired, boolean isEnabled, boolean getCredentialNonExpired, boolean accountNonLocked) {
+    public User(String userId, String username, String password, String firstName, String lastName, String gender, String nationality, String location, String formerJobRole, String dateRegistered, Date lastLogin, String lastLoginInfo, Date dateCreated, Date dateModified, String modifiedBy, String createdBy, String userImageUrl, String email, boolean online, boolean accountNonExpired, boolean isEnabled, boolean getCredentialNonExpired, boolean accountNonLocked) {
         this.userId = userId;
         this.username = username;
         this.password = password;
@@ -198,12 +212,24 @@ public class User implements Serializable {
         this.lastLogin = lastLogin;
     }
 
-    public Date getLastLoginInfo() {
+    public String getLastLoginInfo() {
         return lastLoginInfo;
     }
 
-    public void setLastLoginInfo(Date lastLoginInfo) {
+    public void setLastLoginInfo(String lastLoginInfo) {
         this.lastLoginInfo = lastLoginInfo;
+    }
+
+    public void setGetCredentialNonExpired(boolean getCredentialNonExpired) {
+        this.getCredentialNonExpired = getCredentialNonExpired;
+    }
+
+    public String getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(String accountType) {
+        this.accountType = accountType;
     }
 
     public String getGender() {
@@ -423,7 +449,7 @@ public class User implements Serializable {
         return getCredentialNonExpired;
     }
 
-    public void setGetCredentialNonExpired(boolean getCredentialNonExpired) {
+    public void setCredentialNonExpired(boolean getCredentialNonExpired) {
         this.getCredentialNonExpired = getCredentialNonExpired;
     }
 
@@ -461,6 +487,30 @@ public class User implements Serializable {
 
     public void setGroupId(List<Group1> groupId) {
         this.groupId = groupId;
+    }
+
+    public String getRegistrationMode() {
+        return registrationMode;
+    }
+
+    public void setRegistrationMode(String registrationMode) {
+        this.registrationMode = registrationMode;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public String getFirstName() {
@@ -501,5 +551,17 @@ public class User implements Serializable {
 
     public void setJobRole(String jobRole) {
         this.formerJobRole = jobRole;
+    }
+
+    public void setFormerJobRole(String formerJobRole) {
+        this.formerJobRole = formerJobRole;
+    }
+
+    public boolean getIsEmailVerified() {
+        return emailVerified;
+    }
+
+    public void setEmailVerified(boolean emailVerified) {
+        this.emailVerified = emailVerified;
     }
 }

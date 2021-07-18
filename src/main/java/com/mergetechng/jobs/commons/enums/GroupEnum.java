@@ -1,0 +1,15 @@
+package com.mergetechng.jobs.commons.enums;
+
+public enum GroupEnum {
+    FINANCE_GROUP,
+    SERVER_MONITORING_GROUP,
+    USER_GROUP,
+    EMPLOYER_GROUP,
+    JOB_APPLICANT_GROUP,
+    TECHNICAL_GROUP,
+    SUPER_ADMIN_GROUP,
+    VEHICLE_REGISTRATION_GROUP,
+    VERIFICATION_GROUP,
+    ADMIN_USER_GROUP,
+    NG_JOB_ADMIN
+}

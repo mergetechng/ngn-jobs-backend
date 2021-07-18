@@ -1,0 +1,37 @@
+CODE_CHANGED =  getGitChange();
+pipeline {
+    agent any
+    parameters {
+        choices (name : "VERSION" , choices: ["1.0.0" , ""] , description: "Version of the software")
+    }
+    environment {
+        JUST_TESTING = "echo 'testing the jenkinssfile'"
+        DOCKER_VOLUME = "docker volume create mongo_db_volume && docker volume inspect $(docker ps -aq)"
+    }
+    stages {
+        stage ("build") {
+            echo "buiding the branch"
+            when {
+                expression {
+
+                }
+            }
+            stage ("building-after-condition") {
+                withCredentials(
+                    [usernamePassword(credentials : "some-credentals" , username : USER , password : PASS), emailPassword(credentials : "email-credntial" , email :EMAIL , password : EMAIL_PASSWORD) ]
+                    ){
+                        sh "-u ${}"
+                }
+                
+            }
+        }
+
+        stage ("testing") {
+
+        }
+
+        stage ("mail_team") {
+
+        }
+    }
+}
