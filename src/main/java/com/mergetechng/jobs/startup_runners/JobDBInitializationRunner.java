@@ -39,6 +39,7 @@ public class JobDBInitializationRunner implements CommandLineRunner {
     private PasswordEncoder passwordEncoder;
     private boolean done;
     private static final String NG_JOB_DEFAULT_ADMIN = "ng_jobs_admin";
+
     public JobDBInitializationRunner() {
         LOGGER.info("Starting the job database initialisation");
     }
@@ -51,7 +52,7 @@ public class JobDBInitializationRunner implements CommandLineRunner {
     }
 
     private void createDefaultSuperAdmin() throws ExecutionException, InterruptedException {
-        if (this.userRepository.findByUsername(NG_JOB_DEFAULT_ADMIN) == null ) {
+        if (this.userRepository.findByUsername(NG_JOB_DEFAULT_ADMIN) == null) {
             List<String> groups = List.of(
                     GroupEnum.SUPER_ADMIN_GROUP.name(),
                     GroupEnum.FINANCE_GROUP.name(),
@@ -94,10 +95,10 @@ public class JobDBInitializationRunner implements CommandLineRunner {
 
     private void initGroups() throws JsonProcessingException {
         List<String> actions = List.of("ADD", "UPDATE", "DELETE", "GET");
-        LOGGER.info("Number of user : {} " , userRepository.count());
-        LOGGER.info("Number of group : {} " , groupRepository.count());
-        LOGGER.info("Number of role : {} " , roleRepository.count());
-        LOGGER.info("Number of privilege : {} " , privilegeRepository.count());
+        LOGGER.info("Number of user : {} ", userRepository.count());
+        LOGGER.info("Number of group : {} ", groupRepository.count());
+        LOGGER.info("Number of role : {} ", roleRepository.count());
+        LOGGER.info("Number of privilege : {} ", privilegeRepository.count());
 
         if (this.groupRepository.findByGroupId(GroupEnum.SUPER_ADMIN_GROUP.name()).isEmpty()) {
             List<List<String>> superAdminRoleGroup = List.of(
@@ -215,15 +216,27 @@ public class JobDBInitializationRunner implements CommandLineRunner {
                 privilegeList.add(privilege);
                 this.privilegeRepository.insert(privilege);
                 LOGGER.info("Currently adding this :  {}", _name.get());
+                if (this.privilegeRepository.findByPrivilegeId(_name.get()).isEmpty()) {
+                    privilegeRepository.insert(privilege);
+                }else {
+                    LOGGER.info("PRIVILEGE with ID : " +  privilegeRepository.findByPrivilegeId(_name.get())+" EXISTS already. Skipped");
+                }
             });
             role.setPrivilegeId(privilegeList);
             roleRepository.insert(role);
             LOGGER.info("Currently adding this :  {}", role.getRoleId());
-            roleList.add(role);
+            if (this.roleRepository.findByRoleId(role.getRoleId()).isEmpty()) {
+                roleList.add(role);
+            }else {
+                LOGGER.info("ROLE with ID : " +  role.getRoleId()+" EXISTS already. Skipped");
+            }
         });
         adminGroup.setRoleId(roleList);
-        groupRepository.insert(adminGroup);
-        LOGGER.info("Created "+adminGroup.getGroupId() + " Group");
-
+        if (this.roleRepository.findByRoleId(adminGroup.getGroupId()).isEmpty()) {
+            groupRepository.insert(adminGroup);
+        }else {
+            LOGGER.info("GROUP with ID : " +  groupRepository.findByGroupId(adminGroup.getGroupId())+" EXISTS already. Skipped");
+        }
+        LOGGER.info("Created " + adminGroup.getGroupId() + " Group");
     }
 }
