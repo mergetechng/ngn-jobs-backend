@@ -6,6 +6,7 @@ import com.mergetechng.jobs.entities.Privilege;
 import com.mergetechng.jobs.entities.Role;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -17,12 +18,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class JobsUserDetailsService implements UserDetailsService {
+    @Autowired
     public JobsUserService jobJobsUserService;
     private static Logger logger = LoggerFactory.getLogger(JobsUserDetailsService.class);
-
-    public JobsUserDetailsService(JobsUserService jobJobsUserService){
-        this.jobJobsUserService = jobJobsUserService ;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String username) {

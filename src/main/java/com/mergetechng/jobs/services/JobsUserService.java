@@ -62,7 +62,13 @@ public class JobsUserService implements IUser {
 
     @Override
     public boolean createNewUser(User user) {
-        if (!userExists(user.getUsername()) && !userExists(user.getEmail())) {
+        LOGGER.info("Username: {}", user.getUsername());
+        LOGGER.info("Email: {}", user.getEmail());
+        LOGGER.info("Password: {}", user.getPassword());
+        LOGGER.info("Id: {}", user.getUserId());
+        LOGGER.info("USERNAME_OR_EMAIL_EXISTS : {}", userExists(user.getUsername(), user.getEmail()));
+
+        if (!userExists(user.getUsername(), user.getEmail())) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
             user.setUserId(UUID.randomUUID().toString());
             user.setDateCreated(new Date());
@@ -78,36 +84,41 @@ public class JobsUserService implements IUser {
 
     private void addUserToGroup(User user, String groupName) {
         if (groupRepository.findById(groupName).isPresent()) {
+            LOGGER.info("The Group name is present " + groupName);
             user.setGroupId(List.of(groupRepository.findById(groupName).get()));
             updateUser(user);
         } else {
-            //add user to general group
-            Group1 defaultGroup = new Group1();
-            defaultGroup.setGroupName(GroupEnum.USER_GROUP.name());
-            defaultGroup.setDateCreated(new Date());
-            defaultGroup.setCreatedBy("System");
-            defaultGroup.setGroupId(GroupEnum.USER_GROUP.name());
-            user.setGroupId(List.of(defaultGroup));
+            if (groupRepository.findById(GroupEnum.USER_GROUP.name()).isPresent()) {
+                user.setGroupId(List.of(groupRepository.findById(GroupEnum.USER_GROUP.name()).get()));
+            } else {
+                LOGGER.info("Default USER_GROUP Not found. Adding a default a default user group");
+                Group1 defaultGroup = new Group1();
+                defaultGroup.setGroupName(GroupEnum.USER_GROUP.name());
+                defaultGroup.setDateCreated(new Date());
+                defaultGroup.setCreatedBy("System");
+                defaultGroup.setGroupId(GroupEnum.USER_GROUP.name());
+                user.setGroupId(List.of(defaultGroup));
+            }
             updateUser(user);
         }
     }
 
     @Override
     public void updateUser(User user) {
-        if (userExists(user.getUsername())) {
+        if (userExists(user.getUsername(), user.getEmail())) {
             userRepository.save(user);
         }
-        throw new UserNotFoundException("User with username " + user.getUsername() + "not found");
+        throw new UserNotFoundException("User with username " + user.getUsername() + " not found");
     }
 
     @Override
-    public boolean userExists(String username) {
-        return Objects.nonNull(userRepository.findByUsername(username));
+    public boolean userExists(String username, String email) {
+        return userRepository.existsByUsernameOrEmail(username, email);
     }
 
     @Override
     public String disabledUser(String username) {
-        if (userExists(username)) {
+        if (userExists(username, "")) {
             User user = getUserWithUsername(username);
             if (Objects.nonNull(user)) {
                 user.setEnabled(!user.getIsEnabled());
@@ -238,7 +249,7 @@ public class JobsUserService implements IUser {
 
     @Override
     public boolean logoutUser(String username) {
-        if (userExists(username)) {
+        if (userExists(username, "")) {
             User user = getUserWithUsername(username);
             if (Objects.nonNull(user)) {
                 user.setStatus(StatusEnum.OFFLINE.name());
@@ -254,8 +265,8 @@ public class JobsUserService implements IUser {
      * @return
      */
     public boolean deleteUser(String username) {
-        if (userExists(username) && username.equals("ng_job_admin")) return false;
-        else if (userExists(username)) {
+        if (userExists(username, "") && username.equals("ng_job_admin")) return false;
+        else if (userExists(username, "")) {
             this.userRepository.deleteByUsername(username);
             return true;
         }
@@ -266,15 +277,13 @@ public class JobsUserService implements IUser {
      * @param email      The email Address of the user to map the token
      * @param token      The token to be mapped
      * @param expiryDate The date which the token will expire
-     * @return boolean
      */
-    private boolean storeToken(String email, String token, Date expiryDate) {
+    private void storeToken(String email, String token, Date expiryDate) {
         TokenToEmailMap tokenToEmailMap = new TokenToEmailMap(UUID.randomUUID().toString());
         tokenToEmailMap.setEmailAddress(email);
         tokenToEmailMap.setToken(token);
         tokenToEmailMap.setDateSent(new Date());
         tokenToEmailMap.setExpiryDate(expiryDate);
         LOGGER.info("Created token for email: {} ; token {}; updateTime : {}", email, token, new Date());
-        return true;
     }
 }

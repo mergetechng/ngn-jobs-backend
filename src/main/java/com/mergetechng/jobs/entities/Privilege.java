@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
@@ -16,6 +18,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "privilege", catalog = "faston", schema = "public")
+@Document
 @NamedQueries({
     @NamedQuery(name = "privilege.findAll", query = "SELECT p FROM privilege p"),
     @NamedQuery(name = "privilege.findByprivilegeId", query = "SELECT p FROM privilege p WHERE p.privilegeId = :privilegeId"),

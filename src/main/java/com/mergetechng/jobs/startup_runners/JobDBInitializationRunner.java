@@ -1,5 +1,6 @@
 package com.mergetechng.jobs.startup_runners;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mergetechng.jobs.commons.enums.AccountTypeEnum;
 import com.mergetechng.jobs.commons.enums.GroupEnum;
 import com.mergetechng.jobs.commons.enums.RoleEnum;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Component
 public class JobDBInitializationRunner implements CommandLineRunner {
@@ -32,22 +34,24 @@ public class JobDBInitializationRunner implements CommandLineRunner {
     private RoleRepository roleRepository;
     @Autowired
     private PrivilegeRepository privilegeRepository;
-    private final Logger logger = LoggerFactory.getLogger(JobDBInitializationRunner.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(JobDBInitializationRunner.class);
     @Autowired
     private PasswordEncoder passwordEncoder;
     private boolean done;
+    private static final String NG_JOB_DEFAULT_ADMIN = "ng_jobs_admin";
     public JobDBInitializationRunner() {
-        logger.info("Starting the job database initialisation");
+        LOGGER.info("Starting the job database initialisation");
     }
 
     @Override
     public void run(String... args) throws Exception {
+        LOGGER.info("Starting the command line runner...");
         initGroups();
         createDefaultSuperAdmin();
     }
 
     private void createDefaultSuperAdmin() throws ExecutionException, InterruptedException {
-        if (this.groupRepository.findById(GroupEnum.NG_JOB_ADMIN.name()).isPresent()) {
+        if (this.userRepository.findByUsername(NG_JOB_DEFAULT_ADMIN) == null ) {
             List<String> groups = List.of(
                     GroupEnum.SUPER_ADMIN_GROUP.name(),
                     GroupEnum.FINANCE_GROUP.name(),
@@ -77,10 +81,10 @@ public class JobDBInitializationRunner implements CommandLineRunner {
             user.setAccountType(AccountTypeEnum.ADMIN.name());
             user.setAccountNonExpired(true);
             groups.forEach(s -> {
-                if (groupRepository.findById(s).isPresent()) {
-                    group1List.add(groupRepository.findById(s).get());
+                if (groupRepository.findByGroupId(s).isPresent()) {
+                    group1List.add(groupRepository.findByGroupId(s).get());
                 } else {
-                    logger.info("Skipping " + s + " Group Admin with the ID not added.... Exists False");
+                    LOGGER.info("Skipping " + s + " Group Admin with the ID not added");
                 }
             });
             user.setGroupId(group1List);
@@ -88,9 +92,14 @@ public class JobDBInitializationRunner implements CommandLineRunner {
         }
     }
 
-    private void initGroups() throws ExecutionException, InterruptedException {
+    private void initGroups() throws JsonProcessingException {
         List<String> actions = List.of("ADD", "UPDATE", "DELETE", "GET");
-        if (this.groupRepository.findById(GroupEnum.SUPER_ADMIN_GROUP.name()).isPresent()) {
+        LOGGER.info("Number of user : {} " , userRepository.count());
+        LOGGER.info("Number of group : {} " , groupRepository.count());
+        LOGGER.info("Number of role : {} " , roleRepository.count());
+        LOGGER.info("Number of privilege : {} " , privilegeRepository.count());
+
+        if (this.groupRepository.findByGroupId(GroupEnum.SUPER_ADMIN_GROUP.name()).isEmpty()) {
             List<List<String>> superAdminRoleGroup = List.of(
                     List.of(RoleEnum.ADMIN_DASHBOARD.name(), RoleEnum.ADMIN_DASHBOARD.description),
                     List.of(RoleEnum.USER_MANAGEMENT.name(), RoleEnum.USER_MANAGEMENT.description),
@@ -108,7 +117,7 @@ public class JobDBInitializationRunner implements CommandLineRunner {
             initiateGroupRolesPermissions(GroupEnum.SUPER_ADMIN_GROUP.name(), superAdminRoleGroup, actions);
         }
 
-        if (this.groupRepository.findById(GroupEnum.ADMIN_USER_GROUP.name()).isPresent()) {
+        if (this.groupRepository.findByGroupId(GroupEnum.ADMIN_USER_GROUP.name()).isEmpty()) {
             List<List<String>> adminRoleGroup = List.of(
                     List.of(RoleEnum.ADMIN_DASHBOARD.name(), RoleEnum.ADMIN_DASHBOARD.description),
                     List.of(RoleEnum.PAYMENT_MANAGEMENT.name(), RoleEnum.PAYMENT_MANAGEMENT.description),
@@ -119,7 +128,7 @@ public class JobDBInitializationRunner implements CommandLineRunner {
             initiateGroupRolesPermissions(GroupEnum.ADMIN_USER_GROUP.name(), adminRoleGroup, actions);
         }
 
-        if (this.groupRepository.findById(GroupEnum.FINANCE_GROUP.name()).isPresent()) {
+        if (this.groupRepository.findByGroupId(GroupEnum.FINANCE_GROUP.name()).isEmpty()) {
             List<List<String>> adminFinanceRoleGroup = List.of(
                     List.of(RoleEnum.PAYMENT_MANAGEMENT.name(), RoleEnum.PAYMENT_MANAGEMENT.description),
                     List.of(RoleEnum.WALLET_MANAGEMENT.name(), RoleEnum.WALLET_MANAGEMENT.description)
@@ -127,7 +136,7 @@ public class JobDBInitializationRunner implements CommandLineRunner {
             initiateGroupRolesPermissions(GroupEnum.FINANCE_GROUP.name(), adminFinanceRoleGroup, actions);
         }
 
-        if (this.groupRepository.findById(GroupEnum.VEHICLE_REGISTRATION_GROUP.name()).isPresent()) {
+        if (this.groupRepository.findByGroupId(GroupEnum.VEHICLE_REGISTRATION_GROUP.name()).isEmpty()) {
             List<List<String>> adminFinanceRoleGroup = List.of(
                     List.of(RoleEnum.PAYMENT_MANAGEMENT.name(), RoleEnum.PAYMENT_MANAGEMENT.description),
                     List.of(RoleEnum.WALLET_MANAGEMENT.name(), RoleEnum.WALLET_MANAGEMENT.description)
@@ -135,7 +144,7 @@ public class JobDBInitializationRunner implements CommandLineRunner {
             initiateGroupRolesPermissions(GroupEnum.VEHICLE_REGISTRATION_GROUP.name(), adminFinanceRoleGroup, actions);
         }
 
-        if (this.groupRepository.findById(GroupEnum.VERIFICATION_GROUP.name()).isPresent()) {
+        if (this.groupRepository.findByGroupId(GroupEnum.VERIFICATION_GROUP.name()).isEmpty()) {
             List<List<String>> adminVerificationRoleGroup = List.of(
                     List.of(RoleEnum.ACCOUNT_VERIFICATION.name(), RoleEnum.ACCOUNT_VERIFICATION.description),
                     List.of(RoleEnum.VEHICLE_VERIFICATION.name(), RoleEnum.VEHICLE_VERIFICATION.description),
@@ -144,7 +153,7 @@ public class JobDBInitializationRunner implements CommandLineRunner {
             initiateGroupRolesPermissions(GroupEnum.VERIFICATION_GROUP.name(), adminVerificationRoleGroup, actions);
         }
 
-        if (this.groupRepository.findById(GroupEnum.TECHNICAL_GROUP.name()).isPresent()) {
+        if (this.groupRepository.findByGroupId(GroupEnum.TECHNICAL_GROUP.name()).isEmpty()) {
             List<List<String>> adminTechnicalRoleGroup = List.of(
                     List.of(RoleEnum.API_MANAGEMENT.name(), RoleEnum.API_MANAGEMENT.description),
                     List.of(RoleEnum.SERVER_MANAGEMENT.name(), RoleEnum.SERVER_MANAGEMENT.description),
@@ -153,14 +162,14 @@ public class JobDBInitializationRunner implements CommandLineRunner {
             initiateGroupRolesPermissions(GroupEnum.TECHNICAL_GROUP.name(), adminTechnicalRoleGroup, actions);
         }
 
-        if (this.groupRepository.findById(GroupEnum.EMPLOYER_GROUP.name()).isPresent()) {
+        if (this.groupRepository.findByGroupId(GroupEnum.EMPLOYER_GROUP.name()).isEmpty()) {
             List<List<String>> riderRoleGroup = List.of(
                     List.of(RoleEnum.JOB_EMPLOYER_USER.name(), RoleEnum.JOB_EMPLOYER_USER.description)
             );
             initiateGroupRolesPermissions(GroupEnum.EMPLOYER_GROUP.name(), riderRoleGroup, actions);
         }
 
-        if (this.groupRepository.findById(GroupEnum.JOB_APPLICANT_GROUP.name()).isPresent()) {
+        if (this.groupRepository.findByGroupId(GroupEnum.JOB_APPLICANT_GROUP.name()).isEmpty()) {
             List<List<String>> driverRoleGroup = List.of(
                     List.of(RoleEnum.JOB_APPLICANT_USER.name(), RoleEnum.JOB_APPLICANT_USER.description)
             );
@@ -171,7 +180,7 @@ public class JobDBInitializationRunner implements CommandLineRunner {
     /**
      * @param roles     The roles that will be assigned to the group
      * @param groupName The name of the group
-     * @param actions   The list of actions that will be used to creat the permissions for the roles
+     * @param actions   The list of actions that will be used to create the permissions for the roles
      */
     private void initiateGroupRolesPermissions(String groupName, List<List<String>> roles, List<String> actions) {
 
@@ -194,37 +203,27 @@ public class JobDBInitializationRunner implements CommandLineRunner {
 
             List<Privilege> privilegeList = new ArrayList<>(List.of());
 
+            AtomicReference<String> _name = new AtomicReference<>("");
             actions.forEach(action -> {
+                _name.set(s.get(0) + "_" + action);
                 Privilege privilege = new Privilege();
                 privilege.setCreatedBy("System");
-                privilege.setPrivilegeId(s.get(0) + "_" + action);
-                privilege.setName(s.get(0) + "_" + action);
+                privilege.setPrivilegeId(_name.get());
+                privilege.setName(_name.get());
                 privilege.setDescription("Role " + s.get(0) + " " + action + " privilege");
                 privilege.setDateCreated(new Date());
                 privilegeList.add(privilege);
                 this.privilegeRepository.insert(privilege);
+                LOGGER.info("Currently adding this :  {}", _name.get());
             });
             role.setPrivilegeId(privilegeList);
-            roleRepository.save(role);
+            roleRepository.insert(role);
+            LOGGER.info("Currently adding this :  {}", role.getRoleId());
             roleList.add(role);
         });
         adminGroup.setRoleId(roleList);
-        groupRepository.save(adminGroup);
-    }
+        groupRepository.insert(adminGroup);
+        LOGGER.info("Created "+adminGroup.getGroupId() + " Group");
 
-    /**
-     * @param documentId
-     * @return
-     * @throws ExecutionException
-     * @throws InterruptedException
-     */
-    private boolean checkGroupIfExists(String documentId) throws ExecutionException, InterruptedException {
-        if (this.groupRepository.findById(documentId).isPresent()) {
-            logger.info("Skipped group document creation with documentId : " + documentId);
-            return true;
-        } else {
-            logger.info("Creating document with documentId " + documentId);
-            return false;
-        }
     }
 }

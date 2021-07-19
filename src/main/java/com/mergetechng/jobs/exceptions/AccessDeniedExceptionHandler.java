@@ -17,11 +17,11 @@ import java.io.IOException;
 public class AccessDeniedExceptionHandler implements AccessDeniedHandler {
     public static final Logger LOG = LoggerFactory.getLogger(AccessDeniedExceptionHandler.class);
     @Override
-    public void handle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, org.springframework.security.access.AccessDeniedException e) throws IOException, ServletException {
+    public void handle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, org.springframework.security.access.AccessDeniedException e) throws IOException {
         Authentication auth
                 = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
-            LOG.warn("UserDto: " + auth.getName()
+            LOG.warn("User " + auth.getName()
                     + " attempted to access the protected URL: "
                     + httpServletRequest.getRequestURI());
         }

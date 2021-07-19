@@ -4,6 +4,8 @@ package com.mergetechng.jobs.entities;/*
  * and open the template in the editor.
  */
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
@@ -14,7 +16,6 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "token_to_email_map", catalog = "faston", schema = "public")
-
 public class TokenToEmailMap implements Serializable {
 
     private static final long serialVersionUID = 1L;

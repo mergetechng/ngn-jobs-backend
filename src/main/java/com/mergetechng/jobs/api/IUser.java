@@ -17,7 +17,7 @@ public interface IUser {
 
     boolean createNewUser(User user);
 
-    boolean userExists(String username);
+    boolean userExists(String username, String email);
 
     String disabledUser(String username);
 

@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
@@ -16,6 +18,7 @@ import java.util.List;
  */
 @Entity
 @Table(name = "group", catalog = "faston", schema = "public")
+@Document
 @NamedQueries({
     @NamedQuery(name = "Group1.findAll", query = "SELECT g FROM Group1 g"),
     @NamedQuery(name = "Group1.findByGroupId", query = "SELECT g FROM Group1 g WHERE g.groupId = :groupId"),

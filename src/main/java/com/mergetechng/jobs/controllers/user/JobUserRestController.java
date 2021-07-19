@@ -70,7 +70,7 @@ public class JobUserRestController {
                 new Date(),
                 null);
         try {
-            if (!iUser.userExists(username)) {
+            if (!iUser.userExists(username, "")) {
                 apiResponseDto.setStatusCode("200");
                 apiResponseDto.setMessage("Username is available to used");
                 apiResponseDto.setData(null);
@@ -140,8 +140,8 @@ public class JobUserRestController {
     public ResponseEntity<ApiResponseDto> updateUser(
             @Parameter(description = "The username to be disabled")
             @RequestBody UserAccountUpdateDto userAccountUpdateDto,
-            @Parameter(description = "The usernameOrEnamilOrUserId to be updated")
-            @RequestParam String usernameOrEnamilOrUserId) {
+            @Parameter(description = "The usernameOrEmailOrUserId to be updated")
+            @RequestParam String usernameOrEmailOrUserId) {
         ApiResponseDto apiResponseDto = ApiResponseUtil.process(
                 "Failed to update user basic Information",
                 "400",
@@ -149,7 +149,7 @@ public class JobUserRestController {
                 new Date(),
                 null);
         try {
-            String message = iUser.updateBasicAccountInformation(userAccountUpdateDto, usernameOrEnamilOrUserId);
+            String message = iUser.updateBasicAccountInformation(userAccountUpdateDto, usernameOrEmailOrUserId);
             apiResponseDto.setMessage(message);
             apiResponseDto.setStatusCode("200");
             return ResponseEntity.ok(apiResponseDto);

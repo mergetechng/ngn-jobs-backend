@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Date;
@@ -14,6 +16,7 @@ import javax.persistence.*;
  * @author @keemsisi
  */
 @Entity
+@Document
 @Table(catalog = "ngn_jobs", schema = "POSTGRES", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"email"})})
 @NamedQueries({

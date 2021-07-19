@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -25,6 +27,7 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(name = "account_settings", catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "AccountSettings.findAll", query = "SELECT a FROM AccountSettings a"),
     @NamedQuery(name = "AccountSettings.findByAccountSettingId", query = "SELECT a FROM AccountSettings a WHERE a.accountSettingId = :accountSettingId"),

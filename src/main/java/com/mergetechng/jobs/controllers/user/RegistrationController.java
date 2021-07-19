@@ -3,7 +3,6 @@ package com.mergetechng.jobs.controllers.user;
 import com.mergetechng.jobs.api.IUser;
 import com.mergetechng.jobs.commons.dto.ApiResponseDto;
 import com.mergetechng.jobs.commons.dto.NewJobSeekerDto;
-import com.mergetechng.jobs.commons.dto.UserDto;
 import com.mergetechng.jobs.commons.util.ApiResponseUtil;
 import com.mergetechng.jobs.commons.util.CycleAvoidingMappingContext;
 import com.mergetechng.jobs.services.api.JobApiGeneralMapper;
@@ -25,7 +24,7 @@ import java.util.Date;
 @RequestMapping("/user/")
 public class RegistrationController {
     @Autowired
-    private IUser iUser ;
+    private IUser iUser;
     private static final Logger logger = LoggerFactory.getLogger(RegistrationController.class);
 
     @Operation(description = "Authenticate a user")
@@ -64,7 +63,7 @@ public class RegistrationController {
                 apiResponseDto.setStatusCode("200");
                 return ResponseEntity.ok(apiResponseDto);
             }
-        } catch (Exception e) {
+        } catch (Exception  e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
             return ResponseEntity.badRequest().body(apiResponseDto);
