@@ -171,10 +171,10 @@ public class JobDBInitializationRunner implements CommandLineRunner {
         }
 
         if (this.groupRepository.findByGroupId(GroupEnum.JOB_APPLICANT_GROUP.name()).isEmpty()) {
-            List<List<String>> driverRoleGroup = List.of(
+            List<List<String>> applicantRoleGroup = List.of(
                     List.of(RoleEnum.JOB_APPLICANT_USER.name(), RoleEnum.JOB_APPLICANT_USER.description)
             );
-            initiateGroupRolesPermissions(GroupEnum.JOB_APPLICANT_GROUP.name(), driverRoleGroup, actions);
+            initiateGroupRolesPermissions(GroupEnum.JOB_APPLICANT_GROUP.name(), applicantRoleGroup, actions);
         }
     }
 
@@ -216,23 +216,23 @@ public class JobDBInitializationRunner implements CommandLineRunner {
                 privilegeList.add(privilege);
                 this.privilegeRepository.insert(privilege);
                 LOGGER.info("Currently adding this :  {}", _name.get());
-                if (this.privilegeRepository.findByPrivilegeId(_name.get()).isEmpty()) {
+                if (this.privilegeRepository.findFirstByPrivilegeId(_name.get()).isEmpty()) {
                     privilegeRepository.insert(privilege);
                 }else {
-                    LOGGER.info("PRIVILEGE with ID : " +  privilegeRepository.findByPrivilegeId(_name.get())+" EXISTS already. Skipped");
+                    LOGGER.info("PRIVILEGE with ID : " +  privilegeRepository.findFirstByPrivilegeId(_name.get())+" EXISTS already. Skipped");
                 }
             });
             role.setPrivilegeId(privilegeList);
             roleRepository.insert(role);
             LOGGER.info("Currently adding this :  {}", role.getRoleId());
-            if (this.roleRepository.findByRoleId(role.getRoleId()).isEmpty()) {
+            if (this.roleRepository.findFirstByRoleId(role.getRoleId()).isEmpty()) {
                 roleList.add(role);
             }else {
                 LOGGER.info("ROLE with ID : " +  role.getRoleId()+" EXISTS already. Skipped");
             }
         });
         adminGroup.setRoleId(roleList);
-        if (this.roleRepository.findByRoleId(adminGroup.getGroupId()).isEmpty()) {
+        if (this.roleRepository.findFirstByRoleId(adminGroup.getGroupId()).isEmpty()) {
             groupRepository.insert(adminGroup);
         }else {
             LOGGER.info("GROUP with ID : " +  groupRepository.findByGroupId(adminGroup.getGroupId())+" EXISTS already. Skipped");

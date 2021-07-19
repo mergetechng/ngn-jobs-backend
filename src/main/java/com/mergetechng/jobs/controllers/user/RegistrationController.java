@@ -59,7 +59,7 @@ public class RegistrationController {
                 apiResponseDto.setResponseDate(new Date());
                 return ResponseEntity.ok(apiResponseDto);
             } else {
-                apiResponseDto.setMessage("Failed to create User");
+                apiResponseDto.setMessage("Username or email address of the new user may exist already.");
                 apiResponseDto.setStatusCode("200");
                 return ResponseEntity.ok(apiResponseDto);
             }

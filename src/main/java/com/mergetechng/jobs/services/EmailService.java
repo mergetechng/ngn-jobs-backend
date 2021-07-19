@@ -37,7 +37,7 @@ public class EmailService implements IEmailService {
      * @param to The users or emails to send the mail to
      * @return
      */
-    @Retryable( value = {MailSendException.class,ConnectException.class,UnknownHostException.class})
+    @Retryable( value = {MailSendException.class,ConnectException.class,UnknownHostException.class}, label = "Retry Sending Email After failing")
     @Override
     public CompletableFuture<String> sendSimpleMessage(String subject, String text, FileSystemResource attachment , String... to ) throws ExecutionException, InterruptedException {
         CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
@@ -55,7 +55,7 @@ public class EmailService implements IEmailService {
                     return "Mail sent successfully";
                 } else {
                     SimpleMailMessage message = new SimpleMailMessage();
-                    message.setFrom("mailer@bip39calculator.com");
+                    message.setFrom("developer@transcentng.com");
                     message.setTo(to);
                     message.setSubject(subject);
                     message.setText(text);
@@ -70,7 +70,7 @@ public class EmailService implements IEmailService {
             }
             return "Mail failed to send";
         });
-        completableFuture.get();
+        completableFuture.complete("Sent mail to the email address successfully");
         return completableFuture;
     }
 

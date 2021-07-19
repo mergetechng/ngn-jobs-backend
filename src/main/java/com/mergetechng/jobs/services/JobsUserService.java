@@ -20,10 +20,14 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 @Service
@@ -73,7 +77,7 @@ public class JobsUserService implements IUser {
             user.setUserId(UUID.randomUUID().toString());
             user.setDateCreated(new Date());
             user.setAccountType(AccountTypeEnum.JOB_APPLICANT.name());
-            userRepository.save(user);
+            userRepository.insert(user);
             addUserToGroup(user, GroupEnum.JOB_APPLICANT_GROUP.name());
             sendUserEmailVerification(user.getEmail());
             LOGGER.info("Created new User: {}", user.toString());
@@ -83,13 +87,13 @@ public class JobsUserService implements IUser {
     }
 
     private void addUserToGroup(User user, String groupName) {
-        if (groupRepository.findById(groupName).isPresent()) {
+        if (groupRepository.findByGroupId(groupName).isPresent()) {
             LOGGER.info("The Group name is present " + groupName);
-            user.setGroupId(List.of(groupRepository.findById(groupName).get()));
+            user.setGroupId(List.of(groupRepository.findByGroupId(groupName).get()));
             updateUser(user);
         } else {
-            if (groupRepository.findById(GroupEnum.USER_GROUP.name()).isPresent()) {
-                user.setGroupId(List.of(groupRepository.findById(GroupEnum.USER_GROUP.name()).get()));
+            if (groupRepository.findByGroupId(GroupEnum.USER_GROUP.name()).isPresent()) {
+                user.setGroupId(List.of(groupRepository.findByGroupId(GroupEnum.USER_GROUP.name()).get()));
             } else {
                 LOGGER.info("Default USER_GROUP Not found. Adding a default a default user group");
                 Group1 defaultGroup = new Group1();
@@ -107,6 +111,7 @@ public class JobsUserService implements IUser {
     public void updateUser(User user) {
         if (userExists(user.getUsername(), user.getEmail())) {
             userRepository.save(user);
+            return;
         }
         throw new UserNotFoundException("User with username " + user.getUsername() + " not found");
     }
@@ -121,12 +126,22 @@ public class JobsUserService implements IUser {
         if (userExists(username, "")) {
             User user = getUserWithUsername(username);
             if (Objects.nonNull(user)) {
-                user.setEnabled(!user.getIsEnabled());
+                user.setEnabled(false);
                 updateUser(user);
-                if (user.getIsEnabled()) return "Username successfully enabled";
-                else {
-                    return "Username successfully disabled";
-                }
+                return "Username successfully disabled";
+            }
+        }
+        throw new UserNotFoundException("User with username " + username + "not found");
+    }
+
+    @Override
+    public String enableUser(String username) {
+        if (userExists(username, "")) {
+            User user = getUserWithUsername(username);
+            if (Objects.nonNull(user)) {
+                user.setEnabled(true);
+                updateUser(user);
+                return "Username successfully enabled";
             }
         }
         throw new UserNotFoundException("User with username " + username + "not found");
@@ -138,12 +153,12 @@ public class JobsUserService implements IUser {
     }
 
     @Override
-    public User getUser(String usernameOrEmailOrUserId) {
-        Optional<User> optionalUser = Optional.ofNullable(this.userRepository.findByUsernameOrEmailOrUserId(usernameOrEmailOrUserId));
+    public User getUser(String uei) {
+        Optional<User> optionalUser = Optional.ofNullable(this.userRepository.findFirstByUsernameOrEmailOrUserId(uei, uei, uei));
         if (optionalUser.isPresent()) {
             return optionalUser.get();
         }
-        throw new UserNotFoundException("User with key " + usernameOrEmailOrUserId + "not found");
+        throw new UserNotFoundException("User with key " + uei + "not found");
     }
 
     @Override
@@ -190,7 +205,7 @@ public class JobsUserService implements IUser {
      * @return
      */
     public User getUserWithUsername(String username) {
-        return Optional.ofNullable(userRepository.findByUsername(username)).orElse(null);
+        return Optional.ofNullable(userRepository.findFirstByUsernameOrEmailOrUserId(username, null, null)).orElse(null);
     }
 
     /**
@@ -200,11 +215,12 @@ public class JobsUserService implements IUser {
     @Override
     public boolean sendUserEmailVerification(String emailAddress) {
         try {
-            User user = getUser(emailAddress);
-            if (user != null && !user.getIsEmailVerified()) {
+            Optional<User> optionalUser = Optional.ofNullable(userRepository.findFirstByEmail(emailAddress));
+            if (optionalUser.isPresent() && !optionalUser.get().getIsEmailVerified()) {
                 String token = RandomStringUtils.randomAlphanumeric(500);
+                User user = optionalUser.get();
                 storeToken(user.getEmail(), token, DateUtils.addDays(new Date(), 10));
-                emailService.sendSimpleMessage(
+                CompletableFuture<String> completableFuture = emailService.sendSimpleMessage(
                         "Ng-Jobs: New User Email Verification",
                         "Hey " + emailAddress + "!\nKindly find your Email Verification Link below \n"
                                 + System.getenv("VERIFICATION_BASE_URL")
@@ -212,13 +228,19 @@ public class JobsUserService implements IUser {
                                 + "token=" + token,
                         null,
                         emailAddress
-                );
-                return true;
+                ).toCompletableFuture();
+                if (completableFuture.isCompletedExceptionally()) {
+                    LOGGER.info("Failed to send message");
+                } else {
+                    LOGGER.info("Message from mailer : " + completableFuture.get() + emailAddress);
+                    return true;
+                }
+                return false;
             } else {
                 return false;
             }
         } catch (Exception e) {
-            LOGGER.error("ERROR", e);
+            LOGGER.error("USER_EMAIL_SEND_ERROR ", e);
         }
         return false;
     }
@@ -248,6 +270,16 @@ public class JobsUserService implements IUser {
     }
 
     @Override
+    public List<User> getAll(Query query) {
+        return null;
+    }
+
+    @Override
+    public Page<User> getPage(Query query, Pageable pageable) {
+        return null;
+    }
+
+    @Override
     public boolean logoutUser(String username) {
         if (userExists(username, "")) {
             User user = getUserWithUsername(username);
@@ -265,7 +297,7 @@ public class JobsUserService implements IUser {
      * @return
      */
     public boolean deleteUser(String username) {
-        if (userExists(username, "") && username.equals("ng_job_admin")) return false;
+        if (userExists(username, "") && !username.equals("ng_job_admin")) return false;
         else if (userExists(username, "")) {
             this.userRepository.deleteByUsername(username);
             return true;

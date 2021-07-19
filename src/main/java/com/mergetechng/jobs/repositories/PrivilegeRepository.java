@@ -7,5 +7,5 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.Optional;
 
 public interface PrivilegeRepository extends MongoRepository<Privilege, String> {
-    Optional<Privilege> findByPrivilegeId(String privilegeId);
+    Optional<Privilege> findFirstByPrivilegeId(String privilegeId);
 }

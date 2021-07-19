@@ -3,13 +3,18 @@ package com.mergetechng.jobs.controllers.user;
 
 import com.mergetechng.jobs.api.IUser;
 import com.mergetechng.jobs.commons.dto.ApiResponseDto;
+import com.mergetechng.jobs.commons.dto.FilterCondition;
 import com.mergetechng.jobs.commons.dto.UserAccountUpdateDto;
 import com.mergetechng.jobs.commons.dto.UserDto;
 import com.mergetechng.jobs.commons.util.ApiResponseUtil;
 import com.mergetechng.jobs.commons.util.CycleAvoidingMappingContext;
+import com.mergetechng.jobs.commons.util.PageResponse;
 import com.mergetechng.jobs.entities.User;
+import com.mergetechng.jobs.exceptions.BadRequestException;
 import com.mergetechng.jobs.exceptions.UserNotFoundException;
 import com.mergetechng.jobs.exceptions.UserTokenException;
+import com.mergetechng.jobs.repositories.GenericFilterCriteriaBuilder;
+import com.mergetechng.jobs.services.FilterBuilderService;
 import com.mergetechng.jobs.services.api.JobApiGeneralMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,6 +25,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,12 +36,15 @@ import java.util.List;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/user/")
+@RequestMapping("/user")
 public class JobUserRestController {
 
     @Autowired
     private IUser iUser;
     private static final Logger logger = LoggerFactory.getLogger(JobUserRestController.class);
+
+    @Autowired
+    private FilterBuilderService filterBuilderService;
 
 
     @Operation(description = "Authenticate a user")
@@ -47,14 +58,20 @@ public class JobUserRestController {
             )})
     @PostMapping(value = "/search/{username}", produces = {"application/json"})
     public ResponseEntity<ApiResponseDto> searchUserWithUsername(@PathVariable String username) throws Exception {
-        return null ;
+        return null;
     }
 
-    @Operation(description = "Search for username")
+    @Operation(description = "Check if username exists")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
                     description = "Username exists",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
+                    }
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Username does not exists",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             )
@@ -75,7 +92,7 @@ public class JobUserRestController {
                 apiResponseDto.setMessage("Username is available to used");
                 apiResponseDto.setData(null);
             }
-            return ResponseEntity.badRequest().body(apiResponseDto);
+            return ResponseEntity.ok().body(apiResponseDto);
         } catch (Exception e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
@@ -224,20 +241,21 @@ public class JobUserRestController {
                 "SEARCH_USER",
                 new Date(),
                 null);
-        try {
-            User result = iUser.getUser(usernameOrEmailOrUserId);
-            if (Objects.nonNull(result)) apiResponseDto.setMessage("User gotten successfully");
-            apiResponseDto.setData(JobApiGeneralMapper.INSTANCE.userToUserDto(result, new CycleAvoidingMappingContext()));
-            apiResponseDto.setStatusCode("200");
-            return ResponseEntity.ok(apiResponseDto);
-        } catch (Exception e) {
-            logger.error("ERROR", e);
-            apiResponseDto.setMessage(e.getMessage());
-            return ResponseEntity.badRequest().body(apiResponseDto);
-        }
+//        try {
+        User result = iUser.getUser(usernameOrEmailOrUserId);
+        if (Objects.nonNull(result)) apiResponseDto.setMessage("User gotten successfully");
+        apiResponseDto.setData(JobApiGeneralMapper.INSTANCE.userToUserDto(result, new CycleAvoidingMappingContext()));
+        apiResponseDto.setStatusCode("200");
+        return ResponseEntity.ok(apiResponseDto);
+//        } catch (Exception e) {
+//            logger.error("ERROR", e);
+//            apiResponseDto.setMessage(e.getMessage());
+//            return ResponseEntity.badRequest().body(apiResponseDto);
+//        }
     }
 
 
+    @Deprecated
     @Operation(description = "Logout user with the provided username")
     @ApiResponses(value = {
             @ApiResponse(
@@ -285,6 +303,61 @@ public class JobUserRestController {
             return ResponseEntity.badRequest().body(apiResponseDto);
         }
     }
+
+
+    /**
+     * @param page      page number
+     * @param size      size count
+     * @param filterOr  string filter or conditions
+     * @param filterAnd string filter and conditions
+     * @param orders    string orders
+     * @return PageResponse<User>
+     */
+    @GetMapping(value = "/page")
+    public ResponseEntity<PageResponse<User>> getSearchCriteriaPage(
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "20") int size,
+            @RequestParam(value = "filterOr", required = false) String filterOr,
+            @RequestParam(value = "filterAnd", required = false) String filterAnd,
+            @RequestParam(value = "orders", required = false) String orders) throws BadRequestException {
+
+        PageResponse<User> response = new PageResponse<>();
+
+        org.springframework.data.domain.Pageable pageable = filterBuilderService.getPageable(size, page, orders);
+        GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
+
+
+        List<FilterCondition> andConditions = filterBuilderService.createFilterCondition(filterAnd);
+        List<FilterCondition> orConditions = filterBuilderService.createFilterCondition(filterOr);
+
+        Query query = filterCriteriaBuilder.addCondition(andConditions, orConditions);
+        Page<User> pg = iUser.getPage(query, pageable);
+        response.setPageStats(pg, pg.getContent());
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
+
+    /**
+     * @param filterOr  string filter or conditions
+     * @param filterAnd string filter and conditions
+     * @return list of Users
+     */
+    @GetMapping()
+    public ResponseEntity<List<User>> getAllSearchCriteria(
+            @RequestParam(value = "filterOr", required = false) String filterOr,
+            @RequestParam(value = "filterAnd", required = false) String filterAnd) throws BadRequestException {
+
+        GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
+
+        List<FilterCondition> andConditions = filterBuilderService.createFilterCondition(filterAnd);
+        List<FilterCondition> orConditions = filterBuilderService.createFilterCondition(filterOr);
+
+        Query query = filterCriteriaBuilder.addCondition(andConditions, orConditions);
+        List<User> employees = iUser.getAll(query);
+
+        return new ResponseEntity<>(employees, HttpStatus.OK);
+    }
+
 
     @Operation(description = "Validate the forgot password token using the email address attached to the link")
     @ApiResponses(value = {
@@ -386,7 +459,7 @@ public class JobUserRestController {
     @DeleteMapping(value = "/delete", produces = {"application/json"})
     public ResponseEntity<ApiResponseDto> deleteUserByUsername(
             @Parameter(description = "The username to be deleted")
-            @RequestParam String username) throws Exception {
+            @RequestParam() String username) throws Exception {
         ApiResponseDto apiResponseDto = ApiResponseUtil.process(
                 "Email or Username does not exists",
                 "400",

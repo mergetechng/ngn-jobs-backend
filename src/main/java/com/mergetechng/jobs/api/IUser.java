@@ -5,7 +5,10 @@ import com.mergetechng.jobs.commons.dto.UserDto;
 import com.mergetechng.jobs.commons.dto.UserUpdatePasswordDto;
 import com.mergetechng.jobs.entities.User;
 import com.mergetechng.jobs.exceptions.PasswordMismatchedException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.mongodb.core.query.Query;
 
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 public interface IUser {
@@ -20,6 +23,8 @@ public interface IUser {
     boolean userExists(String username, String email);
 
     String disabledUser(String username);
+
+    String enableUser(String username);
 
     String updateBasicAccountInformation(UserAccountUpdateDto userAccountUpdateDto, String usernameOrEnamilOrUserId);
 
@@ -41,4 +46,17 @@ public interface IUser {
 
     boolean updateUserPassword(UserUpdatePasswordDto passwordUpdate, String usernameOrEmailOrUserId) throws PasswordMismatchedException ;
 
-}
+    /**
+     * @param query custom query
+     * @return list of Employee
+     */
+    List<User> getAll(Query query);
+
+    /**
+     * Get all custom paginate data for entity Employee
+     *
+     * @param query    custom query
+     * @param pageable pageable param
+     * @return Page of entity Employee
+     */
+    Page<User> getPage(Query query, Pageable pageable);}
