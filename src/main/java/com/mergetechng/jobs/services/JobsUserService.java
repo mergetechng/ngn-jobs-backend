@@ -84,6 +84,7 @@ public class JobsUserService implements IUser {
             user.setCredentialNonExpired(false);
             user.setAccountNonLocked(true);
             user.setEnabled(false);
+            user.setCreatedBy("System");
             userRepository.insert(user);
             addUserToGroup(user, GroupEnum.JOB_APPLICANT_GROUP.name());
             sendUserEmailVerification(user.getEmail());
