@@ -5,6 +5,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 
 public interface TokenToEmailMapRepository extends MongoRepository<TokenToEmailMap, String> {
     void deleteByExpiredIsTrue();
-    TokenToEmailMap findByToken( String token);
+    TokenToEmailMap findByToken(String token);
     void deleteByToken(String tokenToDelete);
 }

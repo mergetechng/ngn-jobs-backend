@@ -30,7 +30,7 @@ import javax.persistence.TemporalType;
 @Document
 @NamedQueries({
     @NamedQuery(name = "AccountSettings.findAll", query = "SELECT a FROM AccountSettings a"),
-    @NamedQuery(name = "AccountSettings.findByAccountSettingId", query = "SELECT a FROM AccountSettings a WHERE a.accountSettingId = :accountSettingId"),
+    @NamedQuery(name = "AccountSettings.findById", query = "SELECT a FROM AccountSettings a WHERE a.id = :id"),
     @NamedQuery(name = "AccountSettings.findByLastLoginInfo", query = "SELECT a FROM AccountSettings a WHERE a.lastLoginInfo = :lastLoginInfo"),
     @NamedQuery(name = "AccountSettings.findByReceiveJobAlert", query = "SELECT a FROM AccountSettings a WHERE a.receiveJobAlert = :receiveJobAlert"),
     @NamedQuery(name = "AccountSettings.findByDateCreated", query = "SELECT a FROM AccountSettings a WHERE a.dateCreated = :dateCreated"),
@@ -43,8 +43,8 @@ public class AccountSettings implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "account_setting_id", nullable = false, length = 36)
-    private String accountSettingId;
+    @Column(name = "_id", nullable = false, length = 36)
+    private String id;
     @Column(name = "last_login_info", length = 2147483647)
     private String lastLoginInfo;
     @Column(name = "receive_job_alert")
@@ -71,23 +71,23 @@ public class AccountSettings implements Serializable {
     public AccountSettings() {
     }
 
-    public AccountSettings(String accountSettingId) {
-        this.accountSettingId = accountSettingId;
+    public AccountSettings(String id) {
+        this.id = id;
     }
 
-    public AccountSettings(String accountSettingId, Date dateCreated, String createdBy, String jobAlertSubscriptionId) {
-        this.accountSettingId = accountSettingId;
+    public AccountSettings(String id, Date dateCreated, String createdBy, String jobAlertSubscriptionId) {
+        this.id = id;
         this.dateCreated = dateCreated;
         this.createdBy = createdBy;
         this.jobAlertSubscriptionId = jobAlertSubscriptionId;
     }
 
     public String getAccountSettingId() {
-        return accountSettingId;
+        return id;
     }
 
-    public void setAccountSettingId(String accountSettingId) {
-        this.accountSettingId = accountSettingId;
+    public void setAccountSettingId(String id) {
+        this.id = id;
     }
 
     public String getLastLoginInfo() {
@@ -157,7 +157,7 @@ public class AccountSettings implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (accountSettingId != null ? accountSettingId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -168,7 +168,7 @@ public class AccountSettings implements Serializable {
             return false;
         }
         AccountSettings other = (AccountSettings) object;
-        if ((this.accountSettingId == null && other.accountSettingId != null) || (this.accountSettingId != null && !this.accountSettingId.equals(other.accountSettingId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -176,7 +176,7 @@ public class AccountSettings implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.AccountSettings[ accountSettingId=" + accountSettingId + " ]";
+        return "com.mergetechng.jobs.entities.AccountSettings[ id=" + id + " ]";
     }
     
 }

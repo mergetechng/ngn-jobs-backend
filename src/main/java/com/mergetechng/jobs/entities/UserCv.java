@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Date;
@@ -29,9 +31,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(name = "user_cv", catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "UserCvDto.findAll", query = "SELECT u FROM UserCvDto u"),
-    @NamedQuery(name = "UserCvDto.findByUserCvId", query = "SELECT u FROM UserCvDto u WHERE u.userCvId = :userCvId"),
+    @NamedQuery(name = "UserCvDto.findByUserCvId", query = "SELECT u FROM UserCvDto u WHERE u.id = :id"),
     @NamedQuery(name = "UserCvDto.findByFirstname", query = "SELECT u FROM UserCvDto u WHERE u.firstname = :firstname"),
     @NamedQuery(name = "UserCvDto.findByLastname", query = "SELECT u FROM UserCvDto u WHERE u.lastname = :lastname"),
     @NamedQuery(name = "UserCvDto.findByAboutProfile", query = "SELECT u FROM UserCvDto u WHERE u.aboutProfile = :aboutProfile"),
@@ -47,8 +50,8 @@ public class UserCv implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "user_cv_id", nullable = false, length = 36)
-    private String userCvId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
     @Column(nullable = false, length = 36)
     private String firstname;
@@ -89,37 +92,37 @@ public class UserCv implements Serializable {
     @Column(name = "date_modified")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModified;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Education> educationList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId1")
     private List<Certification> certificationList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Reference> referenceList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Organization> organizationList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Publication> publicationList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Skill> skillList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Refree> refreeList;
     @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
     @ManyToOne(optional = false)
     private User userId;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<WorkExperience> workExperienceList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Hobby> hobbyList;
 
     public UserCv() {
     }
 
-    public UserCv(String userCvId) {
-        this.userCvId = userCvId;
+    public UserCv(String id) {
+        this.id = id;
     }
 
-    public UserCv(String userCvId, String firstname, Date lastname, String aboutProfile, String organization, String phoneNumber, Date dateCreated, String createdBy) {
-        this.userCvId = userCvId;
+    public UserCv(String id, String firstname, Date lastname, String aboutProfile, String organization, String phoneNumber, Date dateCreated, String createdBy) {
+        this.id = id;
         this.firstname = firstname;
         this.lastname = lastname;
         this.aboutProfile = aboutProfile;
@@ -130,11 +133,11 @@ public class UserCv implements Serializable {
     }
 
     public String getUserCvId() {
-        return userCvId;
+        return id;
     }
 
-    public void setUserCvId(String userCvId) {
-        this.userCvId = userCvId;
+    public void setUserCvId(String id) {
+        this.id = id;
     }
 
     public String getFirstname() {
@@ -340,7 +343,7 @@ public class UserCv implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (userCvId != null ? userCvId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -351,7 +354,7 @@ public class UserCv implements Serializable {
             return false;
         }
         UserCv other = (UserCv) object;
-        if ((this.userCvId == null && other.userCvId != null) || (this.userCvId != null && !this.userCvId.equals(other.userCvId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -359,7 +362,7 @@ public class UserCv implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.UserCvDto[ userCvId=" + userCvId + " ]";
+        return "com.mergetechng.jobs.entities.UserCvDto[ id=" + id + " ]";
     }
     
 }

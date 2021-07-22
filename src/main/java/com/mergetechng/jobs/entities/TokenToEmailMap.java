@@ -16,13 +16,14 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "token_to_email_map", catalog = "faston", schema = "public")
+@Document
 public class TokenToEmailMap implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "token_email_map_id")
-    private String tokenEmailMapId;
+    @Column(name = "id")
+    private String id;
 
     @Column(name = "email")
     private String emailAddress;
@@ -58,8 +59,8 @@ public class TokenToEmailMap implements Serializable {
     public TokenToEmailMap() {
     }
 
-    public TokenToEmailMap(String tokenEmailMapId) {
-        this.tokenEmailMapId = tokenEmailMapId;
+    public TokenToEmailMap(String id) {
+        this.id = id;
     }
 
     public static long getSerialVersionUID() {
@@ -67,11 +68,11 @@ public class TokenToEmailMap implements Serializable {
     }
 
     public String getTokenEmailMapId() {
-        return tokenEmailMapId;
+        return id;
     }
 
-    public void setTokenEmailMapId(String tokenEmailMapId) {
-        this.tokenEmailMapId = tokenEmailMapId;
+    public void setTokenEmailMapId(String id) {
+        this.id = id;
     }
 
     public String getEmailAddress() {
@@ -133,7 +134,7 @@ public class TokenToEmailMap implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (tokenEmailMapId != null ? tokenEmailMapId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -144,7 +145,7 @@ public class TokenToEmailMap implements Serializable {
             return false;
         }
         TokenToEmailMap other = (TokenToEmailMap) object;
-        if ((this.tokenEmailMapId == null && other.tokenEmailMapId != null) || (this.tokenEmailMapId != null && !this.tokenEmailMapId.equals(other.tokenEmailMapId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -152,7 +153,7 @@ public class TokenToEmailMap implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.faston.backend.api.entity.TokenEmailMap[ tokenEmailMapId=" + tokenEmailMapId + " ]";
+        return "com.mergetechng.faston.backend.api.entity.TokenEmailMap[ id=" + id + " ]";
     }
 
 

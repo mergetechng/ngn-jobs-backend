@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -25,9 +27,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(name = "job_applicant", catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "JobApplicantDto.findAll", query = "SELECT j FROM JobApplicantDto j"),
-    @NamedQuery(name = "JobApplicantDto.findByJobApplicantId", query = "SELECT j FROM JobApplicantDto j WHERE j.jobApplicantId = :jobApplicantId"),
+    @NamedQuery(name = "JobApplicantDto.findByJobApplicantId", query = "SELECT j FROM JobApplicantDto j WHERE j.id = :id"),
     @NamedQuery(name = "JobApplicantDto.findByJobCapaignId", query = "SELECT j FROM JobApplicantDto j WHERE j.jobCapaignId = :jobCapaignId"),
     @NamedQuery(name = "JobApplicantDto.findByDateCreated", query = "SELECT j FROM JobApplicantDto j WHERE j.dateCreated = :dateCreated"),
     @NamedQuery(name = "JobApplicantDto.findByDateModified", query = "SELECT j FROM JobApplicantDto j WHERE j.dateModified = :dateModified"),
@@ -38,11 +41,11 @@ public class JobApplicant implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "job_applicant_id", nullable = false, length = 36)
-    private String jobApplicantId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
-    @Column(name = "job_capaign_id", nullable = false, length = 36)
-    private String jobCapaignId;
+    @Column(name = "job_id", nullable = false, length = 36)
+    private String jobId;
     @Basic(optional = false)
     @Column(name = "date_created", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -64,32 +67,32 @@ public class JobApplicant implements Serializable {
     public JobApplicant() {
     }
 
-    public JobApplicant(String jobApplicantId) {
-        this.jobApplicantId = jobApplicantId;
+    public JobApplicant(String id) {
+        this.id = id;
     }
 
-    public JobApplicant(String jobApplicantId, String jobCapaignId, Date dateCreated, String createdBy, Date modifiedBy) {
-        this.jobApplicantId = jobApplicantId;
-        this.jobCapaignId = jobCapaignId;
+    public JobApplicant(String id, String jobId, Date dateCreated, String createdBy, Date modifiedBy) {
+        this.id = id;
+        this.jobId = jobId;
         this.dateCreated = dateCreated;
         this.createdBy = createdBy;
         this.modifiedBy = modifiedBy;
     }
 
     public String getJobApplicantId() {
-        return jobApplicantId;
+        return id;
     }
 
-    public void setJobApplicantId(String jobApplicantId) {
-        this.jobApplicantId = jobApplicantId;
+    public void setJobApplicantId(String id) {
+        this.id = id;
     }
 
     public String getJobCapaignId() {
-        return jobCapaignId;
+        return jobId;
     }
 
     public void setJobCapaignId(String jobCapaignId) {
-        this.jobCapaignId = jobCapaignId;
+        this.jobId = jobCapaignId;
     }
 
     public Date getDateCreated() {
@@ -135,7 +138,7 @@ public class JobApplicant implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (jobApplicantId != null ? jobApplicantId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -146,7 +149,7 @@ public class JobApplicant implements Serializable {
             return false;
         }
         JobApplicant other = (JobApplicant) object;
-        if ((this.jobApplicantId == null && other.jobApplicantId != null) || (this.jobApplicantId != null && !this.jobApplicantId.equals(other.jobApplicantId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -154,7 +157,7 @@ public class JobApplicant implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.JobApplicantDto[ jobApplicantId=" + jobApplicantId + " ]";
+        return "com.mergetechng.jobs.entities.JobApplicantDto[ id=" + id + " ]";
     }
     
 }

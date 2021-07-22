@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
@@ -15,9 +17,10 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "api_log_request", catalog = "faston", schema = "public")
+@Document
 @NamedQueries({
     @NamedQuery(name = "ApiLogRequest.findAll", query = "SELECT a FROM ApiLogRequest a"),
-    @NamedQuery(name = "ApiLogRequest.findByApiLogRequestId", query = "SELECT a FROM ApiLogRequest a WHERE a.apiLogRequestId = :apiLogRequestId"),
+    @NamedQuery(name = "ApiLogRequest.findById", query = "SELECT a FROM ApiLogRequest a WHERE a.id = :id"),
     @NamedQuery(name = "ApiLogRequest.findByLogRequestBody", query = "SELECT a FROM ApiLogRequest a WHERE a.logRequestBody = :logRequestBody"),
     @NamedQuery(name = "ApiLogRequest.findByDateCreated", query = "SELECT a FROM ApiLogRequest a WHERE a.dateCreated = :dateCreated"),
     @NamedQuery(name = "ApiLogRequest.findByCreatedBy", query = "SELECT a FROM ApiLogRequest a WHERE a.createdBy = :createdBy")})
@@ -26,7 +29,7 @@ public class ApiLogRequest implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "api_log_request_id")
+    @Column(name = "id")
     private String apiLogRequestId;
     @Column(name = "log_request_body")
     private String logRequestBody;

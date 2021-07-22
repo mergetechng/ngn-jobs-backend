@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -25,9 +27,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "OrganizationDto.findAll", query = "SELECT o FROM OrganizationDto o"),
-    @NamedQuery(name = "OrganizationDto.findByOrganizationId", query = "SELECT o FROM OrganizationDto o WHERE o.organizationId = :organizationId"),
+    @NamedQuery(name = "OrganizationDto.findByOrganizationId", query = "SELECT o FROM OrganizationDto o WHERE o.id = :id"),
     @NamedQuery(name = "OrganizationDto.findByDateStart", query = "SELECT o FROM OrganizationDto o WHERE o.dateStart = :dateStart"),
     @NamedQuery(name = "OrganizationDto.findByDateEnd", query = "SELECT o FROM OrganizationDto o WHERE o.dateEnd = :dateEnd"),
     @NamedQuery(name = "OrganizationDto.findByOrganizationName", query = "SELECT o FROM OrganizationDto o WHERE o.organizationName = :organizationName"),
@@ -44,8 +47,8 @@ public class Organization implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "organization_id", nullable = false, length = 36)
-    private String organizationId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
     @Column(name = "date_start", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -91,12 +94,12 @@ public class Organization implements Serializable {
     public Organization() {
     }
 
-    public Organization(String organizationId) {
-        this.organizationId = organizationId;
+    public Organization(String id) {
+        this.id = id;
     }
 
-    public Organization(String organizationId, Date dateStart, Date dateEnd, String organizationName, String organizationType, String organizationIndustry, String role, Date dateCreated, Date dateModified, String createdBy) {
-        this.organizationId = organizationId;
+    public Organization(String id, Date dateStart, Date dateEnd, String organizationName, String organizationType, String organizationIndustry, String role, Date dateCreated, Date dateModified, String createdBy) {
+        this.id = id;
         this.dateStart = dateStart;
         this.dateEnd = dateEnd;
         this.organizationName = organizationName;
@@ -109,11 +112,11 @@ public class Organization implements Serializable {
     }
 
     public String getOrganizationId() {
-        return organizationId;
+        return id;
     }
 
-    public void setOrganizationId(String organizationId) {
-        this.organizationId = organizationId;
+    public void setOrganizationId(String id) {
+        this.id = id;
     }
 
     public Date getDateStart() {
@@ -223,7 +226,7 @@ public class Organization implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (organizationId != null ? organizationId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -234,7 +237,7 @@ public class Organization implements Serializable {
             return false;
         }
         Organization other = (Organization) object;
-        if ((this.organizationId == null && other.organizationId != null) || (this.organizationId != null && !this.organizationId.equals(other.organizationId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -242,7 +245,7 @@ public class Organization implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.OrganizationDto[ organizationId=" + organizationId + " ]";
+        return "com.mergetechng.jobs.entities.OrganizationDto[ id=" + id + " ]";
     }
     
 }

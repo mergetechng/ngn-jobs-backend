@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -25,9 +27,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(name = "work_experience", catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "WorkExperienceDto.findAll", query = "SELECT w FROM WorkExperienceDto w"),
-    @NamedQuery(name = "WorkExperienceDto.findByWorkExperienceId", query = "SELECT w FROM WorkExperienceDto w WHERE w.workExperienceId = :workExperienceId"),
+    @NamedQuery(name = "WorkExperienceDto.findByWorkExperienceId", query = "SELECT w FROM WorkExperienceDto w WHERE w.id = :id"),
     @NamedQuery(name = "WorkExperienceDto.findByIsCurrentJob", query = "SELECT w FROM WorkExperienceDto w WHERE w.isCurrentJob = :isCurrentJob"),
     @NamedQuery(name = "WorkExperienceDto.findByJobTitle", query = "SELECT w FROM WorkExperienceDto w WHERE w.jobTitle = :jobTitle"),
     @NamedQuery(name = "WorkExperienceDto.findByStartDate", query = "SELECT w FROM WorkExperienceDto w WHERE w.startDate = :startDate"),
@@ -46,8 +49,8 @@ public class WorkExperience implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "work_experience_id", nullable = false, length = 36)
-    private String workExperienceId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
     @Column(name = "is_current_job", nullable = false, length = 250)
     private String isCurrentJob;
@@ -98,12 +101,12 @@ public class WorkExperience implements Serializable {
     public WorkExperience() {
     }
 
-    public WorkExperience(String workExperienceId) {
-        this.workExperienceId = workExperienceId;
+    public WorkExperience(String id) {
+        this.id = id;
     }
 
-    public WorkExperience(String workExperienceId, String isCurrentJob, String jobTitle, Date startDate, String companyName, String jobLocationCity, String jobLocationState, String jobLocationCountry, String createdBy, String jobDescription, Date dateCreated) {
-        this.workExperienceId = workExperienceId;
+    public WorkExperience(String id, String isCurrentJob, String jobTitle, Date startDate, String companyName, String jobLocationCity, String jobLocationState, String jobLocationCountry, String createdBy, String jobDescription, Date dateCreated) {
+        this.id = id;
         this.isCurrentJob = isCurrentJob;
         this.jobTitle = jobTitle;
         this.startDate = startDate;
@@ -117,11 +120,11 @@ public class WorkExperience implements Serializable {
     }
 
     public String getWorkExperienceId() {
-        return workExperienceId;
+        return id;
     }
 
-    public void setWorkExperienceId(String workExperienceId) {
-        this.workExperienceId = workExperienceId;
+    public void setWorkExperienceId(String id) {
+        this.id = id;
     }
 
     public String getIsCurrentJob() {
@@ -247,7 +250,7 @@ public class WorkExperience implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (workExperienceId != null ? workExperienceId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -258,7 +261,7 @@ public class WorkExperience implements Serializable {
             return false;
         }
         WorkExperience other = (WorkExperience) object;
-        if ((this.workExperienceId == null && other.workExperienceId != null) || (this.workExperienceId != null && !this.workExperienceId.equals(other.workExperienceId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -266,7 +269,7 @@ public class WorkExperience implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.WorkExperienceDto[ workExperienceId=" + workExperienceId + " ]";
+        return "com.mergetechng.jobs.entities.WorkExperienceDto[ id=" + id + " ]";
     }
     
 }

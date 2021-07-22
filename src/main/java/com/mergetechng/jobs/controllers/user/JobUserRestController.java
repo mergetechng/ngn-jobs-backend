@@ -47,18 +47,37 @@ public class JobUserRestController {
     private FilterBuilderService filterBuilderService;
 
 
-    @Operation(description = "Authenticate a user")
+    @Operation(description = "Remove user with usernameOrEmailOrId")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "400", description = "No result found", content = @Content),
+            @ApiResponse(responseCode = "400", description = "Failed to delete user", content = @Content),
             @ApiResponse(
                     responseCode = "200",
-                    description = "Searched Successful",
+                    description = "Successfully deleted the user",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             )})
-    @PostMapping(value = "/search/{username}", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> searchUserWithUsername(@PathVariable String username) throws Exception {
-        return null;
+    @DeleteMapping(value = "/remove/{usernameOrEmailOrId}", produces = {"application/json"})
+    public ResponseEntity<ApiResponseDto> searchUserWithUsername(@PathVariable(name = "username") String usernameOrEmailOrId) throws Exception {
+        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+                "Failed to delete user",
+                "200",
+                "DELETE_USER",
+                new Date(),
+                null);
+        try {
+            if (!iUser.userExists(usernameOrEmailOrId, "")) {
+                apiResponseDto.setStatusCode("200");
+                apiResponseDto.setMessage("Successfully deleted the user with credential: " + usernameOrEmailOrId);
+                apiResponseDto.setData(null);
+                return ResponseEntity.ok().body(apiResponseDto);
+            } else {
+                return ResponseEntity.badRequest().body(apiResponseDto);
+            }
+        } catch (Exception e) {
+            logger.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(apiResponseDto);
+        }
     }
 
     @Operation(description = "Check if username exists")
@@ -81,7 +100,7 @@ public class JobUserRestController {
             @Parameter(description = "The username to search")
             @RequestParam(value = "username") String username) throws Exception {
         ApiResponseDto apiResponseDto = ApiResponseUtil.process(
-                "Username is not available to be used",
+                "Username is NOT available to be used",
                 "400",
                 "search existing username",
                 new Date(),
@@ -91,8 +110,10 @@ public class JobUserRestController {
                 apiResponseDto.setStatusCode("200");
                 apiResponseDto.setMessage("Username is available to used");
                 apiResponseDto.setData(null);
+                return ResponseEntity.ok().body(apiResponseDto);
+            } else {
+                return ResponseEntity.badRequest().body(apiResponseDto);
             }
-            return ResponseEntity.ok().body(apiResponseDto);
         } catch (Exception e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
@@ -241,17 +262,17 @@ public class JobUserRestController {
                 "SEARCH_USER",
                 new Date(),
                 null);
-//        try {
-        User result = iUser.getUser(usernameOrEmailOrUserId);
-        if (Objects.nonNull(result)) apiResponseDto.setMessage("User gotten successfully");
-        apiResponseDto.setData(JobApiGeneralMapper.INSTANCE.userToUserDto(result, new CycleAvoidingMappingContext()));
-        apiResponseDto.setStatusCode("200");
-        return ResponseEntity.ok(apiResponseDto);
-//        } catch (Exception e) {
-//            logger.error("ERROR", e);
-//            apiResponseDto.setMessage(e.getMessage());
-//            return ResponseEntity.badRequest().body(apiResponseDto);
-//        }
+        try {
+            User result = iUser.getUser(usernameOrEmailOrUserId);
+            if (Objects.nonNull(result)) apiResponseDto.setMessage("User gotten successfully");
+            apiResponseDto.setData(JobApiGeneralMapper.INSTANCE.userToUserDto(result, new CycleAvoidingMappingContext()));
+            apiResponseDto.setStatusCode("200");
+            return ResponseEntity.ok(apiResponseDto);
+        } catch (UserNotFoundException e) {
+            logger.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(apiResponseDto);
+        }
     }
 
 
@@ -377,17 +398,19 @@ public class JobUserRestController {
     @GetMapping(value = "/token/validate", produces = {"application/json"})
     public ResponseEntity<ApiResponseDto> validateToken(
             @Parameter(description = "The token attached to the link")
-            @RequestParam(value = "token") String token
+            @RequestParam(value = "token") String token,
+            @Parameter(description = "The token email")
+            @RequestParam(value = "email") String email
     ) {
         ApiResponseDto apiResponseDto = ApiResponseUtil.process(
-                false + "-The token is invalid.",
+                false + "- The token is invalid.",
                 "400",
                 "VALIDATE_TOKEN",
                 new Date(),
                 null);
 
         try {
-            if (iUser.validateToken(token)) {
+            if (iUser.validateToken(token, email)) {
                 apiResponseDto.setMessage(true + "-> token valid");
                 apiResponseDto.setStatusCode("200");
                 return ResponseEntity.ok(apiResponseDto);
@@ -447,7 +470,7 @@ public class JobUserRestController {
         }
     }
 
-    @Operation(description = "Delete user with username")
+    @Operation(description = "Delete user with usernameOrEmailOrUserId")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -459,16 +482,16 @@ public class JobUserRestController {
     @DeleteMapping(value = "/delete", produces = {"application/json"})
     public ResponseEntity<ApiResponseDto> deleteUserByUsername(
             @Parameter(description = "The username to be deleted")
-            @RequestParam() String username) throws Exception {
+            @RequestParam() String usernameOrEmailOrUserId) throws Exception {
         ApiResponseDto apiResponseDto = ApiResponseUtil.process(
-                "Email or Username does not exists",
+                "usernameOrEmailOrUserId does not exists",
                 "400",
                 "DELETE_USER",
                 new Date(),
                 null);
         try {
-            if (iUser.deleteUser(username)) {
-                apiResponseDto.setMessage(true + "-User successfully deleted from the system");
+            if (iUser.deleteUser(usernameOrEmailOrUserId)) {
+                apiResponseDto.setMessage(true + "- User successfully deleted from the system");
                 apiResponseDto.setStatusCode("200");
                 return ResponseEntity.ok(apiResponseDto);
             } else {
@@ -493,8 +516,7 @@ public class JobUserRestController {
             description = "Email or Username does not exists",
             content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
             }
-    )
-    })
+    )})
     @GetMapping(value = "/forgot-password-link", produces = {"application/json"})
     public ResponseEntity<ApiResponseDto> forgotPasswordUsingEmailOrUsername(
             @Parameter(description = "The username or email address search and send forgot password link to")
@@ -520,7 +542,7 @@ public class JobUserRestController {
         }
     }
 
-    @Operation(description = "Allow an existing user to reset password")
+    @Operation(description = "Allow an existing to get another email confirmation link")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -532,14 +554,13 @@ public class JobUserRestController {
             description = "Email or Username does not exists",
             content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
             }
-    )
-    })
+    )})
     @GetMapping(value = "/email-confirmation-link", produces = {"application/json"})
     public ResponseEntity<ApiResponseDto> sendEmailConfirmationLink(
             @Parameter(description = "The username or email address search and send confirmation mail link to")
             @RequestParam String emailOrUsername) {
         ApiResponseDto apiResponseDto = ApiResponseUtil.process(
-                "Email or Username does not exists",
+                "Email or Username does not exists, no link sent",
                 "400",
                 "SEND_EMAIL_CONFIRMATION",
                 new Date(),
@@ -549,13 +570,12 @@ public class JobUserRestController {
                 apiResponseDto.setMessage("Mail has be sent to your email address");
                 apiResponseDto.setStatusCode("200");
                 return ResponseEntity.ok(apiResponseDto);
-            } else {
-                return ResponseEntity.badRequest().body(apiResponseDto);
             }
         } catch (Exception e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
             return ResponseEntity.badRequest().body(apiResponseDto);
         }
+        return ResponseEntity.badRequest().body(apiResponseDto);
     }
 }

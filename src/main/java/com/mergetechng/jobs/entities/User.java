@@ -21,7 +21,7 @@ import javax.persistence.*;
         @UniqueConstraint(columnNames = {"email"})})
 @NamedQueries({
         @NamedQuery(name = "UserDto.findAll", query = "SELECT u FROM UserDto u"),
-        @NamedQuery(name = "UserDto.findByUserId", query = "SELECT u FROM UserDto u WHERE u.userId = :userId"),
+        @NamedQuery(name = "UserDto.findById", query = "SELECT u FROM UserDto u WHERE u.id = :id"),
         @NamedQuery(name = "UserDto.findByUsername", query = "SELECT u FROM UserDto u WHERE u.username = :username"),
         @NamedQuery(name = "UserDto.findByPassword", query = "SELECT u FROM UserDto u WHERE u.password = :password"),
         @NamedQuery(name = "UserDto.findByDateRegistered", query = "SELECT u FROM UserDto u WHERE u.dateRegistered = :dateRegistered"),
@@ -39,8 +39,8 @@ public class User implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "user_id", nullable = false, length = 36)
-    private String userId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
     @Column(nullable = false, length = 36 , name = "username")
     private String username;
@@ -85,39 +85,39 @@ public class User implements Serializable {
     @Basic(optional = false)
     @Column(nullable = false, length = 250)
     private String email;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<JobApplicant> jobApplicantList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Education> educationList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<JobAlertSubcription> jobAlertSubcriptionList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<AccountSettings> accountSettingsList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<ActivityLog> activityLogList;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
     private List<Certification> certificationList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Reference> referenceList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<UserLocationInterest> userLocationInterestList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Organization> organizationList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Publication> publicationList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Skill> skillList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<UserCv> userCvList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<WorkExperience> workExperienceList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Hobby> hobbyList;
     @Column(name = "online", nullable = false)
     private boolean online;
     @Column(name = "account_non_expired", nullable = false)
     private boolean accountNonExpired;
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "id", nullable = false)
     private boolean isEnabled;
     @Column(name = "email_verified", nullable = false)
     private boolean emailVerified;
@@ -125,11 +125,11 @@ public class User implements Serializable {
     private boolean getCredentialNonExpired;
     @Column(name = "account_non_locked", nullable = false)
     private boolean accountNonLocked;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userId", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id", fetch = FetchType.LAZY)
     private List<Group1> groupId;
     @Basic(optional = false)
     @Column(nullable = false, length = 250)
-    private String accountType; // Job Seeker | Employer or Admin
+    private String accountType; // Job Seeker | JobEmployer or Admin
     @Basic(optional = false)
     @Column(nullable = false, length = 250)
     private String registrationMode;
@@ -139,18 +139,29 @@ public class User implements Serializable {
     @Basic(optional = false)
     @Column(nullable = false, length = 250)
     private String phone;
-
+    @Basic(optional = false)
+    @Column(nullable = false, length = 250)
+    private String companyName; // for job employer
+    @Basic(optional = false)
+    @Column(nullable = false, length = 250)
+    private String companyAddress; // for job employer
+    @Basic(optional = false)
+    @Column(nullable = false, length = 250)
+    private String companyIndustry; // for job employer
+    @Basic(optional = false)
+    @Column(nullable = false, length = 250)
+    private String companyCategory; // for job employer
 
 
     public User() {
     }
 
-    public User(String userId) {
-        this.userId = userId;
+    public User(String id) {
+        this.id = id;
     }
 
-    public User(String userId, String username, String password, String firstName, String lastName, String gender, String nationality, String location, String formerJobRole, String dateRegistered, Date lastLogin, String lastLoginInfo, Date dateCreated, Date dateModified, String modifiedBy, String createdBy, String userImageUrl, String email, boolean online, boolean accountNonExpired, boolean isEnabled, boolean getCredentialNonExpired, boolean accountNonLocked) {
-        this.userId = userId;
+    public User(String id, String username, String password, String firstName, String lastName, String gender, String nationality, String location, String formerJobRole, String dateRegistered, Date lastLogin, String lastLoginInfo, Date dateCreated, Date dateModified, String modifiedBy, String createdBy, String userImageUrl, String email, boolean online, boolean accountNonExpired, boolean isEnabled, boolean getCredentialNonExpired, boolean accountNonLocked) {
+        this.id = id;
         this.username = username;
         this.password = password;
         this.firstName = firstName;
@@ -176,11 +187,11 @@ public class User implements Serializable {
     }
 
     public String getUserId() {
-        return userId;
+        return id;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUserId(String id) {
+        this.id = id;
     }
 
     public String getUsername() {
@@ -406,7 +417,7 @@ public class User implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (userId != null ? userId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -417,7 +428,7 @@ public class User implements Serializable {
             return false;
         }
         User other = (User) object;
-        if ((this.userId == null && other.userId != null) || (this.userId != null && !this.userId.equals(other.userId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -425,7 +436,7 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.UserDto[ userId=" + userId + " ]";
+        return "com.mergetechng.jobs.entities.UserDto[ id=" + id + " ]";
     }
 
     public boolean isOnline() {
@@ -566,5 +577,41 @@ public class User implements Serializable {
 
     public void setEmailVerified(boolean emailVerified) {
         this.emailVerified = emailVerified;
+    }
+
+    public boolean isEmailVerified() {
+        return emailVerified;
+    }
+
+    public String getCompanyName() {
+        return companyName;
+    }
+
+    public void setCompanyName(String companyName) {
+        this.companyName = companyName;
+    }
+
+    public String getCompanyAddress() {
+        return companyAddress;
+    }
+
+    public void setCompanyAddress(String companyAddress) {
+        this.companyAddress = companyAddress;
+    }
+
+    public String getCompanyIndustry() {
+        return this.companyIndustry;
+    }
+
+    public void setCompanyIndustry(String companyIndustry) {
+        this.companyIndustry = companyIndustry;
+    }
+
+    public String getCompanyCategory() {
+        return companyCategory;
+    }
+
+    public void setCompanyCategory(String companyCategory) {
+        this.companyCategory = companyCategory;
     }
 }

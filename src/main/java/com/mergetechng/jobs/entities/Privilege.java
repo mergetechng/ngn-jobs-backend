@@ -21,7 +21,7 @@ import java.util.List;
 @Document
 @NamedQueries({
     @NamedQuery(name = "privilege.findAll", query = "SELECT p FROM privilege p"),
-    @NamedQuery(name = "privilege.findByprivilegeId", query = "SELECT p FROM privilege p WHERE p.privilegeId = :privilegeId"),
+    @NamedQuery(name = "privilege.findById", query = "SELECT p FROM privilege p WHERE p.id = :id"),
     @NamedQuery(name = "privilege.findByName", query = "SELECT p FROM privilege p WHERE p.name = :name"),
     @NamedQuery(name = "privilege.findByDescription", query = "SELECT p FROM privilege p WHERE p.description = :description"),
     @NamedQuery(name = "privilege.findByDateCreated", query = "SELECT p FROM privilege p WHERE p.dateCreated = :dateCreated"),
@@ -33,8 +33,8 @@ public class Privilege implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "privilege_id")
-    private String privilegeId;
+    @Column(name = "id")
+    private String id;
     @Column(name = "name")
     private String name;
     @Column(name = "description")
@@ -60,21 +60,21 @@ public class Privilege implements Serializable {
     public Privilege() {
     }
 
-    public Privilege(String privilegeId) {
-        this.privilegeId = privilegeId;
+    public Privilege(String id) {
+        this.id = id;
     }
 
-    public Privilege(String privilegeId, Date dateCreated) {
-        this.privilegeId = privilegeId;
+    public Privilege(String id, Date dateCreated) {
+        this.id = id;
         this.dateCreated = dateCreated;
     }
 
     public String getPrivilegeId() {
-        return privilegeId;
+        return id;
     }
 
-    public void setPrivilegeId(String privilegeId) {
-        this.privilegeId = privilegeId;
+    public void setPrivilegeId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -144,7 +144,7 @@ public class Privilege implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (privilegeId != null ? privilegeId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -155,7 +155,7 @@ public class Privilege implements Serializable {
             return false;
         }
         Privilege other = (Privilege) object;
-        if ((this.privilegeId == null && other.privilegeId != null) || (this.privilegeId != null && !this.privilegeId.equals(other.privilegeId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -163,7 +163,7 @@ public class Privilege implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.privilege[ privilegeId=" + privilegeId + " ]";
+        return "com.mergetechng.jobs.entities.privilege[ id=" + id + " ]";
     }
     
 }

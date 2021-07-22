@@ -7,6 +7,9 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -27,6 +30,17 @@ public class RestControllerAdviceExceptionHandler  {
         return message;
     }
 
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    @ResponseStatus(value = HttpStatus.NOT_FOUND)
+    public RestErrorMessageDto resourceNotFoundException(MissingServletRequestParameterException ex, WebRequest request) {
+        RestErrorMessageDto message = new RestErrorMessageDto(
+                ex.getMessage(),
+                HttpStatus.NOT_FOUND.value(),
+                "Failed to get the resource requested"
+        );
+        return message;
+    }
+
 
     @ExceptionHandler(UserNotFoundException.class)
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
@@ -37,6 +51,7 @@ public class RestControllerAdviceExceptionHandler  {
                 ex.getMessage()
         );
         return message;
+//        return ResponseEntity.badRequest().body(new RestErrorMessageDto("Error" , 400 , "Error"));
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -71,10 +86,21 @@ public class RestControllerAdviceExceptionHandler  {
         );
         return message;
     }
+//
+//    @ExceptionHandler(Exception.class)
+//    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
+//    public RestErrorMessageDto globalExceptionHandler(Exception ex, WebRequest request) {
+//        RestErrorMessageDto message = new RestErrorMessageDto(
+//                "Server failed to process your request",
+//                HttpStatus.NOT_FOUND.value(),
+//                "Internal server error occurred."
+//        );
+//        return message;
+//    }
 
-    @ExceptionHandler(Exception.class)
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
-    public RestErrorMessageDto globalExceptionHandler(Exception ex, WebRequest request) {
+    public RestErrorMessageDto globalHttpRequestMethodNotSupportedExceptionHandler(Exception ex, WebRequest request) {
         RestErrorMessageDto message = new RestErrorMessageDto(
                 "Server failed to process your request",
                 HttpStatus.NOT_FOUND.value(),

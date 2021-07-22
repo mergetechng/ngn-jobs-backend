@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
@@ -15,9 +17,10 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "user_has_privilege", catalog = "faston", schema = "public")
+@Document
 @NamedQueries({ @NamedQuery(name = "UserHasPrivilege.findAll", query = "SELECT u FROM UserHasPrivilege u"),
-        @NamedQuery(name = "UserHasPrivilege.findByUserId", query = "SELECT u FROM UserHasPrivilege u WHERE u.UserHasPrivilegePK.userId = :userId"),
-        @NamedQuery(name = "UserHasPrivilege.findByPrivilegeId", query = "SELECT u FROM UserHasPrivilege u WHERE u.UserHasPrivilegePK.privilegeId = :privilegeId"),
+        @NamedQuery(name = "UserHasPrivilege.findById", query = "SELECT u FROM UserHasPrivilege u WHERE u.UserHasPrivilegePK.userId = :userId"),
+        @NamedQuery(name = "UserHasPrivilege.findById", query = "SELECT u FROM UserHasPrivilege u WHERE u.UserHasPrivilegePK.id = :id"),
         @NamedQuery(name = "UserHasPrivilege.findByDateCreated", query = "SELECT u FROM UserHasPrivilege u WHERE u.dateCreated = :dateCreated") })
 public class UserHasPrivilege implements Serializable {
 

@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -25,9 +27,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "EducationDto.findAll", query = "SELECT e FROM EducationDto e"),
-    @NamedQuery(name = "EducationDto.findByEducationId", query = "SELECT e FROM EducationDto e WHERE e.educationId = :educationId"),
+    @NamedQuery(name = "EducationDto.findById", query = "SELECT e FROM EducationDto e WHERE e.id = :id"),
     @NamedQuery(name = "EducationDto.findByDateEarned", query = "SELECT e FROM EducationDto e WHERE e.dateEarned = :dateEarned"),
     @NamedQuery(name = "EducationDto.findByInstitution", query = "SELECT e FROM EducationDto e WHERE e.institution = :institution"),
     @NamedQuery(name = "EducationDto.findByState", query = "SELECT e FROM EducationDto e WHERE e.state = :state"),
@@ -43,8 +46,8 @@ public class Education implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "education_id", nullable = false, length = 36)
-    private String educationId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
     @Column(name = "date_earned", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -86,12 +89,12 @@ public class Education implements Serializable {
     public Education() {
     }
 
-    public Education(String educationId) {
-        this.educationId = educationId;
+    public Education(String id) {
+        this.id = id;
     }
 
-    public Education(String educationId, Date dateEarned, String institution, String state, String country, Date courseStudied, Date dateCreated, String createdBy) {
-        this.educationId = educationId;
+    public Education(String id, Date dateEarned, String institution, String state, String country, Date courseStudied, Date dateCreated, String createdBy) {
+        this.id = id;
         this.dateEarned = dateEarned;
         this.institution = institution;
         this.state = state;
@@ -102,11 +105,11 @@ public class Education implements Serializable {
     }
 
     public String getEducationId() {
-        return educationId;
+        return id;
     }
 
-    public void setEducationId(String educationId) {
-        this.educationId = educationId;
+    public void setEducationId(String id) {
+        this.id = id;
     }
 
     public Date getDateEarned() {
@@ -208,7 +211,7 @@ public class Education implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (educationId != null ? educationId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -219,7 +222,7 @@ public class Education implements Serializable {
             return false;
         }
         Education other = (Education) object;
-        if ((this.educationId == null && other.educationId != null) || (this.educationId != null && !this.educationId.equals(other.educationId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -227,7 +230,7 @@ public class Education implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.EducationDto[ educationId=" + educationId + " ]";
+        return "com.mergetechng.jobs.entities.EducationDto[ id=" + id + " ]";
     }
     
 }

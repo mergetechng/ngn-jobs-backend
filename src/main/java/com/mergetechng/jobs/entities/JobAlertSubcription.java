@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -25,9 +27,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(name = "job_alert_subcription", catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "JobAlertSubcription.findAll", query = "SELECT j FROM JobAlertSubcription j"),
-    @NamedQuery(name = "JobAlertSubcription.findByJobSubscriptionId", query = "SELECT j FROM JobAlertSubcription j WHERE j.jobSubscriptionId = :jobSubscriptionId"),
+    @NamedQuery(name = "JobAlertSubcription.findByJobSubscriptionId", query = "SELECT j FROM JobAlertSubcription j WHERE j.id = :id"),
     @NamedQuery(name = "JobAlertSubcription.findBySubscriptionDate", query = "SELECT j FROM JobAlertSubcription j WHERE j.subscriptionDate = :subscriptionDate"),
     @NamedQuery(name = "JobAlertSubcription.findByDateCreated", query = "SELECT j FROM JobAlertSubcription j WHERE j.dateCreated = :dateCreated"),
     @NamedQuery(name = "JobAlertSubcription.findByDateModified", query = "SELECT j FROM JobAlertSubcription j WHERE j.dateModified = :dateModified"),
@@ -38,8 +41,8 @@ public class JobAlertSubcription implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "job_subscription_id", nullable = false, length = 36)
-    private String jobSubscriptionId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Column(name = "subscription_date")
     @Temporal(TemporalType.TIMESTAMP)
     private Date subscriptionDate;
@@ -64,21 +67,21 @@ public class JobAlertSubcription implements Serializable {
     public JobAlertSubcription() {
     }
 
-    public JobAlertSubcription(String jobSubscriptionId) {
-        this.jobSubscriptionId = jobSubscriptionId;
+    public JobAlertSubcription(String id) {
+        this.id = id;
     }
 
-    public JobAlertSubcription(String jobSubscriptionId, Date dateCreated) {
-        this.jobSubscriptionId = jobSubscriptionId;
+    public JobAlertSubcription(String id, Date dateCreated) {
+        this.id = id;
         this.dateCreated = dateCreated;
     }
 
     public String getJobSubscriptionId() {
-        return jobSubscriptionId;
+        return id;
     }
 
-    public void setJobSubscriptionId(String jobSubscriptionId) {
-        this.jobSubscriptionId = jobSubscriptionId;
+    public void setJobSubscriptionId(String id) {
+        this.id = id;
     }
 
     public Date getSubscriptionDate() {
@@ -140,7 +143,7 @@ public class JobAlertSubcription implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (jobSubscriptionId != null ? jobSubscriptionId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -151,7 +154,7 @@ public class JobAlertSubcription implements Serializable {
             return false;
         }
         JobAlertSubcription other = (JobAlertSubcription) object;
-        if ((this.jobSubscriptionId == null && other.jobSubscriptionId != null) || (this.jobSubscriptionId != null && !this.jobSubscriptionId.equals(other.jobSubscriptionId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -159,7 +162,7 @@ public class JobAlertSubcription implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.JobAlertSubcription[ jobSubscriptionId=" + jobSubscriptionId + " ]";
+        return "com.mergetechng.jobs.entities.JobAlertSubcription[ id=" + id + " ]";
     }
     
 }

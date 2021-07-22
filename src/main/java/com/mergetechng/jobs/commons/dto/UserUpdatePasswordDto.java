@@ -1,15 +1,19 @@
 package com.mergetechng.jobs.commons.dto;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
 
 public class UserUpdatePasswordDto {
 
     @NotNull
+    @NotEmpty
     private String oldPassword ;
     @NotNull
+    @NotEmpty
     private String newPassword;
     @NotNull
+    @NotEmpty
     private String confirmPassword;
 
     public UserUpdatePasswordDto(String newPassword, String confirmPassword , String oldPassword) {

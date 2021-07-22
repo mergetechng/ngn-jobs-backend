@@ -251,7 +251,7 @@ CREATE TABLE public.organization (
 CREATE TABLE public.job_applicant (
   "job_applicant_id" VARCHAR(36) ,
   "user_id" VARCHAR(36) NOT NULL,
-  "job_capaign_id" VARCHAR(36) NOT NULL,
+  "job_id" VARCHAR(36) NOT NULL,
   "date_created" timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "date_modified" timestamp with time zone ,
   "created_by" VARCHAR(250) NOT NULL,
@@ -259,7 +259,10 @@ CREATE TABLE public.job_applicant (
   PRIMARY KEY ("job_applicant_id"),
   CONSTRAINT "FK_job_applicant.user_id"
     FOREIGN KEY ("user_id")
-      REFERENCES public.user("user_id")
+      REFERENCES public.user("user_id"),
+  CONSTRAINT "FK_job_applicant.job_id"
+    FOREIGN KEY ("job_id")
+      REFERENCES public.user("job_id")
 );
 
 CREATE TABLE public.activity_log (
@@ -385,6 +388,34 @@ CREATE TABLE public.group_has_roles (
       CONSTRAINT group_has_roles_pk PRIMARY KEY (group_has_roles_id , privilege_id),
       CONSTRAINT group_has_roles_privilege_fk FOREIGN KEY (privilege_id) REFERENCES privilege(privilege_id)
 );
+
+CREATE TABLE public.job (
+    job_id varchar(36),
+    job_title varchar(255) NOT NULL,
+    job_description varchar(10000) not null,
+    email_address varchar(255) NOT NULL,
+    specialims VARCHAR(255) NOT NULL,
+    offered_salary integer NOT NULL,
+    experience VARCHAR(255) NOT NULL,
+    industry VARCHAR(255) NOT NULL,
+    application_deadline timestamp with time zone NOT NULL,
+    complete_address VARCHAR(255) NOT NULL,
+    latitue VARCHAR(10),
+    longitude VARCHAR(10),
+    package_payment_decription varchar(2500),
+    country varchar(255) NOT NULL,
+    city varchar(255) NOT NULL,
+    job_type varchar(255) NOT NULL, ---- define list of Job type
+    career_type varchar(255) NOT NULL,
+    gender varchar(255) NOT NULL,
+    qualification varchar(255) NOT NULL,
+    date_created timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    date_modified timestamp with time zone,
+    created_by varchar(150) NOT NULL,
+    job_category VARCHAR(255) NOT NULL,
+    modifed_by VARCHAR(250),
+      CONSTRAINT job_pk PRIMARY KEY (job_id)
+)
 --
 --CREATE TABLE "public.profile_image" (
 --  "profile_image_id" VARCHAR(36),

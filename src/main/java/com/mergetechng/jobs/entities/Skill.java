@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -25,9 +27,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "SkillDto.findAll", query = "SELECT s FROM SkillDto s"),
-    @NamedQuery(name = "SkillDto.findBySkillId", query = "SELECT s FROM SkillDto s WHERE s.skillId = :skillId"),
+    @NamedQuery(name = "SkillDto.findBySkillId", query = "SELECT s FROM SkillDto s WHERE s.id = :id"),
     @NamedQuery(name = "SkillDto.findBySkillArea", query = "SELECT s FROM SkillDto s WHERE s.skillArea = :skillArea"),
     @NamedQuery(name = "SkillDto.findBySkillDescription", query = "SELECT s FROM SkillDto s WHERE s.skillDescription = :skillDescription"),
     @NamedQuery(name = "SkillDto.findBySkillName", query = "SELECT s FROM SkillDto s WHERE s.skillName = :skillName"),
@@ -40,8 +43,8 @@ public class Skill implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "skill_id", nullable = false, length = 36)
-    private String skillId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
     @Column(name = "skill_area", nullable = false, length = 36)
     private String skillArea;
@@ -71,12 +74,12 @@ public class Skill implements Serializable {
     public Skill() {
     }
 
-    public Skill(String skillId) {
-        this.skillId = skillId;
+    public Skill(String id) {
+        this.id = id;
     }
 
-    public Skill(String skillId, String skillArea, String skillName, String createdDate, String createdBy) {
-        this.skillId = skillId;
+    public Skill(String id, String skillArea, String skillName, String createdDate, String createdBy) {
+        this.id = id;
         this.skillArea = skillArea;
         this.skillName = skillName;
         this.createdDate = createdDate;
@@ -84,11 +87,11 @@ public class Skill implements Serializable {
     }
 
     public String getSkillId() {
-        return skillId;
+        return id;
     }
 
-    public void setSkillId(String skillId) {
-        this.skillId = skillId;
+    public void setSkillId(String id) {
+        this.id = id;
     }
 
     public String getSkillArea() {
@@ -166,7 +169,7 @@ public class Skill implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (skillId != null ? skillId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -177,7 +180,7 @@ public class Skill implements Serializable {
             return false;
         }
         Skill other = (Skill) object;
-        if ((this.skillId == null && other.skillId != null) || (this.skillId != null && !this.skillId.equals(other.skillId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -185,7 +188,7 @@ public class Skill implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.SkillDto[ skillId=" + skillId + " ]";
+        return "com.mergetechng.jobs.entities.SkillDto[ id=" + id + " ]";
     }
     
 }

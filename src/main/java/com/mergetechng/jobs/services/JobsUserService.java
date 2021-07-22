@@ -3,6 +3,7 @@ package com.mergetechng.jobs.services;
 import com.mergetechng.jobs.api.IUser;
 import com.mergetechng.jobs.commons.dto.UserAccountUpdateDto;
 import com.mergetechng.jobs.commons.dto.UserDto;
+import com.mergetechng.jobs.commons.dto.UserResetPasswordDto;
 import com.mergetechng.jobs.commons.dto.UserUpdatePasswordDto;
 import com.mergetechng.jobs.commons.enums.AccountTypeEnum;
 import com.mergetechng.jobs.commons.enums.GroupEnum;
@@ -10,8 +11,7 @@ import com.mergetechng.jobs.commons.enums.StatusEnum;
 import com.mergetechng.jobs.entities.Group1;
 import com.mergetechng.jobs.entities.TokenToEmailMap;
 import com.mergetechng.jobs.entities.User;
-import com.mergetechng.jobs.exceptions.PasswordMismatchedException;
-import com.mergetechng.jobs.exceptions.UserNotFoundException;
+import com.mergetechng.jobs.exceptions.*;
 import com.mergetechng.jobs.repositories.GroupRepository;
 import com.mergetechng.jobs.repositories.TokenToEmailMapRepository;
 import com.mergetechng.jobs.repositories.UserRepository;
@@ -28,7 +28,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @Service
 public class JobsUserService implements IUser {
@@ -44,6 +43,10 @@ public class JobsUserService implements IUser {
     @Autowired
     private TokenToEmailMapRepository tokenToEmailMapRepository;
 
+    private static final String VERIFICATION_BASE_URL = "http://localhost:8081/user/verify-account-email/";
+    private static final String FORGOT_PASSWORD_BASE_URL = "http://localhost:8081/user/reset-account-password/";
+
+
     public void logInUser(String username) {
         Optional<User> userOptional = Optional.ofNullable(this.userRepository.findByUsername(username));
         if (userOptional.isPresent()) {
@@ -57,7 +60,7 @@ public class JobsUserService implements IUser {
     }
 
     public User getUserByUsername(String username) {
-        return this.userRepository.findByUsername(username);
+        return this.userRepository.findByUsernameOrEmailOrId(username, null, null);
     }
 
     public List<User> getUserByFirstNameAndLastName(String firstName, String lastName) {
@@ -77,6 +80,10 @@ public class JobsUserService implements IUser {
             user.setUserId(UUID.randomUUID().toString());
             user.setDateCreated(new Date());
             user.setAccountType(AccountTypeEnum.JOB_APPLICANT.name());
+            user.setAccountNonExpired(true);
+            user.setCredentialNonExpired(false);
+            user.setAccountNonLocked(true);
+            user.setEnabled(false);
             userRepository.insert(user);
             addUserToGroup(user, GroupEnum.JOB_APPLICANT_GROUP.name());
             sendUserEmailVerification(user.getEmail());
@@ -87,13 +94,13 @@ public class JobsUserService implements IUser {
     }
 
     private void addUserToGroup(User user, String groupName) {
-        if (groupRepository.findByGroupId(groupName).isPresent()) {
+        if (groupRepository.findById(groupName).isPresent()) {
             LOGGER.info("The Group name is present " + groupName);
-            user.setGroupId(List.of(groupRepository.findByGroupId(groupName).get()));
+            user.setGroupId(List.of(groupRepository.findById(groupName).get()));
             updateUser(user);
         } else {
-            if (groupRepository.findByGroupId(GroupEnum.USER_GROUP.name()).isPresent()) {
-                user.setGroupId(List.of(groupRepository.findByGroupId(GroupEnum.USER_GROUP.name()).get()));
+            if (groupRepository.findById(GroupEnum.USER_GROUP.name()).isPresent()) {
+                user.setGroupId(List.of(groupRepository.findById(GroupEnum.USER_GROUP.name()).get()));
             } else {
                 LOGGER.info("Default USER_GROUP Not found. Adding a default a default user group");
                 Group1 defaultGroup = new Group1();
@@ -110,6 +117,7 @@ public class JobsUserService implements IUser {
     @Override
     public void updateUser(User user) {
         if (userExists(user.getUsername(), user.getEmail())) {
+            user.setDateModified(new Date());
             userRepository.save(user);
             return;
         }
@@ -131,7 +139,7 @@ public class JobsUserService implements IUser {
                 return "Username successfully disabled";
             }
         }
-        throw new UserNotFoundException("User with username " + username + "not found");
+        throw new UserNotFoundException("User with username " + username + " not found");
     }
 
     @Override
@@ -148,17 +156,31 @@ public class JobsUserService implements IUser {
     }
 
     @Override
-    public String updateBasicAccountInformation(UserAccountUpdateDto userAccountUpdateDto, String usernameOrEnamilOrUserId) {
-        return null;
+    public String updateBasicAccountInformation(UserAccountUpdateDto userAccountUpdateDto, String usernameOrEmailOrUserId) throws UserAlreadyExistsException {
+        User user = getUser(usernameOrEmailOrUserId);
+        if (Objects.nonNull(user)) {
+            user.setEmail(userAccountUpdateDto.getEmail());
+            /*send email verification link to the new email*/
+            user.setPhone(userAccountUpdateDto.getPhoneNumber());
+            user.setLastName(userAccountUpdateDto.getLastName());
+            user.setFirstName(userAccountUpdateDto.getFirstName());
+            if (userExists(userAccountUpdateDto.getUsername(), null)) {
+                user.setUsername(userAccountUpdateDto.getUsername());
+                throw new UserAlreadyExistsException("Username " + userAccountUpdateDto.getUsername() + " already exist");
+            }
+            updateUser(user);
+            return "User basic information updated successfully";
+        }
+        throw new UserAccountUpdateException("Failed to update user basic information");
     }
 
     @Override
-    public User getUser(String uei) {
-        Optional<User> optionalUser = Optional.ofNullable(this.userRepository.findFirstByUsernameOrEmailOrUserId(uei, uei, uei));
+    public User getUser(String uei) throws UserNotFoundException {
+        Optional<User> optionalUser = Optional.ofNullable(this.userRepository.findByUsernameOrEmailOrId(uei, uei, uei));
         if (optionalUser.isPresent()) {
             return optionalUser.get();
         }
-        throw new UserNotFoundException("User with key " + uei + "not found");
+        throw new UserNotFoundException("User with key " + uei + " not found");
     }
 
     @Override
@@ -172,13 +194,12 @@ public class JobsUserService implements IUser {
      * @throws Exception
      */
     @Override
-    public boolean validateToken(String token) throws Exception {
+    public boolean validateToken(String token, String email) throws UserTokenException {
         Optional<TokenToEmailMap> optionalTokenToEmailMap = Optional.ofNullable(tokenToEmailMapRepository.findByToken(token));
-        LOGGER.info("RESULTS IS EMPTY ???? " + optionalTokenToEmailMap.isEmpty());
-        if (optionalTokenToEmailMap.isPresent()) {
+        if (optionalTokenToEmailMap.isPresent() && optionalTokenToEmailMap.get().getEmailAddress().equals(email)) {
             TokenToEmailMap tokenToEmailMap = optionalTokenToEmailMap.get();
             if (new Date().compareTo(tokenToEmailMap.getExpiryDate()) > 0) {
-                throw new Exception("Token has expired. Please request for another forget password link");
+                throw new UserTokenException("Token has expired. Please request for another forget password link");
             } else {
                 return true;
             }
@@ -186,17 +207,62 @@ public class JobsUserService implements IUser {
         return false;
     }
 
+
+    /**
+     * @param email The user email address
+     * @param token The User token
+     * @return
+     * @throws UserTokenException    This is thrown when the user token does not exists
+     * @throws UserNotFoundException This is thrown when the user is not found
+     */
     @Override
-    public boolean verifyUserEmail(String email, String token) {
-        return false;
+    public boolean verifyUserEmail(String email, String token) throws ResourceNotFoundException, UserNotFoundException, UserTokenException {
+        User user = getUser(email);
+        if (!validateToken(token,email)) {
+            throw new ResourceNotFoundException("The token " + token + " was not found");
+        } else {
+            deleteToken(token);
+            user.setEmailVerified(true);
+            user.setAccountNonLocked(true);
+            user.setEnabled(true);
+            updateUser(user);
+            return true;
+        }
     }
 
     @Override
-    public boolean forgotPassword(String emailOrUsername) {
+    public boolean forgotPassword(String emailOrUsername) throws Exception {
+        try {
+            User user = getUser(emailOrUsername);
+            if (user != null) {
+                String token = RandomStringUtils.randomAlphanumeric(500);
+                storeToken(emailOrUsername, token, DateUtils.addDays(new Date(), 10));
+                String emailText = "Please check your forgot password link below. \nThe " +
+                        "link below will expire after 10 days. \nClick on the link below to proceed\n\n" +
+                        "" + FORGOT_PASSWORD_BASE_URL
+                        + "?email=" + user.getEmail() + "&"
+                        + "token=" + token;
+                emailService.sendSimpleMessage(
+                        "User Account Forget Password-"
+                        , emailText,
+                        null,
+                        3,
+                        user.getEmail()
+                );
+                return true;
+            }
+        } catch (Exception e) {
+            LOGGER.error("ERROR :", e);
+            throw new Exception(e.getMessage());
+        }
         return false;
     }
 
-    private void deleteToken(String token) throws ExecutionException, InterruptedException {
+
+    /**
+     * @param token The token to be deleted
+     */
+    private void deleteToken(String token) {
         tokenToEmailMapRepository.deleteByToken(token);
     }
 
@@ -205,39 +271,39 @@ public class JobsUserService implements IUser {
      * @return
      */
     public User getUserWithUsername(String username) {
-        return Optional.ofNullable(userRepository.findFirstByUsernameOrEmailOrUserId(username, null, null)).orElse(null);
+        return Optional.ofNullable(userRepository.findByUsernameOrEmailOrId(username, null, null)).orElse(null);
     }
 
     /**
-     * @param emailAddress The userEmail Address
+     * @param uei The userEmail Address
      * @return boolean
      */
     @Override
-    public boolean sendUserEmailVerification(String emailAddress) {
+    public boolean sendUserEmailVerification(String uei) {
         try {
-            Optional<User> optionalUser = Optional.ofNullable(userRepository.findFirstByEmail(emailAddress));
+            Optional<User> optionalUser = Optional.ofNullable(userRepository.findByUsernameOrEmailOrId(uei, uei, uei));
             if (optionalUser.isPresent() && !optionalUser.get().getIsEmailVerified()) {
                 String token = RandomStringUtils.randomAlphanumeric(500);
                 User user = optionalUser.get();
                 storeToken(user.getEmail(), token, DateUtils.addDays(new Date(), 10));
-                CompletableFuture<String> completableFuture = emailService.sendSimpleMessage(
-                        "Ng-Jobs: New User Email Verification",
-                        "Hey " + emailAddress + "!\nKindly find your Email Verification Link below \n"
-                                + System.getenv("VERIFICATION_BASE_URL")
-                                + "?email=" + user.getEmail() + "&"
-                                + "token=" + token,
-                        null,
-                        emailAddress
-                ).toCompletableFuture();
+                CompletableFuture<String> completableFuture =
+                        emailService.sendSimpleMessage(
+                                "Ng-Jobs: New User Email Verification",
+                                "Hello " + uei + "!\nKindly find your Email Verification Link below \n"
+                                        + System.getenv("VERIFICATION_BASE_URL")
+                                        + "?email=" + user.getEmail() + "&"
+                                        + "token=" + token,
+                                null,
+                                uei
+                        );
                 if (completableFuture.isCompletedExceptionally()) {
                     LOGGER.info("Failed to send message");
-                } else {
-                    LOGGER.info("Message from mailer : " + completableFuture.get() + emailAddress);
+                } else if (completableFuture.isDone() && !completableFuture.isCompletedExceptionally()) {
+                    LOGGER.info("Message from mailer : " + completableFuture.get() + uei);
                     return true;
                 }
-                return false;
-            } else {
-                return false;
+            }else if (optionalUser.isPresent() && optionalUser.get().getIsEmailVerified()) {
+                return true;
             }
         } catch (Exception e) {
             LOGGER.error("USER_EMAIL_SEND_ERROR ", e);
@@ -246,37 +312,53 @@ public class JobsUserService implements IUser {
     }
 
     @Override
-    public boolean updateUserPassword(UserUpdatePasswordDto passwordUpdate, String usernameOrEmailOrUserId) throws PasswordMismatchedException {
-        try {
-            User user = getUser(usernameOrEmailOrUserId);
-            if (passwordEncoder.matches(passwordUpdate.getOldPassword(), user.getPassword())) {
-                if (passwordUpdate.getConfirmPassword().equals(passwordUpdate.getNewPassword())) {
-                    user.setPassword(passwordEncoder.encode(passwordUpdate.getNewPassword()));
-                    user.setDateModified(new Date());
-                    user.setModifiedBy(usernameOrEmailOrUserId);
-                    updateUser(user);
-                    return true;
-                } else {
-                    throw new PasswordMismatchedException("User password old and new password does not match");
-                }
+    public boolean updateUserPassword(UserUpdatePasswordDto passwordUpdate, String usernameOrEmailOrUserId) throws PasswordMismatchedException, UserNotFoundException {
+        User user = getUser(usernameOrEmailOrUserId);
+        LOGGER.info("RAW PASSWORD : {}", passwordUpdate.getOldPassword());
+        LOGGER.info("ENCODED PASSWORD : {}", user.getPassword());
+        LOGGER.info("PASSWORD MATCHED: {}", passwordEncoder.matches(passwordUpdate.getOldPassword(), user.getPassword()));
+
+        if (passwordEncoder.matches(passwordUpdate.getOldPassword(), user.getPassword())) {
+            if (passwordUpdate.getConfirmPassword().equals(passwordUpdate.getNewPassword())) {
+                user.setPassword(passwordEncoder.encode(passwordUpdate.getNewPassword()));
+                user.setDateModified(new Date());
+                user.setModifiedBy(usernameOrEmailOrUserId);
+                updateUser(user);
+                return true;
             } else {
-                throw new PasswordMismatchedException("User confirm password and new password entered mismatched");
+                throw new PasswordMismatchedException("Confirm password & new password mismatched!");
             }
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
-            e.printStackTrace();
+        } else {
+            throw new PasswordMismatchedException("Incorrect old password");
         }
-        return false;
     }
+
 
     @Override
     public List<User> getAll(Query query) {
+//        return userRepository.findAll(query);
         return null;
     }
 
     @Override
     public Page<User> getPage(Query query, Pageable pageable) {
+//        return userRepository.findAll(query, pageable);
         return null;
+    }
+
+    @Override
+    public boolean resetUserPassword(String token ,UserResetPasswordDto userResetPasswordDto) throws UserNotFoundException , PasswordMismatchedException {
+        User user = getUser(userResetPasswordDto.getUsername());
+        if (userResetPasswordDto.getConfirmPassword().equals(userResetPasswordDto.getNewPassword())) {
+            user.setPassword(passwordEncoder.encode(userResetPasswordDto.getNewPassword()));
+            user.setDateModified(new Date());
+            user.setModifiedBy(userResetPasswordDto.getUsername());
+            tokenToEmailMapRepository.deleteByToken(token);
+            updateUser(user);
+            return true;
+        } else {
+            throw new PasswordMismatchedException("Confirm password & new password mismatched!");
+        }
     }
 
     @Override
@@ -297,8 +379,7 @@ public class JobsUserService implements IUser {
      * @return
      */
     public boolean deleteUser(String username) {
-        if (userExists(username, "") && !username.equals("ng_job_admin")) return false;
-        else if (userExists(username, "")) {
+        if (userExists(username, "") && !username.equals("ng_jobs_admin")) {
             this.userRepository.deleteByUsername(username);
             return true;
         }
@@ -316,6 +397,7 @@ public class JobsUserService implements IUser {
         tokenToEmailMap.setToken(token);
         tokenToEmailMap.setDateSent(new Date());
         tokenToEmailMap.setExpiryDate(expiryDate);
+        tokenToEmailMapRepository.save(tokenToEmailMap);
         LOGGER.info("Created token for email: {} ; token {}; updateTime : {}", email, token, new Date());
     }
 }

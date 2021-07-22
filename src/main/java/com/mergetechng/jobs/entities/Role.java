@@ -21,7 +21,7 @@ import java.util.List;
 @Document
 @NamedQueries({
     @NamedQuery(name = "Role.findAll", query = "SELECT r FROM Role r"),
-    @NamedQuery(name = "Role.findByRoleId", query = "SELECT r FROM Role r WHERE r.roleId = :roleId"),
+    @NamedQuery(name = "Role.findById", query = "SELECT r FROM Role r WHERE r.id = :id"),
     @NamedQuery(name = "Role.findByName", query = "SELECT r FROM Role r WHERE r.name = :name"),
     @NamedQuery(name = "Role.findByDateCreated", query = "SELECT r FROM Role r WHERE r.dateCreated = :dateCreated"),
     @NamedQuery(name = "Role.findByDateModified", query = "SELECT r FROM Role r WHERE r.dateModified = :dateModified"),
@@ -32,8 +32,8 @@ public class Role implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "role_id")
-    private String roleId;
+    @Column(name = "id")
+    private String id;
     @Column(name = "name")
     private String name;
     @Basic(optional = false)
@@ -47,7 +47,7 @@ public class Role implements Serializable {
     private String modifiedBy;
     @Column(name = "description")
     private String description;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "roleId" ,fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id" ,fetch = FetchType.LAZY)
     private List<Privilege> privilegeId;
 //    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY )
 //    private Group1 groupId;
@@ -55,21 +55,21 @@ public class Role implements Serializable {
     public Role() {
     }
 
-    public Role(String roleId) {
-        this.roleId = roleId;
+    public Role(String id) {
+        this.id = id;
     }
 
-    public Role(String roleId, Date dateCreated) {
-        this.roleId = roleId;
+    public Role(String id, Date dateCreated) {
+        this.id = id;
         this.dateCreated = dateCreated;
     }
 
     public String getRoleId() {
-        return roleId;
+        return id;
     }
 
-    public void setRoleId(String roleId) {
-        this.roleId = roleId;
+    public void setRoleId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -131,7 +131,7 @@ public class Role implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (roleId != null ? roleId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -142,7 +142,7 @@ public class Role implements Serializable {
             return false;
         }
         Role other = (Role) object;
-        if ((this.roleId == null && other.roleId != null) || (this.roleId != null && !this.roleId.equals(other.roleId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -150,7 +150,7 @@ public class Role implements Serializable {
 
     @Override
     public String toString() {
-        return "Role[ roleId=" + roleId + " ]";
+        return "Role[ id=" + id + " ]";
     }
     
 }

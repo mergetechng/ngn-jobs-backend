@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -25,9 +27,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "HobbyDto.findAll", query = "SELECT h FROM HobbyDto h"),
-    @NamedQuery(name = "HobbyDto.findByHobbyId", query = "SELECT h FROM HobbyDto h WHERE h.hobbyId = :hobbyId"),
+    @NamedQuery(name = "HobbyDto.findByHobbyId", query = "SELECT h FROM HobbyDto h WHERE h.id = :id"),
     @NamedQuery(name = "HobbyDto.findByHobbyName", query = "SELECT h FROM HobbyDto h WHERE h.hobbyName = :hobbyName"),
     @NamedQuery(name = "HobbyDto.findByDescription", query = "SELECT h FROM HobbyDto h WHERE h.description = :description"),
     @NamedQuery(name = "HobbyDto.findByDateCreated", query = "SELECT h FROM HobbyDto h WHERE h.dateCreated = :dateCreated"),
@@ -39,8 +42,8 @@ public class Hobby implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "hobby_id", nullable = false, length = 36)
-    private String hobbyId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
     @Column(name = "hobby_name", nullable = false, length = 250)
     private String hobbyName;
@@ -69,12 +72,12 @@ public class Hobby implements Serializable {
     public Hobby() {
     }
 
-    public Hobby(String hobbyId) {
-        this.hobbyId = hobbyId;
+    public Hobby(String id) {
+        this.id = id;
     }
 
-    public Hobby(String hobbyId, String hobbyName, String description, Date dateCreated, String createdBy) {
-        this.hobbyId = hobbyId;
+    public Hobby(String id, String hobbyName, String description, Date dateCreated, String createdBy) {
+        this.id = id;
         this.hobbyName = hobbyName;
         this.description = description;
         this.dateCreated = dateCreated;
@@ -82,11 +85,11 @@ public class Hobby implements Serializable {
     }
 
     public String getHobbyId() {
-        return hobbyId;
+        return id;
     }
 
-    public void setHobbyId(String hobbyId) {
-        this.hobbyId = hobbyId;
+    public void setHobbyId(String id) {
+        this.id = id;
     }
 
     public String getHobbyName() {
@@ -156,7 +159,7 @@ public class Hobby implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (hobbyId != null ? hobbyId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -167,7 +170,7 @@ public class Hobby implements Serializable {
             return false;
         }
         Hobby other = (Hobby) object;
-        if ((this.hobbyId == null && other.hobbyId != null) || (this.hobbyId != null && !this.hobbyId.equals(other.hobbyId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -175,7 +178,7 @@ public class Hobby implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.HobbyDto[ hobbyId=" + hobbyId + " ]";
+        return "com.mergetechng.jobs.entities.HobbyDto[ id=" + id + " ]";
     }
     
 }

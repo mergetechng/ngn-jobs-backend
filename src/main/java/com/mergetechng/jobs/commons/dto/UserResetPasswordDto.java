@@ -8,6 +8,9 @@ public class UserResetPasswordDto {
     private String newPassword ;
     @NotNull
     private String confirmPassword ;
+    @NotNull
+    private String username ;
+
 
     public UserResetPasswordDto(@NotNull String newPassword, @NotNull String confirmPassword) {
         this.newPassword = newPassword;
@@ -28,11 +31,15 @@ public class UserResetPasswordDto {
         this.confirmPassword = confirmPassword;
     }
 
-    public String getPassword() {
-        return newPassword;
-    }
-
     public String getConfirmPassword() {
         return confirmPassword;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }

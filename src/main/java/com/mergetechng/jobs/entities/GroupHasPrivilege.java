@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
@@ -15,13 +17,14 @@ import java.util.Date;
  */
 @Entity
 @Table(name = "group_has_roles", catalog = "faston", schema = "public")
+@Document
 @NamedQueries({
     @NamedQuery(name = "GroupHasPrivilege.findAll", query = "SELECT g FROM GroupHasPrivilege g"),
-    @NamedQuery(name = "GroupHasPrivilege.findByGroupHasPrivilegeId", query = "SELECT g FROM GroupHasPrivilege g WHERE g.GroupHasPrivilegePK.GroupHasPrivilegeId = :GroupHasPrivilegeId"),
-    @NamedQuery(name = "GroupHasPrivilege.findByprivilegeId", query = "SELECT g FROM GroupHasPrivilege g WHERE g.GroupHasPrivilegePK.privilegeId = :privilegeId"),
+    @NamedQuery(name = "GroupHasPrivilege.findByGroupHasId", query = "SELECT g FROM GroupHasPrivilege g WHERE g.GroupHasPrivilegePK.GroupHasPrivilegeId = :GroupHasPrivilegeId"),
+    @NamedQuery(name = "GroupHasPrivilege.findById", query = "SELECT g FROM GroupHasPrivilege g WHERE g.GroupHasPrivilegePK.id = :id"),
     @NamedQuery(name = "GroupHasPrivilege.findByCreatedBy", query = "SELECT g FROM GroupHasPrivilege g WHERE g.createdBy = :createdBy"),
     @NamedQuery(name = "GroupHasPrivilege.findByDateCreated", query = "SELECT g FROM GroupHasPrivilege g WHERE g.dateCreated = :dateCreated"),
-    @NamedQuery(name = "GroupHasPrivilege.findByGroupId", query = "SELECT g FROM GroupHasPrivilege g WHERE g.groupId = :groupId")})
+    @NamedQuery(name = "GroupHasPrivilege.findById", query = "SELECT g FROM GroupHasPrivilege g WHERE g.groupId = :groupId")})
 public class GroupHasPrivilege implements Serializable {
 
     private static final long serialVersionUID = 1L;

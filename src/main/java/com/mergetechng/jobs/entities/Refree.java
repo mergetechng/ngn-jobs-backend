@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Date;
@@ -28,9 +30,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "RefreeDto.findAll", query = "SELECT r FROM RefreeDto r"),
-    @NamedQuery(name = "RefreeDto.findByRefreeId", query = "SELECT r FROM RefreeDto r WHERE r.refreeId = :refreeId"),
+    @NamedQuery(name = "RefreeDto.findByRefreeId", query = "SELECT r FROM RefreeDto r WHERE r.id = :id"),
     @NamedQuery(name = "RefreeDto.findByRefreeFullName", query = "SELECT r FROM RefreeDto r WHERE r.refreeFullName = :refreeFullName"),
     @NamedQuery(name = "RefreeDto.findByRefreePhone", query = "SELECT r FROM RefreeDto r WHERE r.refreePhone = :refreePhone"),
     @NamedQuery(name = "RefreeDto.findByRefreeTitle", query = "SELECT r FROM RefreeDto r WHERE r.refreeTitle = :refreeTitle"),
@@ -44,8 +47,8 @@ public class Refree implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "refree_id", nullable = false, length = 36)
-    private String refreeId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
     @Column(name = "refree_full_name", nullable = false, length = 250)
     private String refreeFullName;
@@ -67,7 +70,7 @@ public class Refree implements Serializable {
     private String createdBy;
     @Column(name = "modified_by", length = 250)
     private String modifiedBy;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "refreeId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<Reference> referenceList;
     @JoinColumn(name = "user_cv_id", referencedColumnName = "user_cv_id", nullable = false)
     @ManyToOne(optional = false)
@@ -76,12 +79,12 @@ public class Refree implements Serializable {
     public Refree() {
     }
 
-    public Refree(String refreeId) {
-        this.refreeId = refreeId;
+    public Refree(String id) {
+        this.id = id;
     }
 
-    public Refree(String refreeId, String refreeFullName, String refreeTitle, Date dateCreated, String createdBy) {
-        this.refreeId = refreeId;
+    public Refree(String id, String refreeFullName, String refreeTitle, Date dateCreated, String createdBy) {
+        this.id = id;
         this.refreeFullName = refreeFullName;
         this.refreeTitle = refreeTitle;
         this.dateCreated = dateCreated;
@@ -89,11 +92,11 @@ public class Refree implements Serializable {
     }
 
     public String getRefreeId() {
-        return refreeId;
+        return id;
     }
 
-    public void setRefreeId(String refreeId) {
-        this.refreeId = refreeId;
+    public void setRefreeId(String id) {
+        this.id = id;
     }
 
     public String getRefreeFullName() {
@@ -179,7 +182,7 @@ public class Refree implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (refreeId != null ? refreeId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -190,7 +193,7 @@ public class Refree implements Serializable {
             return false;
         }
         Refree other = (Refree) object;
-        if ((this.refreeId == null && other.refreeId != null) || (this.refreeId != null && !this.refreeId.equals(other.refreeId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -198,7 +201,7 @@ public class Refree implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.RefreeDto[ refreeId=" + refreeId + " ]";
+        return "com.mergetechng.jobs.entities.RefreeDto[ id=" + id + " ]";
     }
     
 }

@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
@@ -15,6 +17,7 @@ import java.io.Serializable;
  * @author keemsisi
  */
 @Embeddable
+@Document
 public class UserHasPrivilegePK implements Serializable {
 
     @Basic(optional = false)

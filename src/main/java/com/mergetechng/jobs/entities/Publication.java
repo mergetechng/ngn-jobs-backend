@@ -4,6 +4,8 @@ package com.mergetechng.jobs.entities;/*
  * and open the template in the editor.
  */
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -24,9 +26,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "PublicationDto.findAll", query = "SELECT p FROM PublicationDto p"),
-    @NamedQuery(name = "PublicationDto.findByPublicationId", query = "SELECT p FROM PublicationDto p WHERE p.publicationId = :publicationId"),
+    @NamedQuery(name = "PublicationDto.findByPublicationId", query = "SELECT p FROM PublicationDto p WHERE p.id = :id"),
     @NamedQuery(name = "PublicationDto.findByDatePublished", query = "SELECT p FROM PublicationDto p WHERE p.datePublished = :datePublished"),
     @NamedQuery(name = "PublicationDto.findByCountry", query = "SELECT p FROM PublicationDto p WHERE p.country = :country"),
     @NamedQuery(name = "PublicationDto.findByState", query = "SELECT p FROM PublicationDto p WHERE p.state = :state"),
@@ -42,8 +45,8 @@ public class Publication implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "publication_id", nullable = false, length = 36)
-    private String publicationId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
     @Column(name = "date_published", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -83,12 +86,12 @@ public class Publication implements Serializable {
     public Publication() {
     }
 
-    public Publication(String publicationId) {
-        this.publicationId = publicationId;
+    public Publication(String id) {
+        this.id = id;
     }
 
-    public Publication(String publicationId, Date datePublished, String country, String publicationTopic, String publicationDescription, Date dateCreated, String createdBy) {
-        this.publicationId = publicationId;
+    public Publication(String id, Date datePublished, String country, String publicationTopic, String publicationDescription, Date dateCreated, String createdBy) {
+        this.id = id;
         this.datePublished = datePublished;
         this.country = country;
         this.publicationTopic = publicationTopic;
@@ -98,11 +101,11 @@ public class Publication implements Serializable {
     }
 
     public String getPublicationId() {
-        return publicationId;
+        return id;
     }
 
-    public void setPublicationId(String publicationId) {
-        this.publicationId = publicationId;
+    public void setPublicationId(String id) {
+        this.id = id;
     }
 
     public Date getDatePublished() {
@@ -204,7 +207,7 @@ public class Publication implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (publicationId != null ? publicationId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -215,7 +218,7 @@ public class Publication implements Serializable {
             return false;
         }
         Publication other = (Publication) object;
-        if ((this.publicationId == null && other.publicationId != null) || (this.publicationId != null && !this.publicationId.equals(other.publicationId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -223,7 +226,7 @@ public class Publication implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.PublicationDto[ publicationId=" + publicationId + " ]";
+        return "com.mergetechng.jobs.entities.PublicationDto[ id=" + id + " ]";
     }
     
 }

@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.Date;
@@ -26,9 +28,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "Location.findAll", query = "SELECT l FROM Location l"),
-    @NamedQuery(name = "Location.findByLocationId", query = "SELECT l FROM Location l WHERE l.locationId = :locationId"),
+    @NamedQuery(name = "Location.findByLocationId", query = "SELECT l FROM Location l WHERE l.id = :id"),
     @NamedQuery(name = "Location.findByCity", query = "SELECT l FROM Location l WHERE l.city = :city"),
     @NamedQuery(name = "Location.findByState", query = "SELECT l FROM Location l WHERE l.state = :state"),
     @NamedQuery(name = "Location.findByCountry", query = "SELECT l FROM Location l WHERE l.country = :country"),
@@ -41,8 +44,8 @@ public class Location implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "location_id", nullable = false, length = 36)
-    private String locationId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
     @Column(nullable = false, length = 36)
     private String city;
@@ -65,20 +68,20 @@ public class Location implements Serializable {
     @Basic(optional = false)
     @Column(name = "created_by", nullable = false, length = 250)
     private String createdBy;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "locationId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<JobAlertSubcription> jobAlertSubcriptionList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "locationId")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
     private List<UserLocationInterest> userLocationInterestList;
 
     public Location() {
     }
 
-    public Location(String locationId) {
-        this.locationId = locationId;
+    public Location(String id) {
+        this.id = id;
     }
 
-    public Location(String locationId, String city, Date state, String country, Date dateCreated, String createdBy) {
-        this.locationId = locationId;
+    public Location(String id, String city, Date state, String country, Date dateCreated, String createdBy) {
+        this.id = id;
         this.city = city;
         this.state = state;
         this.country = country;
@@ -87,11 +90,11 @@ public class Location implements Serializable {
     }
 
     public String getLocationId() {
-        return locationId;
+        return id;
     }
 
-    public void setLocationId(String locationId) {
-        this.locationId = locationId;
+    public void setLocationId(String id) {
+        this.id = id;
     }
 
     public String getCity() {
@@ -169,7 +172,7 @@ public class Location implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (locationId != null ? locationId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -180,7 +183,7 @@ public class Location implements Serializable {
             return false;
         }
         Location other = (Location) object;
-        if ((this.locationId == null && other.locationId != null) || (this.locationId != null && !this.locationId.equals(other.locationId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -188,7 +191,7 @@ public class Location implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.Location[ locationId=" + locationId + " ]";
+        return "com.mergetechng.jobs.entities.Location[ id=" + id + " ]";
     }
     
 }

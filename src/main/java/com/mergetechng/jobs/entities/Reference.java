@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -25,9 +27,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "Reference.findAll", query = "SELECT r FROM Reference r"),
-    @NamedQuery(name = "Reference.findByReferenceId", query = "SELECT r FROM Reference r WHERE r.referenceId = :referenceId"),
+    @NamedQuery(name = "Reference.findByReferenceId", query = "SELECT r FROM Reference r WHERE r.id = :id"),
     @NamedQuery(name = "Reference.findByDateCreated", query = "SELECT r FROM Reference r WHERE r.dateCreated = :dateCreated"),
     @NamedQuery(name = "Reference.findByCreatedBy", query = "SELECT r FROM Reference r WHERE r.createdBy = :createdBy"),
     @NamedQuery(name = "Reference.findByModifiedBy", query = "SELECT r FROM Reference r WHERE r.modifiedBy = :modifiedBy"),
@@ -37,8 +40,8 @@ public class Reference implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "reference_id", nullable = false, length = 36)
-    private String referenceId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
     @Column(name = "date_created", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -63,22 +66,22 @@ public class Reference implements Serializable {
     public Reference() {
     }
 
-    public Reference(String referenceId) {
-        this.referenceId = referenceId;
+    public Reference(String id) {
+        this.id = id;
     }
 
-    public Reference(String referenceId, Date dateCreated, String createdBy) {
-        this.referenceId = referenceId;
+    public Reference(String id, Date dateCreated, String createdBy) {
+        this.id = id;
         this.dateCreated = dateCreated;
         this.createdBy = createdBy;
     }
 
     public String getReferenceId() {
-        return referenceId;
+        return id;
     }
 
-    public void setReferenceId(String referenceId) {
-        this.referenceId = referenceId;
+    public void setReferenceId(String id) {
+        this.id = id;
     }
 
     public Date getDateCreated() {
@@ -140,7 +143,7 @@ public class Reference implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (referenceId != null ? referenceId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -151,7 +154,7 @@ public class Reference implements Serializable {
             return false;
         }
         Reference other = (Reference) object;
-        if ((this.referenceId == null && other.referenceId != null) || (this.referenceId != null && !this.referenceId.equals(other.referenceId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -159,7 +162,7 @@ public class Reference implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.Reference[ referenceId=" + referenceId + " ]";
+        return "com.mergetechng.jobs.entities.Reference[ id=" + id + " ]";
     }
     
 }

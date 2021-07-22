@@ -2,9 +2,12 @@ package com.mergetechng.jobs.api;
 
 import com.mergetechng.jobs.commons.dto.UserAccountUpdateDto;
 import com.mergetechng.jobs.commons.dto.UserDto;
+import com.mergetechng.jobs.commons.dto.UserResetPasswordDto;
 import com.mergetechng.jobs.commons.dto.UserUpdatePasswordDto;
 import com.mergetechng.jobs.entities.User;
 import com.mergetechng.jobs.exceptions.PasswordMismatchedException;
+import com.mergetechng.jobs.exceptions.UserNotFoundException;
+import com.mergetechng.jobs.exceptions.UserTokenException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.mongodb.core.query.Query;
 
@@ -32,13 +35,13 @@ public interface IUser {
 
     List<UserDto> filterSearchUser(String searchBy, Integer limit, Integer offset, String operation, String operationValue, String order);
 
-    boolean validateToken(String token) throws Exception;
+    boolean validateToken(String token, String email) throws UserTokenException ;
 
-    boolean verifyUserEmail(String email, String token);
+    boolean verifyUserEmail(String email, String token) throws Exception;
 
     boolean deleteUser(String username);
 
-    boolean forgotPassword(String emailOrUsername);
+    boolean forgotPassword(String emailOrUsername) throws Exception;
 
     boolean sendUserEmailVerification(String emailOrUsername);
 
@@ -59,4 +62,7 @@ public interface IUser {
      * @param pageable pageable param
      * @return Page of entity Employee
      */
-    Page<User> getPage(Query query, Pageable pageable);}
+    Page<User> getPage(Query query, Pageable pageable);
+
+    boolean resetUserPassword(String token ,UserResetPasswordDto userResetPasswordDto) throws UserNotFoundException, PasswordMismatchedException ;
+}

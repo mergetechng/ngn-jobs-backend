@@ -41,6 +41,7 @@ public class EmailService implements IEmailService {
     @Override
     public CompletableFuture<String> sendSimpleMessage(String subject, String text, FileSystemResource attachment , String... to ) throws ExecutionException, InterruptedException {
         CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
+            LOGGER.info("PREPARING TO SEND THE MAIL.....");
             try {
                 if (attachment != null) {
                     MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -54,6 +55,7 @@ public class EmailService implements IEmailService {
                     javaMailSender.send(mimeMessage);
                     return "Mail sent successfully";
                 } else {
+                    LOGGER.info("Sending non attachment email now");
                     SimpleMailMessage message = new SimpleMailMessage();
                     message.setFrom("developer@transcentng.com");
                     message.setTo(to);
@@ -67,14 +69,17 @@ public class EmailService implements IEmailService {
                 e.printStackTrace();
                 LOGGER.error("ERROR", e);
                 LOGGER.info("Retrying sending of mail to " + Arrays.toString(to));
+            }catch (Exception e) {
+                e.printStackTrace();
+                LOGGER.error("ERROR{}\nRetrying sending of mail to {}", e , Arrays.toString(to) );
             }
             return "Mail failed to send";
         });
-        completableFuture.complete("Sent mail to the email address successfully");
+        completableFuture.get();
         return completableFuture;
     }
 
-//    public void sendSimpleMessage(String subject, String text, FileSystemResource attachment , int count , String... to) throws ExecutionException, InterruptedException {
-//        sendSimpleMessage(subject , text , attachment , to);
-//    }
+    public void sendSimpleMessage(String subject, String text, FileSystemResource attachment , int count , String... to) throws ExecutionException, InterruptedException {
+        sendSimpleMessage(subject , text , attachment , to);
+    }
 }

@@ -5,6 +5,8 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Basic;
@@ -25,9 +27,10 @@ import javax.persistence.TemporalType;
  */
 @Entity
 @Table(catalog = "ngn_jobs", schema = "POSTGRES")
+@Document
 @NamedQueries({
     @NamedQuery(name = "CertificationDto.findAll", query = "SELECT c FROM CertificationDto c"),
-    @NamedQuery(name = "CertificationDto.findByCertificationId", query = "SELECT c FROM CertificationDto c WHERE c.certificationId = :certificationId"),
+    @NamedQuery(name = "CertificationDto.findByCertificationId", query = "SELECT c FROM CertificationDto c WHERE c.id = :id"),
     @NamedQuery(name = "CertificationDto.findByGrantingOrganization", query = "SELECT c FROM CertificationDto c WHERE c.grantingOrganization = :grantingOrganization"),
     @NamedQuery(name = "CertificationDto.findByStartDate", query = "SELECT c FROM CertificationDto c WHERE c.startDate = :startDate"),
     @NamedQuery(name = "CertificationDto.findByEndDate", query = "SELECT c FROM CertificationDto c WHERE c.endDate = :endDate"),
@@ -37,15 +40,15 @@ import javax.persistence.TemporalType;
     @NamedQuery(name = "CertificationDto.findByDateCreated", query = "SELECT c FROM CertificationDto c WHERE c.dateCreated = :dateCreated"),
     @NamedQuery(name = "CertificationDto.findByDateModified", query = "SELECT c FROM CertificationDto c WHERE c.dateModified = :dateModified"),
     @NamedQuery(name = "CertificationDto.findByModifiedBy", query = "SELECT c FROM CertificationDto c WHERE c.modifiedBy = :modifiedBy"),
-    @NamedQuery(name = "CertificationDto.findByUserId", query = "SELECT c FROM CertificationDto c WHERE c.userId = :userId"),
+    @NamedQuery(name = "CertificationDto.findById", query = "SELECT c FROM CertificationDto c WHERE c.userId = :userId"),
     @NamedQuery(name = "CertificationDto.findByCreatedBy", query = "SELECT c FROM CertificationDto c WHERE c.createdBy = :createdBy")})
 public class Certification implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "certification_id", nullable = false, length = 36)
-    private String certificationId;
+    @Column(name = "id", nullable = false, length = 36)
+    private String id;
     @Basic(optional = false)
     @Column(name = "granting_organization", nullable = false, length = 250)
     private String grantingOrganization;
@@ -91,12 +94,12 @@ public class Certification implements Serializable {
     public Certification() {
     }
 
-    public Certification(String certificationId) {
-        this.certificationId = certificationId;
+    public Certification(String id) {
+        this.id = id;
     }
 
-    public Certification(String certificationId, String grantingOrganization, Date startDate, Date endDate, String city, String state, String country, Date dateCreated, String userId, String createdBy) {
-        this.certificationId = certificationId;
+    public Certification(String id, String grantingOrganization, Date startDate, Date endDate, String city, String state, String country, Date dateCreated, String userId, String createdBy) {
+        this.id = id;
         this.grantingOrganization = grantingOrganization;
         this.startDate = startDate;
         this.endDate = endDate;
@@ -109,11 +112,11 @@ public class Certification implements Serializable {
     }
 
     public String getCertificationId() {
-        return certificationId;
+        return id;
     }
 
-    public void setCertificationId(String certificationId) {
-        this.certificationId = certificationId;
+    public void setCertificationId(String id) {
+        this.id = id;
     }
 
     public String getGrantingOrganization() {
@@ -223,7 +226,7 @@ public class Certification implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (certificationId != null ? certificationId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -234,7 +237,7 @@ public class Certification implements Serializable {
             return false;
         }
         Certification other = (Certification) object;
-        if ((this.certificationId == null && other.certificationId != null) || (this.certificationId != null && !this.certificationId.equals(other.certificationId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -242,7 +245,7 @@ public class Certification implements Serializable {
 
     @Override
     public String toString() {
-        return "com.mergetechng.jobs.entities.CertificationDto[ certificationId=" + certificationId + " ]";
+        return "com.mergetechng.jobs.entities.CertificationDto[ id=" + id + " ]";
     }
     
 }

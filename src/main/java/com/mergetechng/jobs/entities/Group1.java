@@ -21,7 +21,7 @@ import java.util.List;
 @Document
 @NamedQueries({
     @NamedQuery(name = "Group1.findAll", query = "SELECT g FROM Group1 g"),
-    @NamedQuery(name = "Group1.findByGroupId", query = "SELECT g FROM Group1 g WHERE g.groupId = :groupId"),
+    @NamedQuery(name = "Group1.findById", query = "SELECT g FROM Group1 g WHERE g.id = :id"),
     @NamedQuery(name = "Group1.findByGroupName", query = "SELECT g FROM Group1 g WHERE g.groupName = :groupName"),
     @NamedQuery(name = "Group1.findByCreatedBy", query = "SELECT g FROM Group1 g WHERE g.createdBy = :createdBy"),
     @NamedQuery(name = "Group1.findByDateCreated", query = "SELECT g FROM Group1 g WHERE g.dateCreated = :dateCreated"),
@@ -32,8 +32,8 @@ public class Group1 implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "group_id")
-    private String groupId;
+    @Column(name = "id")
+    private String id;
     @Column(name = "group_name")
     private String groupName;
     @Column(name = "created_by")
@@ -48,29 +48,29 @@ public class Group1 implements Serializable {
     private Date dateModified;
     @Column(name = "modified_by")
     private String modifiedBy;
-    @OneToMany(fetch = FetchType.LAZY ,cascade = CascadeType.ALL , mappedBy = "groupId")
+    @OneToMany(fetch = FetchType.LAZY ,cascade = CascadeType.ALL , mappedBy = "id")
     private List<Role> roleId;
 
 
     public Group1() {
     }
 
-    public Group1(String groupId) {
-        this.groupId = groupId;
+    public Group1(String id) {
+        this.id = id;
     }
 
-    public Group1(String groupId, Date dateCreated, Date dateModified) {
-        this.groupId = groupId;
+    public Group1(String id, Date dateCreated, Date dateModified) {
+        this.id = id;
         this.dateCreated = dateCreated;
         this.dateModified = dateModified;
     }
 
     public String getGroupId() {
-        return groupId;
+        return id;
     }
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public void setGroupId(String id) {
+        this.id = id;
     }
 
     public String getGroupName() {
@@ -125,7 +125,7 @@ public class Group1 implements Serializable {
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (groupId != null ? groupId.hashCode() : 0);
+        hash += (id != null ? id.hashCode() : 0);
         return hash;
     }
 
@@ -136,7 +136,7 @@ public class Group1 implements Serializable {
             return false;
         }
         Group1 other = (Group1) object;
-        if ((this.groupId == null && other.groupId != null) || (this.groupId != null && !this.groupId.equals(other.groupId))) {
+        if ((this.id == null && other.id != null) || (this.id != null && !this.id.equals(other.id))) {
             return false;
         }
         return true;
@@ -144,7 +144,7 @@ public class Group1 implements Serializable {
 
     @Override
     public String toString() {
-        return "Group1[ groupId=" + groupId + " ]";
+        return "Group1[ id=" + id + " ]";
     }
     
 }

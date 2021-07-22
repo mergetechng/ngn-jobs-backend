@@ -1,13 +1,11 @@
 package com.mergetechng.jobs.services.api;
 
 
-import com.mergetechng.jobs.commons.dto.ApiLogRequestDto;
-import com.mergetechng.jobs.commons.dto.Group1Dto;
-import com.mergetechng.jobs.commons.dto.NewJobSeekerDto;
-import com.mergetechng.jobs.commons.dto.UserDto;
+import com.mergetechng.jobs.commons.dto.*;
 import com.mergetechng.jobs.commons.util.CycleAvoidingMappingContext;
 import com.mergetechng.jobs.entities.ApiLogRequest;
 import com.mergetechng.jobs.entities.Group1;
+import com.mergetechng.jobs.entities.Job;
 import com.mergetechng.jobs.entities.User;
 import org.mapstruct.Context;
 import org.mapstruct.Mapper;
@@ -30,5 +28,9 @@ public interface JobApiGeneralMapper {
     Group1 groupDtoToGroup(Group1Dto group1Dto , @Context CycleAvoidingMappingContext cycleAvoidingMappingContext) ;
 
     Group1Dto groupToGroupDto(Group1 group1 , @Context CycleAvoidingMappingContext cycleAvoidingMappingContext) ;
+
+    Job jobToJobDto(JobDto jobDto , @Context CycleAvoidingMappingContext cycleAvoidingMappingContext) ;
+
+    Job jobDtoToJob(Job job , @Context CycleAvoidingMappingContext cycleAvoidingMappingContext) ;
 
 }
