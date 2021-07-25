@@ -41,7 +41,7 @@ public class Amazons3ClientService {
     private String accessKey;
     @Value("${amazonProperties.secretKey}")
     private String secretKey;
-    @Value("${uploaded_file_prefix}")
+    @Value("${amazonProperties.uploaded_file_prefix}")
     private String uploadedFilePrefix;
     @Autowired
     private UserUploadedDocumentRepository userUploadedDocumentRepository;

@@ -1,12 +1,9 @@
 package com.mergetechng.jobs.services;
 
-import com.mergetechng.jobs.commons.dto.JobDto;
-import com.mergetechng.jobs.commons.enums.AccountTypeEnum;
-import com.mergetechng.jobs.commons.enums.GroupEnum;
+
 import com.mergetechng.jobs.commons.util.JWTUtil;
 import com.mergetechng.jobs.entities.Job;
 import com.mergetechng.jobs.entities.JobApplicant;
-import com.mergetechng.jobs.entities.User;
 import com.mergetechng.jobs.exceptions.JobApplicantNotFoundException;
 import com.mergetechng.jobs.exceptions.JobNotExistsException;
 import com.mergetechng.jobs.repositories.JobApplicantRepository;
@@ -24,6 +21,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.data.mongodb.core.query.TextQuery;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -32,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Service
 public class JobService implements IJobService {
 
     @Autowired
@@ -144,7 +143,7 @@ public class JobService implements IJobService {
     public JobApplicant getSingleJobApplicant(String jobId, String jobApplicationId) throws JobNotExistsException {
         if (jobExists(jobId)) {
             Optional<JobApplicant> jobApplicant = jobApplicantRepository.findById(jobApplicationId);
-            if (jobApplicant.isPresent() && jobApplicant.get().getJob().getId().equals(jobId)) {
+            if (jobApplicant.isPresent() && jobApplicant.get().getJobId().equals(jobId)) {
                 return jobApplicant.get();
             }
             throw new JobApplicantNotFoundException("Job applicant with id " + jobApplicationId + " not found");

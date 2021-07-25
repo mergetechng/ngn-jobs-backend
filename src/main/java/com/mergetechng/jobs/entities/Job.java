@@ -36,7 +36,7 @@ public class Job {
     @Column(nullable = false)
     private Float offeredSalary;
 
-    @TextIndexed(weight = 3)
+    @TextIndexed(weight = 6)
     @Basic(optional = false)
     @Column(nullable = false)
     private String specialims;
@@ -85,13 +85,18 @@ public class Job {
     @Column(nullable = false)
     private String career_type;
 
+    @TextIndexed(weight = 3)
     @Basic(optional = false)
-    @Column(nullable = false , name = "job_category")
+    @Column(nullable = false, name = "job_category")
     private String jobCategory;
 
     @Basic(optional = false)
     @Column(nullable = false)
     private String jobType;
+
+    @Basic(optional = false)
+    @Column(nullable = false)
+    private String jobStatus;
 
     @Basic(optional = false)
     @Column(name = "date_created", nullable = false)
@@ -114,10 +119,10 @@ public class Job {
     private String jobPostCode;
 
     @TextScore
-    private Float  textScore;
+    private Float textScore;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "", fetch = FetchType.LAZY)
-    private List<JobApplicant> jobApplicants ;
+    private List<JobApplicant> jobApplicants;
 
     public String getId() {
         return id;
@@ -348,11 +353,11 @@ public class Job {
         this.createdBy = createdBy;
     }
 
-    public Float  getTextScore() {
+    public Float getTextScore() {
         return textScore;
     }
 
-    public void setTextScore(Float  textScore) {
+    public void setTextScore(Float textScore) {
         this.textScore = textScore;
     }
 
@@ -366,6 +371,14 @@ public class Job {
 
     public String getJobPostCode() {
         return jobPostCode;
+    }
+
+    public String getJobStatus() {
+        return jobStatus;
+    }
+
+    public void setJobStatus(String jobStatus) {
+        this.jobStatus = jobStatus;
     }
 
     public void setJobPostCode(String jobPostCode) {
