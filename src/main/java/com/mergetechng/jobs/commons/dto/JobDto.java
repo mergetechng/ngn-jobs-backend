@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 public class JobDto {
-    private String jobId;
+    private String id;
     @NotNull
     @NotEmpty
     private String jobTitle;
@@ -54,10 +54,10 @@ public class JobDto {
     private String gender;
     @NotNull
     @NotBlank
-    private String career_type;
+    private String careerType;
     @NotNull
     @NotBlank
-    private String job_type;
+    private String jobType;
 
     private Date dateCreated;
     private Date dateModified;
@@ -68,11 +68,11 @@ public class JobDto {
     public JobDto(){}
 
     public String getJobId() {
-        return jobId;
+        return id;
     }
 
     public void setJobId(String jobId) {
-        this.jobId = jobId;
+        this.id = jobId;
     }
 
     public String getJobTitle() {
@@ -203,20 +203,20 @@ public class JobDto {
         this.gender = gender;
     }
 
-    public String getCareer_type() {
-        return career_type;
+    public String getCareerType() {
+        return careerType;
     }
 
-    public void setCareer_type(String career_type) {
-        this.career_type = career_type;
+    public void setCareerType(String careerType) {
+        this.careerType = careerType;
     }
 
-    public String getJob_type() {
-        return job_type;
+    public String getJobType() {
+        return jobType;
     }
 
-    public void setJob_type(String job_type) {
-        this.job_type = job_type;
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
     }
 
     public Date getDateCreated() {

@@ -355,7 +355,7 @@ CREATE TABLE public.group (
   created_by varchar(150),
   date_created timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   date_modified timestamp with time zone NOT NULL,
-  modified_by varchar(150),
+  modified_by varchar(250),
       CONSTRAINT group_pk PRIMARY KEY ("group_id")
 );
 
@@ -366,7 +366,7 @@ CREATE TABLE public.privilege (
   date_created timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
   date_modified boolean,
   created_by varchar(150),
-  modifed_by timestamp with time zone ,
+  modifed_by varchar(250) ,
         CONSTRAINT privilege_fk PRIMARY KEY ("privilege_id")
 );
 
@@ -416,6 +416,31 @@ CREATE TABLE public.job (
     modifed_by VARCHAR(250),
       CONSTRAINT job_pk PRIMARY KEY (job_id)
 )
+
+-- Store documents uploaded to bucket or file system
+CREATE TABLE user_upload_document {
+	id VARCHAR(36),
+	file_name TEXT NOT NULL,
+	user_id VARCHAR(36) NOT NULL,
+	document_url text NOT NULL,
+	access_level VARCHAR(250) NOT NULL, -- PRIVATE | PUBLIC
+	document_access_options json DEFAULT "[DOWNLOAD , DELETE , VIEW , PUBLIC_DOWNLOAD , PUBLIC_VIEW]",
+	document_state VARCHAR(100) DEFAULT 'OPEN' --- ['OPEN' , 'LOCKED' , 'RESTRICTED']
+	file_metadata text,
+	document_type VARCHAR(50) NOT NULL , -- CURRICULUM_VITAE | LETTER | RECOMMENDATION_LETTER | AWARD | IMAGE |PROFILE_PICTURE | CERTIFICATE
+	date_created timestamp with time zone NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	date_modified timestamp with time zone NOT NULL,
+	created_by VARCHAR(250) NOT NULL,
+	modified_by VARCHAR(250),
+	access_count number(30),
+	total_download number(30),
+	last_download_date timestamp with time zone NOT NULL,
+	last_access_date timestamp with time zone NOT NULL,
+	user_ids_who_accessed json,
+	user_ids_who_download json,
+	  CONSTRAINT storage_document_fk PRIMARY KEY (job_id),
+      CONSTRAINT storage_document_fk_user_id FOREIGN KEY (user_id) REFERENCES user(user_id)
+}
 --
 --CREATE TABLE "public.profile_image" (
 --  "profile_image_id" VARCHAR(36),

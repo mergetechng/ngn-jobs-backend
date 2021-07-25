@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.mapping.TextScore;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.List;
 
 @Document()
 @Entity
@@ -19,7 +20,7 @@ public class Job {
 
     @TextIndexed(weight = 5)
     @Basic(optional = false)
-    @Column(name = "job_title", nullable = false)
+    @Column(name = "job_type", nullable = false)
     private String jobTitle;
 
     @TextIndexed(weight = 4)
@@ -90,7 +91,7 @@ public class Job {
 
     @Basic(optional = false)
     @Column(nullable = false)
-    private String job_type;
+    private String jobType;
 
     @Basic(optional = false)
     @Column(name = "date_created", nullable = false)
@@ -115,6 +116,25 @@ public class Job {
     @TextScore
     private Float  textScore;
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "", fetch = FetchType.LAZY)
+    private List<JobApplicant> jobApplicants ;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public List<JobApplicant> getJobApplicants() {
+        return jobApplicants;
+    }
+
+    public void setJobApplicants(List<JobApplicant> jobApplicants) {
+        this.jobApplicants = jobApplicants;
+    }
+
     public String getJobId() {
         return id;
     }
@@ -123,7 +143,7 @@ public class Job {
         this.id = id;
     }
 
-    public Job(String id, String jobTitle, String jobDescription, String emailAddress, Float offeredSalary, String specialims, String experience, String industry, String applicationDeadline, String completeAddress, String latitude, String longitude, String packagePaymentDescription, String country, String city, String qualification, String gender, String career_type, String job_type) {
+    public Job(String id, String jobTitle, String jobDescription, String emailAddress, Float offeredSalary, String specialims, String experience, String industry, String applicationDeadline, String completeAddress, String latitude, String longitude, String packagePaymentDescription, String country, String city, String qualification, String gender, String career_type, String jobType) {
         this.id = id;
         this.jobTitle = jobTitle;
         this.jobDescription = jobDescription;
@@ -142,7 +162,7 @@ public class Job {
         this.qualification = qualification;
         this.gender = gender;
         this.career_type = career_type;
-        this.job_type = job_type;
+        this.jobType = jobType;
     }
 
     public Job() {
@@ -288,12 +308,12 @@ public class Job {
         this.career_type = career_type;
     }
 
-    public String getJob_type() {
-        return job_type;
+    public String getJobType() {
+        return jobType;
     }
 
-    public void setJob_type(String job_type) {
-        this.job_type = job_type;
+    public void setJobType(String jobType) {
+        this.jobType = jobType;
     }
 
     public Date getDateCreated() {

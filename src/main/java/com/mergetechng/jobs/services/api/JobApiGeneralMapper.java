@@ -31,6 +31,6 @@ public interface JobApiGeneralMapper {
 
     Job jobToJobDto(JobDto jobDto , @Context CycleAvoidingMappingContext cycleAvoidingMappingContext) ;
 
-    Job jobDtoToJob(Job job , @Context CycleAvoidingMappingContext cycleAvoidingMappingContext) ;
+    Job jobDtoToJob(JobDto job , @Context CycleAvoidingMappingContext cycleAvoidingMappingContext) ;
 
 }

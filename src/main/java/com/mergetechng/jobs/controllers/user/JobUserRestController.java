@@ -60,7 +60,7 @@ public class JobUserRestController {
     public ResponseEntity<ApiResponseDto> searchUserWithUsername(@PathVariable(name = "username") String usernameOrEmailOrId) throws Exception {
         ApiResponseDto apiResponseDto = ApiResponseUtil.process(
                 "Failed to delete user",
-                "200",
+                "400",
                 "DELETE_USER",
                 new Date(),
                 null);

@@ -153,12 +153,11 @@ public class User implements Serializable {
     private String companyCategory; // for job employer
 
 
-    public User() {
-    }
-
     public User(String id) {
         this.id = id;
     }
+
+    public User(){}
 
     public User(String id, String username, String password, String firstName, String lastName, String gender, String nationality, String location, String formerJobRole, String dateRegistered, Date lastLogin, String lastLoginInfo, Date dateCreated, Date dateModified, String modifiedBy, String createdBy, String userImageUrl, String email, boolean online, boolean accountNonExpired, boolean isEnabled, boolean getCredentialNonExpired, boolean accountNonLocked) {
         this.id = id;
