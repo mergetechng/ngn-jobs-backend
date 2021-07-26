@@ -1,6 +1,7 @@
 package com.mergetechng.jobs.services;
 
 
+import com.mergetechng.jobs.commons.enums.MessageEnum;
 import com.mergetechng.jobs.services.api.IEmailService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +14,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
+import javax.mail.AuthenticationFailedException;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.net.ConnectException;
@@ -30,16 +32,15 @@ public class EmailService implements IEmailService {
     private static final Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
 
     /**
-     *
-     * @param subject The subject of the mail
-     * @param text The content of the mail
+     * @param subject    The subject of the mail
+     * @param text       The content of the mail
      * @param attachment The file to send with the mail
-     * @param to The users or emails to send the mail to
+     * @param to         The users or emails to send the mail to
      * @return
      */
-    @Retryable( value = {MailSendException.class,ConnectException.class,UnknownHostException.class}, label = "Retry Sending Email After failing")
+    @Retryable(value = {MailSendException.class, ConnectException.class, UnknownHostException.class}, label = "Retry Sending Email After failing")
     @Override
-    public CompletableFuture<String> sendSimpleMessage(String subject, String text, FileSystemResource attachment , String... to ) throws ExecutionException, InterruptedException {
+    public CompletableFuture<String> sendSimpleMessage(String subject, String text, FileSystemResource attachment, String... to) throws ExecutionException, InterruptedException {
         CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
             LOGGER.info("PREPARING TO SEND THE MAIL.....");
             try {
@@ -62,24 +63,24 @@ public class EmailService implements IEmailService {
                     message.setSubject(subject);
                     message.setText(text);
                     javaMailSender.send(message);
-                    LOGGER.info("Done sending mail to " +  Arrays.toString(to));
-                    return "Mail sent successfully";
+                    LOGGER.info("Done sending mail to " + Arrays.toString(to));
+                    return MessageEnum.MAIL_SENDING_SUCCESSFUL.getMessage();
                 }
             } catch (MessagingException e) {
                 e.printStackTrace();
                 LOGGER.error("ERROR", e);
                 LOGGER.info("Retrying sending of mail to " + Arrays.toString(to));
-            }catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
-                LOGGER.error("ERROR{}\nRetrying sending of mail to {}", e , Arrays.toString(to) );
+                LOGGER.error("ERROR{}\nRetrying sending of mail to {}", e, Arrays.toString(to));
             }
-            return "Mail failed to send";
+            return MessageEnum.MAIL_SENDING_FAILED.getMessage();
         });
         completableFuture.get();
         return completableFuture;
     }
 
-    public void sendSimpleMessage(String subject, String text, FileSystemResource attachment , int count , String... to) throws ExecutionException, InterruptedException {
-        sendSimpleMessage(subject , text , attachment , to);
+    public void sendSimpleMessage(String subject, String text, FileSystemResource attachment, int count, String... to) throws ExecutionException, InterruptedException {
+        sendSimpleMessage(subject, text, attachment, to);
     }
 }

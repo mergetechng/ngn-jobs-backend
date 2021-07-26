@@ -10,9 +10,7 @@ import com.mergetechng.jobs.commons.util.ApiResponseUtil;
 import com.mergetechng.jobs.commons.util.CycleAvoidingMappingContext;
 import com.mergetechng.jobs.commons.util.PageResponse;
 import com.mergetechng.jobs.entities.User;
-import com.mergetechng.jobs.exceptions.BadRequestException;
-import com.mergetechng.jobs.exceptions.UserNotFoundException;
-import com.mergetechng.jobs.exceptions.UserTokenException;
+import com.mergetechng.jobs.exceptions.*;
 import com.mergetechng.jobs.repositories.GenericFilterCriteriaBuilder;
 import com.mergetechng.jobs.services.FilterBuilderService;
 import com.mergetechng.jobs.services.api.JobApiGeneralMapper;
@@ -374,17 +372,17 @@ public class JobUserRestController {
         List<FilterCondition> orConditions = filterBuilderService.createFilterCondition(filterOr);
 
         Query query = filterCriteriaBuilder.addCondition(andConditions, orConditions);
-        List<User> employees = iUser.getAll(query);
+        List<User> users = iUser.getAll(query);
 
-        return new ResponseEntity<>(employees, HttpStatus.OK);
+        return new ResponseEntity<>(users, HttpStatus.OK);
     }
 
 
-    @Operation(description = "Validate the forgot password token using the email address attached to the link")
+    @Operation(description = "Validate the email confirmation token using the email address attached to the link")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = true + "-The token is valid and can be used.",
+                    description = true + "-> token valid",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ),
@@ -395,7 +393,7 @@ public class JobUserRestController {
                     }
             )
     })
-    @GetMapping(value = "/token/validate", produces = {"application/json"})
+    @GetMapping(value = "/email-token/validate", produces = {"application/json"})
     public ResponseEntity<ApiResponseDto> validateToken(
             @Parameter(description = "The token attached to the link")
             @RequestParam(value = "token") String token,
@@ -455,7 +453,7 @@ public class JobUserRestController {
                 null);
         try {
             if (iUser.verifyUserEmail(email, token)) {
-                apiResponseDto.setMessage(true + "-The user account is verified and account is enabled");
+                apiResponseDto.setMessage(true + "- The user account is verified and account is enabled");
                 apiResponseDto.setStatusCode("200");
                 return ResponseEntity.ok(apiResponseDto);
             } else {
@@ -570,12 +568,25 @@ public class JobUserRestController {
                 apiResponseDto.setMessage("Mail has be sent to your email address");
                 apiResponseDto.setStatusCode("200");
                 return ResponseEntity.ok(apiResponseDto);
+            } else {
+                return ResponseEntity.badRequest().body(apiResponseDto);
             }
+        } catch (UserAccountAlreadyVerifiedException e) {
+            logger.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponseDto);
+        } catch (UserNotFoundException e) {
+            logger.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponseDto);
+        } catch (EmailVerificationLinkSendingFailedException e) {
+            logger.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(apiResponseDto);
         } catch (Exception e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
-            return ResponseEntity.badRequest().body(apiResponseDto);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiResponseDto);
         }
-        return ResponseEntity.badRequest().body(apiResponseDto);
     }
 }

@@ -3,6 +3,7 @@ package com.mergetechng.jobs.services;
 import com.mergetechng.jobs.commons.dto.FilterCondition;
 import com.mergetechng.jobs.commons.enums.FilterOperationEnum;
 import com.mergetechng.jobs.exceptions.BadRequestException;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -35,10 +36,10 @@ public class FilterBuilderService {
 
             if (criteria != null && !criteria.isEmpty()) {
 
-                final String FILTER_SHEARCH_DELIMITER = "&";
+                final String FILTER_SEARCH_DELIMITER = "&";
                 final String FILTER_CONDITION_DELIMITER = "\\|";
 
-                List<String> values = split(criteria, FILTER_SHEARCH_DELIMITER);
+                List<String> values = split(criteria, FILTER_SEARCH_DELIMITER);
                 if (!values.isEmpty()) {
                     values.forEach(x -> {
                         List<String> filter = split(x, FILTER_CONDITION_DELIMITER);
@@ -78,7 +79,7 @@ public class FilterBuilderService {
         int currentPage = (page <= 0) ? 1 : page;
 
         try {
-            if (order != null && !order.isEmpty()) {
+            if (ObjectUtils.isNotEmpty(order)) {
 
                 final String FILTER_CONDITION_DELIMITER = "\\|";
 

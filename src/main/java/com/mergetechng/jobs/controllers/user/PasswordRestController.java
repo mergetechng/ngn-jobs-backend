@@ -116,8 +116,23 @@ public class PasswordRestController {
                         responseDto.setStatusCode("200");
                         responseDto.setData("Password reset");
                         return ResponseEntity.ok(responseDto);
+                    } else {
+                        responseDto.setMessage("Failed to update password");
+                        responseDto.setStatusCode("400");
+                        responseDto.setData(null);
+                        return ResponseEntity.ok(responseDto);
                     }
+                } else {
+                    responseDto.setMessage("Token is not valid to reset password");
+                    responseDto.setStatusCode("400");
+                    responseDto.setData(null);
+                    return ResponseEntity.ok(responseDto);
                 }
+            }else {
+                responseDto.setMessage(String.format("User %s is not found", userResetPasswordDto.getUsername()));
+                responseDto.setStatusCode("400");
+                responseDto.setData(null);
+                return ResponseEntity.ok(responseDto);
             }
         } catch (PasswordMismatchedException | UserNotFoundException | UserTokenException e) {
             logger.error("ERROR", e);

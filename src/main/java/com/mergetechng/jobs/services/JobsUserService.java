@@ -7,6 +7,7 @@ import com.mergetechng.jobs.commons.dto.UserResetPasswordDto;
 import com.mergetechng.jobs.commons.dto.UserUpdatePasswordDto;
 import com.mergetechng.jobs.commons.enums.AccountTypeEnum;
 import com.mergetechng.jobs.commons.enums.GroupEnum;
+import com.mergetechng.jobs.commons.enums.MessageEnum;
 import com.mergetechng.jobs.commons.enums.StatusEnum;
 import com.mergetechng.jobs.entities.Group1;
 import com.mergetechng.jobs.entities.TokenToEmailMap;
@@ -22,12 +23,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 @Service
 public class JobsUserService implements IUser {
@@ -42,6 +45,9 @@ public class JobsUserService implements IUser {
     private final UserRepository userRepository;
     @Autowired
     private TokenToEmailMapRepository tokenToEmailMapRepository;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     private static final String VERIFICATION_BASE_URL = "http://localhost:8081/user/verify-account-email/";
     private static final String FORGOT_PASSWORD_BASE_URL = "http://localhost:8081/user/reset-account-password/";
@@ -68,7 +74,7 @@ public class JobsUserService implements IUser {
     }
 
     @Override
-    public boolean createNewUser(User user) {
+    public boolean createNewUser(User user) throws Exception {
         LOGGER.info("Username: {}", user.getUsername());
         LOGGER.info("Email: {}", user.getEmail());
         LOGGER.info("Password: {}", user.getPassword());
@@ -219,7 +225,7 @@ public class JobsUserService implements IUser {
     @Override
     public boolean verifyUserEmail(String email, String token) throws ResourceNotFoundException, UserNotFoundException, UserTokenException {
         User user = getUser(email);
-        if (!validateToken(token,email)) {
+        if (!validateToken(token, email)) {
             throw new ResourceNotFoundException("The token " + token + " was not found");
         } else {
             deleteToken(token);
@@ -237,7 +243,7 @@ public class JobsUserService implements IUser {
             User user = getUser(emailOrUsername);
             if (user != null) {
                 String token = RandomStringUtils.randomAlphanumeric(500);
-                storeToken(emailOrUsername, token, DateUtils.addDays(new Date(), 10));
+                storeToken(user.getEmail(), token, DateUtils.addDays(new Date(), 10));
                 String emailText = "Please check your forgot password link below. \nThe " +
                         "link below will expire after 10 days. \nClick on the link below to proceed\n\n" +
                         "" + FORGOT_PASSWORD_BASE_URL
@@ -280,10 +286,11 @@ public class JobsUserService implements IUser {
      * @return boolean
      */
     @Override
-    public boolean sendUserEmailVerification(String uei) {
-        try {
-            Optional<User> optionalUser = Optional.ofNullable(userRepository.findByUsernameOrEmailOrId(uei, uei, uei));
-            if (optionalUser.isPresent() && !optionalUser.get().getIsEmailVerified()) {
+    public boolean sendUserEmailVerification(String uei) throws Exception {
+        Optional<User> optionalUser = Optional.ofNullable(userRepository.findByUsernameOrEmailOrId(uei, uei, uei));
+        if (optionalUser.isPresent()) {
+            if (!optionalUser.get().getIsEmailVerified()) {
+                LOGGER.info("Yes I was able to run this...");
                 String token = RandomStringUtils.randomAlphanumeric(500);
                 User user = optionalUser.get();
                 storeToken(user.getEmail(), token, DateUtils.addDays(new Date(), 10));
@@ -299,17 +306,23 @@ public class JobsUserService implements IUser {
                         );
                 if (completableFuture.isCompletedExceptionally()) {
                     LOGGER.info("Failed to send message");
+                    throw new Exception("Failed to successfully send new confirmation link");
+                } else if (completableFuture.isDone() && completableFuture.get().equals(MessageEnum.MAIL_SENDING_SUCCESSFUL.getMessage())) {
+                    LOGGER.info("Sent mail successfully");
+                    return true;
+                } else if (completableFuture.isDone() && completableFuture.get().equals(MessageEnum.MAIL_SENDING_FAILED.getMessage())) {
+                    LOGGER.info("Failed to send mail");
+                    return false;
                 } else if (completableFuture.isDone() && !completableFuture.isCompletedExceptionally()) {
-                    LOGGER.info("Message from mailer : " + completableFuture.get() + uei);
+                    LOGGER.info("Message from mailer: " + completableFuture.get() + uei);
                     return true;
                 }
-            }else if (optionalUser.isPresent() && optionalUser.get().getIsEmailVerified()) {
-                return true;
+            } else if (optionalUser.get().getIsEmailVerified()) {
+                LOGGER.info(String.format("Account %s already verified", uei));
+                throw new UserAccountAlreadyVerifiedException("User account is already verified. No link sent");
             }
-        } catch (Exception e) {
-            LOGGER.error("USER_EMAIL_SEND_ERROR ", e);
         }
-        return false;
+        throw new UserNotFoundException(String.format("User credential %s not found", uei));
     }
 
     @Override
@@ -337,18 +350,17 @@ public class JobsUserService implements IUser {
 
     @Override
     public List<User> getAll(Query query) {
-//        return userRepository.findAll(query);
-        return null;
+        return mongoTemplate.find(query, User.class);
     }
 
     @Override
     public Page<User> getPage(Query query, Pageable pageable) {
-//        return userRepository.findAll(query, pageable);
         return null;
+//        return userRepository.findAll(query, pageable);
     }
 
     @Override
-    public boolean resetUserPassword(String token ,UserResetPasswordDto userResetPasswordDto) throws UserNotFoundException , PasswordMismatchedException {
+    public boolean resetUserPassword(String token, UserResetPasswordDto userResetPasswordDto) throws UserNotFoundException, PasswordMismatchedException {
         User user = getUser(userResetPasswordDto.getUsername());
         if (userResetPasswordDto.getConfirmPassword().equals(userResetPasswordDto.getNewPassword())) {
             user.setPassword(passwordEncoder.encode(userResetPasswordDto.getNewPassword()));

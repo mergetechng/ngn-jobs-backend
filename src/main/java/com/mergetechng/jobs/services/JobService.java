@@ -124,7 +124,7 @@ public class JobService implements IJobService {
         if (userRepository.existsByUsernameOrEmail(userName, null) && userRepository.findByUsername(userName).isEmailVerified()) {
             throw new UsernameNotFoundException("Can't create Job because user is unverified");
         } else if (!userRepository.existsByUsernameOrEmail(userName, null)) {
-            throw new UsernameNotFoundException("User is not found");
+            throw new UsernameNotFoundException(String.format("User %s is not found", userName));
         }
         job.setJobId(UUID.randomUUID().toString());
         job.setDateCreated(new Date());

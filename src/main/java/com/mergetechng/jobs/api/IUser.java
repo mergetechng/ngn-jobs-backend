@@ -13,6 +13,7 @@ import org.springframework.data.mongodb.core.query.Query;
 
 import org.springframework.data.domain.Pageable;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public interface IUser {
     boolean logoutUser(String username);
@@ -21,7 +22,7 @@ public interface IUser {
 
     List<User> getUserByFirstNameAndLastName(String firstName, String lastName);
 
-    boolean createNewUser(User user);
+    boolean createNewUser(User user) throws Exception;
 
     boolean userExists(String username, String email);
 
@@ -43,7 +44,7 @@ public interface IUser {
 
     boolean forgotPassword(String emailOrUsername) throws Exception;
 
-    boolean sendUserEmailVerification(String emailOrUsername);
+    boolean sendUserEmailVerification(String emailOrUsername) throws Exception;
 
     void updateUser(User user);
 
