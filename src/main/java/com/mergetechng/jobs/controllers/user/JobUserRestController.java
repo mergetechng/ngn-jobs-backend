@@ -55,8 +55,8 @@ public class JobUserRestController {
                     }
             )})
     @DeleteMapping(value = "/remove/{usernameOrEmailOrId}", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> searchUserWithUsername(@PathVariable(name = "username") String usernameOrEmailOrId) throws Exception {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+    public ResponseEntity<ApiResponseDto<Boolean>> searchUserWithUsername(@PathVariable(name = "username") String usernameOrEmailOrId) throws Exception {
+        ApiResponseDto<Boolean> apiResponseDto = ApiResponseUtil.process(
                 "Failed to delete user",
                 "400",
                 "DELETE_USER",
@@ -66,13 +66,15 @@ public class JobUserRestController {
             if (!iUser.userExists(usernameOrEmailOrId, "")) {
                 apiResponseDto.setStatusCode("200");
                 apiResponseDto.setMessage("Successfully deleted the user with credential: " + usernameOrEmailOrId);
-                apiResponseDto.setData(null);
+                apiResponseDto.setData(true);
                 return ResponseEntity.ok().body(apiResponseDto);
             } else {
+                apiResponseDto.setData(false);
                 return ResponseEntity.badRequest().body(apiResponseDto);
             }
         } catch (Exception e) {
             logger.error("ERROR", e);
+            apiResponseDto.setData(false);
             apiResponseDto.setMessage(e.getMessage());
             return ResponseEntity.badRequest().body(apiResponseDto);
         }
@@ -94,10 +96,10 @@ public class JobUserRestController {
             )
     })
     @GetMapping(value = "/exists", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> userExists(
+    public ResponseEntity<ApiResponseDto<Boolean>> userExists(
             @Parameter(description = "The username to search")
             @RequestParam(value = "username") String username) throws Exception {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<Boolean> apiResponseDto = ApiResponseUtil.process(
                 "Username is NOT available to be used",
                 "400",
                 "search existing username",
@@ -107,9 +109,10 @@ public class JobUserRestController {
             if (!iUser.userExists(username, "")) {
                 apiResponseDto.setStatusCode("200");
                 apiResponseDto.setMessage("Username is available to used");
-                apiResponseDto.setData(null);
+                apiResponseDto.setData(true);
                 return ResponseEntity.ok().body(apiResponseDto);
             } else {
+                apiResponseDto.setData(false);
                 return ResponseEntity.badRequest().body(apiResponseDto);
             }
         } catch (Exception e) {
@@ -135,10 +138,10 @@ public class JobUserRestController {
             )
     })
     @PutMapping(value = "/disable", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> disableUser(
+    public ResponseEntity<ApiResponseDto<Boolean>> disableUser(
             @Parameter(description = "The username to be disabled")
             @RequestParam(value = "username") String username) throws Exception {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<Boolean> apiResponseDto = ApiResponseUtil.process(
                 "username was unable to be disabled",
                 "400",
                 "DISABLE_USER",
@@ -148,10 +151,12 @@ public class JobUserRestController {
             String message = iUser.disabledUser(username);
             apiResponseDto.setMessage(message);
             apiResponseDto.setStatusCode("200");
+            apiResponseDto.setData(true);
             return ResponseEntity.ok(apiResponseDto);
         } catch (Exception e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
+            apiResponseDto.setData(false);
             return ResponseEntity.badRequest().body(apiResponseDto);
         }
     }
@@ -173,12 +178,12 @@ public class JobUserRestController {
             )
     })
     @PutMapping(value = "/update", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> updateUser(
+    public ResponseEntity<ApiResponseDto<String>> updateUser(
             @Parameter(description = "The username to be disabled")
             @RequestBody UserAccountUpdateDto userAccountUpdateDto,
             @Parameter(description = "The usernameOrEmailOrUserId to be updated")
             @RequestParam String usernameOrEmailOrUserId) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "Failed to update user basic Information",
                 "400",
                 "UPDATE_USER",
@@ -188,6 +193,7 @@ public class JobUserRestController {
             String message = iUser.updateBasicAccountInformation(userAccountUpdateDto, usernameOrEmailOrUserId);
             apiResponseDto.setMessage(message);
             apiResponseDto.setStatusCode("200");
+            apiResponseDto.setMessage("Ok");
             return ResponseEntity.ok(apiResponseDto);
         } catch (Exception e) {
             logger.error("ERROR", e);
@@ -213,10 +219,10 @@ public class JobUserRestController {
             )
     })
     @PutMapping(value = "/logout", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> logoutUser(
+    public ResponseEntity<ApiResponseDto<String>> logoutUser(
             @Parameter(description = "The username to be disabled")
             @RequestParam(value = "username") String username) throws Exception {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "user does not exists",
                 "400",
                 "LOGOUT_USER",
@@ -226,6 +232,7 @@ public class JobUserRestController {
             boolean isLoggedOut = iUser.logoutUser(username);
             apiResponseDto.setMessage("User is logged out ->" + isLoggedOut);
             apiResponseDto.setStatusCode("200");
+            apiResponseDto.setData("Ok");
             return ResponseEntity.ok(apiResponseDto);
         } catch (Exception e) {
             logger.error("ERROR", e);
@@ -274,54 +281,54 @@ public class JobUserRestController {
     }
 
 
-    @Deprecated
-    @Operation(description = "Logout user with the provided username")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "User logout successfully",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
-                    }
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Username does exists and can not be logout",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
-                    }
-            )
-    })
-    @GetMapping(value = "/filter-search", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> filterSearchUsers(
-            @Parameter(description = "The field to search")
-            @RequestParam String searchBy,
-            @Parameter(description = "The limits of data to be returned")
-            @RequestParam Integer limit,
-            @Parameter(description = "The starting point where the data will start from")
-            @RequestParam Integer offset,
-            @Parameter(description = "The Operation eg whereEquals, whereGreaterThan etc")
-            @RequestParam(required = false) String operation,
-            @Parameter(description = "The operation argument value")
-            @RequestParam(required = false) String operationValue,
-            @Parameter(description = "The field to the compared with operator value")
-            @RequestParam String order) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
-                "user does not exists",
-                "400",
-                "FILTER_SEARCH",
-                new Date(),
-                null);
-        try {
-            List<UserDto> result = iUser.filterSearchUser(searchBy, limit, offset, operation, operationValue, order);
-            if (Objects.nonNull(result)) apiResponseDto.setMessage("User(s) gotten successfully");
-            apiResponseDto.setData(result);
-            apiResponseDto.setStatusCode("200");
-            return ResponseEntity.ok(apiResponseDto);
-        } catch (Exception e) {
-            logger.error("ERROR", e);
-            apiResponseDto.setMessage(e.getMessage());
-            return ResponseEntity.badRequest().body(apiResponseDto);
-        }
-    }
+//    @Deprecated
+//    @Operation(description = "Logout user with the provided username")
+//    @ApiResponses(value = {
+//            @ApiResponse(
+//                    responseCode = "200",
+//                    description = "User logout successfully",
+//                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
+//                    }
+//            ),
+//            @ApiResponse(
+//                    responseCode = "400",
+//                    description = "Username does exists and can not be logout",
+//                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
+//                    }
+//            )
+//    })
+//    @GetMapping(value = "/filter-search", produces = {"application/json"})
+//    public ResponseEntity<ApiResponseDto> filterSearchUsers(
+//            @Parameter(description = "The field to search")
+//            @RequestParam String searchBy,
+//            @Parameter(description = "The limits of data to be returned")
+//            @RequestParam Integer limit,
+//            @Parameter(description = "The starting point where the data will start from")
+//            @RequestParam Integer offset,
+//            @Parameter(description = "The Operation eg whereEquals, whereGreaterThan etc")
+//            @RequestParam(required = false) String operation,
+//            @Parameter(description = "The operation argument value")
+//            @RequestParam(required = false) String operationValue,
+//            @Parameter(description = "The field to the compared with operator value")
+//            @RequestParam String order) {
+//        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+//                "user does not exists",
+//                "400",
+//                "FILTER_SEARCH",
+//                new Date(),
+//                null);
+//        try {
+//            List<UserDto> result = iUser.filterSearchUser(searchBy, limit, offset, operation, operationValue, order);
+//            if (Objects.nonNull(result)) apiResponseDto.setMessage("User(s) gotten successfully");
+//            apiResponseDto.setData(result);
+//            apiResponseDto.setStatusCode("200");
+//            return ResponseEntity.ok(apiResponseDto);
+//        } catch (Exception e) {
+//            logger.error("ERROR", e);
+//            apiResponseDto.setMessage(e.getMessage());
+//            return ResponseEntity.badRequest().body(apiResponseDto);
+//        }
+//    }
 
 
     @Operation(description = "Pageable Advance search")
@@ -422,13 +429,13 @@ public class JobUserRestController {
             )
     })
     @GetMapping(value = "/email-token/validate", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> validateToken(
+    public ResponseEntity<ApiResponseDto<String>> validateToken(
             @Parameter(description = "The token attached to the link")
             @RequestParam(value = "token") String token,
             @Parameter(description = "The token email")
             @RequestParam(value = "email") String email
     ) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 false + "- The token is invalid.",
                 "400",
                 "VALIDATE_TOKEN",
@@ -439,6 +446,7 @@ public class JobUserRestController {
             if (iUser.validateToken(token, email)) {
                 apiResponseDto.setMessage(true + "-> token valid");
                 apiResponseDto.setStatusCode("200");
+                apiResponseDto.setData("Ok");
                 return ResponseEntity.ok(apiResponseDto);
             } else {
                 return ResponseEntity.badRequest().body(apiResponseDto);
@@ -467,13 +475,13 @@ public class JobUserRestController {
             )
     })
     @PutMapping(value = "/verify-account-email", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> verifyUserAccountEmail(
+    public ResponseEntity<ApiResponseDto<String>> verifyUserAccountEmail(
             @Parameter(description = "The email attached to the link")
             @RequestParam(value = "email") String email,
             @Parameter(description = "The token attached to the link")
             @RequestParam(value = "token") String token
     ) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 false + "-The user account email failed to be verified. Ensure link is still valid",
                 "400",
                 "VERIFY_USER_EMAIL_ACCOUNT",
@@ -483,6 +491,7 @@ public class JobUserRestController {
             if (iUser.verifyUserEmail(email, token)) {
                 apiResponseDto.setMessage(true + "- The user account is verified and account is enabled");
                 apiResponseDto.setStatusCode("200");
+                apiResponseDto.setData("Ok");
                 return ResponseEntity.ok(apiResponseDto);
             } else {
                 return ResponseEntity.badRequest().body(apiResponseDto);
@@ -506,10 +515,10 @@ public class JobUserRestController {
             )
     })
     @DeleteMapping(value = "/delete", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> deleteUserByUsername(
+    public ResponseEntity<ApiResponseDto<Boolean>> deleteUserByUsername(
             @Parameter(description = "The username to be deleted")
             @RequestParam() String usernameOrEmailOrUserId) throws Exception {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<Boolean> apiResponseDto = ApiResponseUtil.process(
                 "usernameOrEmailOrUserId does not exists",
                 "400",
                 "DELETE_USER",
@@ -519,6 +528,7 @@ public class JobUserRestController {
             if (iUser.deleteUser(usernameOrEmailOrUserId)) {
                 apiResponseDto.setMessage(true + "- User successfully deleted from the system");
                 apiResponseDto.setStatusCode("200");
+                apiResponseDto.setData(true);
                 return ResponseEntity.ok(apiResponseDto);
             } else {
                 return ResponseEntity.badRequest().body(apiResponseDto);
@@ -526,6 +536,7 @@ public class JobUserRestController {
         } catch (Exception e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
+            apiResponseDto.setData(false);
             return ResponseEntity.badRequest().body(apiResponseDto);
         }
     }
@@ -544,10 +555,10 @@ public class JobUserRestController {
             }
     )})
     @GetMapping(value = "/forgot-password-link", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> forgotPasswordUsingEmailOrUsername(
+    public ResponseEntity<ApiResponseDto<String>> forgotPasswordUsingEmailOrUsername(
             @Parameter(description = "The username or email address search and send forgot password link to")
             @RequestParam String emailOrUsername) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "Email or Username does not exists",
                 "400",
                 "CREATE_FORGOT_PASSWORD_LINK",
@@ -582,10 +593,10 @@ public class JobUserRestController {
             }
     )})
     @GetMapping(value = "/email-confirmation-link", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> sendEmailConfirmationLink(
+    public ResponseEntity<ApiResponseDto<String>> sendEmailConfirmationLink(
             @Parameter(description = "The username or email address search and send confirmation mail link to")
             @RequestParam String emailOrUsername) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "Email or Username does not exists, no link sent",
                 "400",
                 "SEND_EMAIL_CONFIRMATION",
