@@ -12,7 +12,7 @@ import java.util.Optional;
 
 
 @Repository
-public interface UserRepository extends MongoRepository<User, String> {
+public interface UserRepository extends ResourceRepository<User, String> {
     User findByUsername(String username);
     User findFirstByEmail(String username);
     boolean existsByUsernameOrEmail(String username , String email);
@@ -21,6 +21,4 @@ public interface UserRepository extends MongoRepository<User, String> {
     List<User> findByFirstNameAndLastName(String firstName, String lastName);
     void deleteByUsername(String username);
     User findByUsernameOrEmailOrId(String uei, String uei1, String uei2);
-//    Page<User> findAll(Query query, Pageable pageable);
-//    List<User> findAll(Query query);
 }

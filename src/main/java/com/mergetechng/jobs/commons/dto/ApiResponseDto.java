@@ -3,16 +3,16 @@ package com.mergetechng.jobs.commons.dto;
 
 import java.util.Date;
 
-public class ApiResponseDto {
+public class ApiResponseDto<T> {
     private String message;
     private String statusCode;
     private String action;
     private Date responseDate;
-    private Object data;
+    private T data;
 
     public ApiResponseDto(){}
 
-    public ApiResponseDto(String message, String statusCode, String action, Date requestDate, Object data) {
+    public ApiResponseDto(String message, String statusCode, String action, Date requestDate, T data) {
         this.message = message;
         this.statusCode = statusCode;
         this.action = action;
@@ -36,7 +36,7 @@ public class ApiResponseDto {
         this.action = action;
     }
 
-    public void setData(Object data) {
+    public void setData(T data) {
         this.data = data;
     }
 

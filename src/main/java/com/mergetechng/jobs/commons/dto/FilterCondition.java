@@ -6,14 +6,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-/**
- * <h2>FilterCondition</h2>
- *
- * @author aek
- * <p>
- * Description: Filter Condition Class
- */
-
 public class FilterCondition {
 
     private String field;

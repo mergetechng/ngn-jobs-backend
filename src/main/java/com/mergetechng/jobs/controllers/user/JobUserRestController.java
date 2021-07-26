@@ -8,7 +8,6 @@ import com.mergetechng.jobs.commons.dto.UserAccountUpdateDto;
 import com.mergetechng.jobs.commons.dto.UserDto;
 import com.mergetechng.jobs.commons.util.ApiResponseUtil;
 import com.mergetechng.jobs.commons.util.CycleAvoidingMappingContext;
-import com.mergetechng.jobs.commons.util.PageResponse;
 import com.mergetechng.jobs.entities.User;
 import com.mergetechng.jobs.exceptions.*;
 import com.mergetechng.jobs.repositories.GenericFilterCriteriaBuilder;
@@ -24,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -324,57 +324,85 @@ public class JobUserRestController {
     }
 
 
-    /**
-     * @param page      page number
-     * @param size      size count
-     * @param filterOr  string filter or conditions
-     * @param filterAnd string filter and conditions
-     * @param orders    string orders
-     * @return PageResponse<User>
-     */
-    @GetMapping(value = "/page")
-    public ResponseEntity<PageResponse<User>> getSearchCriteriaPage(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "20") int size,
-            @RequestParam(value = "filterOr", required = false) String filterOr,
-            @RequestParam(value = "filterAnd", required = false) String filterAnd,
-            @RequestParam(value = "orders", required = false) String orders) throws BadRequestException {
-
-        PageResponse<User> response = new PageResponse<>();
-
-        org.springframework.data.domain.Pageable pageable = filterBuilderService.getPageable(size, page, orders);
-        GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
-
-
-        List<FilterCondition> andConditions = filterBuilderService.createFilterCondition(filterAnd);
-        List<FilterCondition> orConditions = filterBuilderService.createFilterCondition(filterOr);
-
-        Query query = filterCriteriaBuilder.addCondition(andConditions, orConditions);
-        Page<User> pg = iUser.getPage(query, pageable);
-        response.setPageStats(pg, pg.getContent());
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
+    @Operation(description = "Pageable Advance search")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Advance search completed successfully",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
+                    }
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Pageable Advance search completed with BadRequest",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
+                    }
+            )
+    })
+    @GetMapping(value = "/advanceQuerySearch")
+    public ResponseEntity<ApiResponseDto<List<User>>> advanceQuerySearch(
+            @RequestParam(value = "query", required = false) String query) throws BadRequestException {
+        ApiResponseDto<List<User>> apiResponseDto = ApiResponseUtil.process(
+                null,
+                "400",
+                "ADVANCE_SEARCH",
+                new Date(),
+                null);
+        try {
+            GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
+            List<FilterCondition> queryCondition = filterBuilderService.createFilterCondition(query);
+            Query mongoQuery = filterCriteriaBuilder.addCondition(List.of(), queryCondition);
+            List<User> pageableUsers = iUser.getAllWithoutPageable(mongoQuery);
+            apiResponseDto.setData(pageableUsers);
+            return ResponseEntity.ok().body(apiResponseDto);
+        } catch (Exception e) {
+            logger.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(apiResponseDto);
+        }
     }
 
-    /**
-     * @param filterOr  string filter or conditions
-     * @param filterAnd string filter and conditions
-     * @return list of Users
-     */
-    @GetMapping()
-    public ResponseEntity<List<User>> getAllSearchCriteria(
-            @RequestParam(value = "filterOr", required = false) String filterOr,
-            @RequestParam(value = "filterAnd", required = false) String filterAnd) throws BadRequestException {
 
-        GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
-
-        List<FilterCondition> andConditions = filterBuilderService.createFilterCondition(filterAnd);
-        List<FilterCondition> orConditions = filterBuilderService.createFilterCondition(filterOr);
-
-        Query query = filterCriteriaBuilder.addCondition(andConditions, orConditions);
-        List<User> users = iUser.getAll(query);
-
-        return new ResponseEntity<>(users, HttpStatus.OK);
+    @Operation(description = "User Advance search")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Advance search completed successfully",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
+                    }
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Advance search completed with BadRequest",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
+                    }
+            )
+    })
+    @GetMapping(value = "/advancePageableQuerySearch")
+    public ResponseEntity<ApiResponseDto<Page<User>>> advancePageableQuerySearch(
+            @RequestParam(value = "query", required = false) String query,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "orders", required = false) String orders,
+            @RequestParam(value = "size", required = false) Integer size) {
+        ApiResponseDto<Page<User>> apiResponseDto = ApiResponseUtil.process(
+                null,
+                "400",
+                "ADVANCE_SEARCH",
+                new Date(),
+                null);
+        try {
+            Pageable pageable = filterBuilderService.getPageable(size, page, orders);
+            GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
+            List<FilterCondition> queryCondition = filterBuilderService.createFilterCondition(query);
+            Query mongoQuery = filterCriteriaBuilder.addCondition(List.of(), queryCondition);
+            Page<User> pageableUsers = iUser.getAllWithPageable(mongoQuery, pageable);
+            apiResponseDto.setData(pageableUsers);
+            return ResponseEntity.ok().body(apiResponseDto);
+        } catch (Exception e) {
+            logger.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(apiResponseDto);
+        }
     }
 
 

@@ -25,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -349,15 +350,19 @@ public class JobsUserService implements IUser {
 
 
     @Override
-    public List<User> getAll(Query query) {
-        return mongoTemplate.find(query, User.class);
+    public Page<User> getAllWithPageable(Query query , Pageable pageable) {
+        return PageableExecutionUtils.getPage(
+                mongoTemplate.find(query, User.class),
+                pageable,
+                () -> mongoTemplate.count(query.skip(0).limit(0), User.class)
+        );
     }
 
     @Override
-    public Page<User> getPage(Query query, Pageable pageable) {
-        return null;
-//        return userRepository.findAll(query, pageable);
+    public List<User> getAllWithoutPageable(Query query) {
+        return mongoTemplate.find(query, User.class);
     }
+
 
     @Override
     public boolean resetUserPassword(String token, UserResetPasswordDto userResetPasswordDto) throws UserNotFoundException, PasswordMismatchedException {

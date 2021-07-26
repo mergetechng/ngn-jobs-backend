@@ -1,6 +1,8 @@
 package com.mergetechng.jobs.repositories;
 
 import com.mergetechng.jobs.commons.dto.FilterCondition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
@@ -19,6 +21,7 @@ public class GenericFilterCriteriaBuilder {
 
     private static final Map<String, Function<FilterCondition, Criteria>>
             FILTER_CRITERIA = new HashMap<>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericFilterCriteriaBuilder.class);
 
     // Create map of filter
     static {
@@ -65,7 +68,6 @@ public class GenericFilterCriteriaBuilder {
         } else {
             return new Query();
         }
-
     }
 
 

@@ -67,7 +67,6 @@ public class FilterBuilderService {
 
     /**
      * Get request pageable. Page Request Builder. custom pageable
-     *
      * @param size  the number of items to collect
      * @param page  page number
      * @param order search order filter (eg: field|ASC)

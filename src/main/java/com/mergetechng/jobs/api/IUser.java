@@ -50,20 +50,9 @@ public interface IUser {
 
     boolean updateUserPassword(UserUpdatePasswordDto passwordUpdate, String usernameOrEmailOrUserId) throws PasswordMismatchedException ;
 
-    /**
-     * @param query custom query
-     * @return list of Employee
-     */
-    List<User> getAll(Query query);
-
-    /**
-     * Get all custom paginate data for entity Employee
-     *
-     * @param query    custom query
-     * @param pageable pageable param
-     * @return Page of entity Employee
-     */
-    Page<User> getPage(Query query, Pageable pageable);
+    Page<User> getAllWithPageable(Query query , Pageable pageable) ;
 
     boolean resetUserPassword(String token ,UserResetPasswordDto userResetPasswordDto) throws UserNotFoundException, PasswordMismatchedException ;
+
+    List<User> getAllWithoutPageable(Query mongoQuery);
 }
