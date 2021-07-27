@@ -5,7 +5,6 @@ import com.mergetechng.jobs.api.IUser;
 import com.mergetechng.jobs.commons.dto.ApiResponseDto;
 import com.mergetechng.jobs.commons.dto.FilterCondition;
 import com.mergetechng.jobs.commons.dto.UserAccountUpdateDto;
-import com.mergetechng.jobs.commons.dto.UserDto;
 import com.mergetechng.jobs.commons.util.ApiResponseUtil;
 import com.mergetechng.jobs.commons.util.CycleAvoidingMappingContext;
 import com.mergetechng.jobs.entities.User;
@@ -348,7 +347,10 @@ public class JobUserRestController {
     })
     @GetMapping(value = "/advanceQuerySearch")
     public ResponseEntity<ApiResponseDto<List<User>>> advanceQuerySearch(
-            @RequestParam(value = "query", required = false) String query) throws BadRequestException {
+            @RequestParam(value = "query", required = false) String query,
+            @RequestParam(value = "filterAnd", required = false) String filterAnd,
+            @RequestParam(value = "filterOr", required = false) String filterOr
+    ) throws BadRequestException {
         ApiResponseDto<List<User>> apiResponseDto = ApiResponseUtil.process(
                 null,
                 "400",
@@ -357,8 +359,9 @@ public class JobUserRestController {
                 null);
         try {
             GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
-            List<FilterCondition> queryCondition = filterBuilderService.createFilterCondition(query);
-            Query mongoQuery = filterCriteriaBuilder.addCondition(List.of(), queryCondition);
+            List<FilterCondition> queryFilterAndCondition = filterBuilderService.createFilterCondition(filterAnd);
+            List<FilterCondition> queryFilterOrCondition = filterBuilderService.createFilterCondition(filterOr);
+            Query mongoQuery = filterCriteriaBuilder.addCondition(queryFilterAndCondition, queryFilterOrCondition);
             List<User> pageableUsers = iUser.getAllWithoutPageable(mongoQuery);
             apiResponseDto.setData(pageableUsers);
             return ResponseEntity.ok().body(apiResponseDto);
@@ -387,7 +390,8 @@ public class JobUserRestController {
     })
     @GetMapping(value = "/advancePageableQuerySearch")
     public ResponseEntity<ApiResponseDto<Page<User>>> advancePageableQuerySearch(
-            @RequestParam(value = "query", required = false) String query,
+            @RequestParam(value = "filterAnd", required = false) String filterAnd,
+            @RequestParam(value = "filterOr", required = false) String filterOr,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "orders", required = false) String orders,
             @RequestParam(value = "size", required = false) Integer size) {
@@ -400,8 +404,9 @@ public class JobUserRestController {
         try {
             Pageable pageable = filterBuilderService.getPageable(size, page, orders);
             GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
-            List<FilterCondition> queryCondition = filterBuilderService.createFilterCondition(query);
-            Query mongoQuery = filterCriteriaBuilder.addCondition(List.of(), queryCondition);
+            List<FilterCondition> queryFilterAndCondition = filterBuilderService.createFilterCondition(filterAnd);
+            List<FilterCondition> queryFilterOrCondition = filterBuilderService.createFilterCondition(filterOr);
+            Query mongoQuery = filterCriteriaBuilder.addCondition(queryFilterAndCondition, queryFilterOrCondition);
             Page<User> pageableUsers = iUser.getAllWithPageable(mongoQuery, pageable);
             apiResponseDto.setData(pageableUsers);
             return ResponseEntity.ok().body(apiResponseDto);

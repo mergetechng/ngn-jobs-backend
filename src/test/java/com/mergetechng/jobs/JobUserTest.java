@@ -141,6 +141,7 @@ public class JobUserTest {
         
     }
 
+
     public static class MongoDbInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
         @Override
         public void initialize(@NotNull ConfigurableApplicationContext configurableApplicationContext) {
