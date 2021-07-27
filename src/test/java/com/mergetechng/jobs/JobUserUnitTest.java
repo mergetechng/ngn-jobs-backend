@@ -11,7 +11,9 @@ import com.mergetechng.jobs.repositories.UserRepository;
 import com.mergetechng.jobs.services.FilterBuilderService;
 import com.mergetechng.jobs.services.JobsUserService;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.After;
 import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.data.mongo.AutoConfigureDataM
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -46,10 +49,19 @@ public class JobUserUnitTest {
     private JobsUserService userService;
 
     @Autowired
+    private MongoTemplate mongoTemplate;
+
+    @Autowired
     private FilterBuilderService filterBuilderService;
 
     private static final String QUERY_FOR_SUPER_ADMIN = "groupId.groupName|eq|SUPER_ADMIN_GROUP&groupId.createdBy|eq|System&lastName|eq|ng_jobs";
     private static final String QUERY_FOR_USERS = "firstName|eq|adeshina&lastName|eq|keemsisi";
+
+
+    @After
+    public void dropMongoTestDatabase(){
+        mongoTemplate.getDb().drop();
+    }
 
     @Test
     public void testUserInsertAndSearchMatch() {
@@ -200,6 +212,5 @@ public class JobUserUnitTest {
         assertNotNull(apiResponseDto);
         assertEquals(apiResponseDto.getStatusCode(), "400");
         assertFalse(ORDERS.split("\\|").length > 1);
-
     }
 }
