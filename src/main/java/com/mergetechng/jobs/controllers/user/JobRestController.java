@@ -106,25 +106,28 @@ public class JobRestController {
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             )})
-    @DeleteMapping(value = "/delete", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> deleteJob(@RequestParam(name = "jobId") String jobIb) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+    @DeleteMapping(value = "/remove", produces = {"application/json"})
+    public ResponseEntity<ApiResponseDto<String>> deleteJob(@RequestParam(name = "jobId") String jobIb) {
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "Failed to delete job",
                 "400",
                 "DELETE_JOB",
                 new Date(),
                 null);
         try {
-            if (!iJobService.deleteJob(jobIb)) {
+            if (iJobService.deleteJob(jobIb)) {
                 apiResponseDto.setStatusCode("200");
+                apiResponseDto.setData("Ok");
                 apiResponseDto.setMessage("Successfully deleted the job with id: " + jobIb);
                 return ResponseEntity.ok().body(apiResponseDto);
             } else {
+                apiResponseDto.setData("Not Ok");
                 return ResponseEntity.badRequest().body(apiResponseDto);
             }
         } catch (Exception e) {
             LOGGER.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
+            apiResponseDto.setData("Not ok");
             return ResponseEntity.badRequest().body(apiResponseDto);
         }
     }
@@ -140,23 +143,26 @@ public class JobRestController {
                     }
             )})
     @PostMapping(value = "/update", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> updateJob(@RequestParam(name = "jobId") String jobIb) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+    public ResponseEntity<ApiResponseDto<String>> updateJob(@RequestParam(name = "jobId") String jobIb) {
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "Failed to update job",
                 "400",
                 "UPDATE_JOB",
                 new Date(),
                 null);
         try {
-            if (!iJobService.updateJob(jobIb)) {
+            if (iJobService.updateJob(jobIb)) {
                 apiResponseDto.setStatusCode("200");
+                apiResponseDto.setData("Ok");
                 apiResponseDto.setMessage("Successfully update the job with id: " + jobIb);
                 return ResponseEntity.ok().body(apiResponseDto);
             } else {
+                apiResponseDto.setData("Not Ok");
                 return ResponseEntity.badRequest().body(apiResponseDto);
             }
         } catch (Exception e) {
             LOGGER.error("ERROR", e);
+            apiResponseDto.setData("Not Ok");
             apiResponseDto.setMessage(e.getMessage());
             return ResponseEntity.badRequest().body(apiResponseDto);
         }

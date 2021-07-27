@@ -1,12 +1,13 @@
 package com.mergetechng.jobs.controllers.user;
 
 
-import com.mergetechng.jobs.api.IUser;
 import com.mergetechng.jobs.commons.dto.ApiResponseDto;
 import com.mergetechng.jobs.commons.dto.FilterCondition;
 import com.mergetechng.jobs.commons.dto.UserAccountUpdateDto;
+import com.mergetechng.jobs.commons.dto.UserDto;
 import com.mergetechng.jobs.commons.util.ApiResponseUtil;
 import com.mergetechng.jobs.commons.util.CycleAvoidingMappingContext;
+import com.mergetechng.jobs.entities.User;
 import com.mergetechng.jobs.exceptions.*;
 import com.mergetechng.jobs.repositories.GenericFilterCriteriaBuilder;
 import com.mergetechng.jobs.services.FilterBuilderService;
@@ -257,24 +258,25 @@ public class JobUserRestController {
             )
     })
     @GetMapping(value = "/search", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> getUser(
+    public ResponseEntity<ApiResponseDto<UserDto>> getUser(
             @Parameter(description = "The username to get")
             @RequestParam(value = "usernameOrEmailOrUserId") String usernameOrEmailOrUserId) throws Exception {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<UserDto> apiResponseDto = ApiResponseUtil.process(
                 "user does not exists",
                 "400",
                 "SEARCH_USER",
                 new Date(),
                 null);
         try {
-            com.mergetechng.jobs.entities.User result = iUser.getUser(usernameOrEmailOrUserId);
-            if (Objects.nonNull(result)) apiResponseDto.setMessage("IUser gotten successfully");
+            User result = iUser.getUser(usernameOrEmailOrUserId);
+            if (Objects.nonNull(result)) apiResponseDto.setMessage("User gotten successfully");
             apiResponseDto.setData(JobApiGeneralMapper.INSTANCE.userToUserDto(result, new CycleAvoidingMappingContext()));
             apiResponseDto.setStatusCode("200");
             return ResponseEntity.ok(apiResponseDto);
         } catch (UserNotFoundException e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
+            apiResponseDto.setData(null);
             return ResponseEntity.badRequest().body(apiResponseDto);
         }
     }

@@ -94,13 +94,13 @@ public class PasswordRestController {
     )
     })
     @PutMapping(value = "/reset")
-    public ResponseEntity<ApiResponseDto> resetUserPassword(
+    public ResponseEntity<ApiResponseDto<String>> resetUserPassword(
             @Parameter(description = "The password reset body")
             @RequestBody UserResetPasswordDto userResetPasswordDto,
             @Parameter(description = "IUser email, username or userId")
             @RequestParam(name = "token") String token
     ) {
-        ApiResponseDto responseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> responseDto = ApiResponseUtil.process(
                 "Invalid token!",
                 "400",
                 "PASSWORD_RESET",

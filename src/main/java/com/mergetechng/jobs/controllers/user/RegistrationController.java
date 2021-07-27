@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 
 @RestController
-@RequestMapping("/user/")
+@RequestMapping("/user")
 public class RegistrationController {
     @Autowired
     private IUser iUser;
@@ -43,8 +43,8 @@ public class RegistrationController {
             ),
     })
     @PostMapping(value = "/create", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> createNewUser(@Parameter(description = "New IUser Object") @RequestBody NewJobSeekerDto newJobSeekerDto) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+    public ResponseEntity<ApiResponseDto<String>> createNewUser(@Parameter(description = "New IUser Object") @RequestBody NewJobSeekerDto newJobSeekerDto) {
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "IUser failed to be authenticated",
                 "400",
                 "create new user",

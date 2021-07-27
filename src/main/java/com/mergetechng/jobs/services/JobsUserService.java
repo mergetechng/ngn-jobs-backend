@@ -129,7 +129,7 @@ public class JobsUserService implements IUser, IAdvanceSearch<User> {
             userRepository.save(user);
             return;
         }
-        throw new UserNotFoundException("IUser with username " + user.getUsername() + " not found");
+        throw new UserNotFoundException("User with username " + user.getUsername() + " not found");
     }
 
     @Override

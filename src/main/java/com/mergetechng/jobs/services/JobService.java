@@ -59,6 +59,7 @@ public class JobService implements IJobService, IAdvanceSearch<Job> {
     public boolean deleteJob(String jobId) throws JobNotExistsException {
         Optional<Job> jobOptional = jobRepository.findById(jobId);
         if (jobOptional.isPresent()) {
+            LOGGER.info("Yes Job was found");
             jobRepository.deleteById(jobId);
             return true;
         } else throw new JobNotExistsException("Oops job not found");
