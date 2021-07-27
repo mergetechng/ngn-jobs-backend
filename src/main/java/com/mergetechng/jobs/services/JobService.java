@@ -1,6 +1,7 @@
 package com.mergetechng.jobs.services;
 
 
+import com.mergetechng.jobs.api.IAdvanceSearch;
 import com.mergetechng.jobs.commons.util.JWTUtil;
 import com.mergetechng.jobs.entities.Job;
 import com.mergetechng.jobs.entities.JobApplicant;
@@ -21,6 +22,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.data.mongodb.core.query.TextQuery;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -32,7 +34,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Service
-public class JobService implements IJobService {
+public class JobService implements IJobService, IAdvanceSearch<Job> {
 
     @Autowired
     private JobRepository jobRepository;
@@ -186,5 +188,19 @@ public class JobService implements IJobService {
             } else return List.of();
         }
         throw new JobNotExistsException("Job with id: " + jobId + " does not exists");
+    }
+
+    @Override
+    public Page<Job> getAllWithPageable(Query query , Pageable pageable) {
+        return PageableExecutionUtils.getPage(
+                mongoTemplate.find(query, Job.class),
+                pageable,
+                () -> mongoTemplate.count(query.skip(0).limit(0), Job.class)
+        );
+    }
+
+    @Override
+    public List<Job> getAllWithoutPageable(Query query) {
+        return mongoTemplate.find(query, Job.class);
     }
 }
