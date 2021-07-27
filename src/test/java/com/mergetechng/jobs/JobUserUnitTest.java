@@ -35,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest(classes = Application.class , webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureDataMongo
 @Slf4j
-public class JobUserUnitTest extends JobUserTest.MongoDbInitializer {
+public class JobUserUnitTest {
 
     @Autowired
     private UserRepository userRepository;
