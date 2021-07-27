@@ -6,6 +6,7 @@ import com.mergetechng.jobs.entities.JobApplicant;
 import com.mergetechng.jobs.entities.User;
 import com.mergetechng.jobs.exceptions.JobApplicantNotFoundException;
 import com.mergetechng.jobs.exceptions.JobNotExistsException;
+import com.mergetechng.jobs.exceptions.UserAccountAlreadyVerifiedException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Query;
@@ -31,7 +32,7 @@ public interface IJobService {
 
     boolean applyForJob(String jobId, String userId);
 
-    boolean createNewJob(Job job, String userName);
+    boolean createNewJob(Job job, String userName) throws UserAccountAlreadyVerifiedException;
 
     Page<Job> pageFetchJobApplicant(Integer page, Integer size, String orders, String filterAnd, String filterOr);
 

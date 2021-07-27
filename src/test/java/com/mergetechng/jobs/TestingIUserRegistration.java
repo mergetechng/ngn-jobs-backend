@@ -12,6 +12,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(classes = Application.class , webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureDataMongo
 @Slf4j
-public class TestingUserRegistration {
+public class TestingIUserRegistration {
 
 }

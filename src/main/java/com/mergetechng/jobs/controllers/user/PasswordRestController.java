@@ -56,7 +56,7 @@ public class PasswordRestController {
     public ResponseEntity<ApiResponseDto> updateUserPassword(
             @Parameter(description = "The password update body")
             @RequestBody UserUpdatePasswordDto userUpdatePasswordDto,
-            @Parameter(description = "User email, username or userId")
+            @Parameter(description = "IUser email, username or userId")
             @RequestParam(value = "usernameOrEmailOrUserId") String usernameOrEmailOrUserId) {
         ApiResponseDto responseDto = ApiResponseUtil.process(
                 "Bad Request",
@@ -88,7 +88,7 @@ public class PasswordRestController {
                     }
             ), @ApiResponse(
             responseCode = "400",
-            description = "User with eui does not exists | Token Validation Error | Confirm password & new password mismatched! ",
+            description = "IUser with eui does not exists | Token Validation Error | Confirm password & new password mismatched! ",
             content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
             }
     )
@@ -97,7 +97,7 @@ public class PasswordRestController {
     public ResponseEntity<ApiResponseDto> resetUserPassword(
             @Parameter(description = "The password reset body")
             @RequestBody UserResetPasswordDto userResetPasswordDto,
-            @Parameter(description = "User email, username or userId")
+            @Parameter(description = "IUser email, username or userId")
             @RequestParam(name = "token") String token
     ) {
         ApiResponseDto responseDto = ApiResponseUtil.process(
@@ -129,7 +129,7 @@ public class PasswordRestController {
                     return ResponseEntity.ok(responseDto);
                 }
             }else {
-                responseDto.setMessage(String.format("User %s is not found", userResetPasswordDto.getUsername()));
+                responseDto.setMessage(String.format("IUser %s is not found", userResetPasswordDto.getUsername()));
                 responseDto.setStatusCode("400");
                 responseDto.setData(null);
                 return ResponseEntity.ok(responseDto);

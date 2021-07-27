@@ -63,17 +63,18 @@ public class JobRestController {
                     }
             )})
     @PostMapping(value = "/create", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> createJob(@RequestBody JobDto jobDto) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+    public ResponseEntity<ApiResponseDto<String>> createJob(@RequestBody JobDto jobDto) {
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "Failed to create job",
-                "200",
+                "400",
                 "CREATE_JOB",
                 new Date(),
                 null);
         try {
-            if (!iJobService.createNewJob(JobApiGeneralMapper.INSTANCE.jobDtoToJob(jobDto, new CycleAvoidingMappingContext()), iAuthenticationFacadeService.getAuthentication().getName())) {
+            if (iJobService.createNewJob(JobApiGeneralMapper.INSTANCE.jobDtoToJob(jobDto, new CycleAvoidingMappingContext()), iAuthenticationFacadeService.getAuthentication().getName())) {
                 apiResponseDto.setStatusCode("200");
                 apiResponseDto.setMessage("Successfully created Job");
+                apiResponseDto.setData("Ok");
                 return ResponseEntity.ok().body(apiResponseDto);
             } else {
                 return ResponseEntity.badRequest().body(apiResponseDto);
@@ -81,6 +82,7 @@ public class JobRestController {
         } catch (Exception e) {
             LOGGER.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
+            apiResponseDto.setData("Not Ok");
             return ResponseEntity.badRequest().body(apiResponseDto);
         }
     }

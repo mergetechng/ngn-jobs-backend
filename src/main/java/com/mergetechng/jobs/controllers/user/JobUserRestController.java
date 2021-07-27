@@ -7,10 +7,10 @@ import com.mergetechng.jobs.commons.dto.FilterCondition;
 import com.mergetechng.jobs.commons.dto.UserAccountUpdateDto;
 import com.mergetechng.jobs.commons.util.ApiResponseUtil;
 import com.mergetechng.jobs.commons.util.CycleAvoidingMappingContext;
-import com.mergetechng.jobs.entities.User;
 import com.mergetechng.jobs.exceptions.*;
 import com.mergetechng.jobs.repositories.GenericFilterCriteriaBuilder;
 import com.mergetechng.jobs.services.FilterBuilderService;
+import com.mergetechng.jobs.services.JobsUserService;
 import com.mergetechng.jobs.services.api.JobApiGeneralMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -37,7 +37,7 @@ import java.util.Objects;
 public class JobUserRestController {
 
     @Autowired
-    private IUser iUser;
+    private JobsUserService iUser;
     private static final Logger logger = LoggerFactory.getLogger(JobUserRestController.class);
 
     @Autowired
@@ -125,7 +125,7 @@ public class JobUserRestController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "User disabled successfully",
+                    description = "IUser disabled successfully",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ),
@@ -165,7 +165,7 @@ public class JobUserRestController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "User basic information Successfully Updated",
+                    description = "IUser basic information Successfully Updated",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ),
@@ -206,7 +206,7 @@ public class JobUserRestController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "User logout successfully",
+                    description = "IUser logout successfully",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ),
@@ -229,7 +229,7 @@ public class JobUserRestController {
                 null);
         try {
             boolean isLoggedOut = iUser.logoutUser(username);
-            apiResponseDto.setMessage("User is logged out ->" + isLoggedOut);
+            apiResponseDto.setMessage("IUser is logged out ->" + isLoggedOut);
             apiResponseDto.setStatusCode("200");
             apiResponseDto.setData("Ok");
             return ResponseEntity.ok(apiResponseDto);
@@ -245,7 +245,7 @@ public class JobUserRestController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "User logout successfully",
+                    description = "IUser logout successfully",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ),
@@ -267,8 +267,8 @@ public class JobUserRestController {
                 new Date(),
                 null);
         try {
-            User result = iUser.getUser(usernameOrEmailOrUserId);
-            if (Objects.nonNull(result)) apiResponseDto.setMessage("User gotten successfully");
+            com.mergetechng.jobs.entities.User result = iUser.getUser(usernameOrEmailOrUserId);
+            if (Objects.nonNull(result)) apiResponseDto.setMessage("IUser gotten successfully");
             apiResponseDto.setData(JobApiGeneralMapper.INSTANCE.userToUserDto(result, new CycleAvoidingMappingContext()));
             apiResponseDto.setStatusCode("200");
             return ResponseEntity.ok(apiResponseDto);
@@ -285,7 +285,7 @@ public class JobUserRestController {
 //    @ApiResponses(value = {
 //            @ApiResponse(
 //                    responseCode = "200",
-//                    description = "User logout successfully",
+//                    description = "IUser logout successfully",
 //                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
 //                    }
 //            ),
@@ -318,7 +318,7 @@ public class JobUserRestController {
 //                null);
 //        try {
 //            List<UserDto> result = iUser.filterSearchUser(searchBy, limit, offset, operation, operationValue, order);
-//            if (Objects.nonNull(result)) apiResponseDto.setMessage("User(s) gotten successfully");
+//            if (Objects.nonNull(result)) apiResponseDto.setMessage("IUser(s) gotten successfully");
 //            apiResponseDto.setData(result);
 //            apiResponseDto.setStatusCode("200");
 //            return ResponseEntity.ok(apiResponseDto);
@@ -346,12 +346,12 @@ public class JobUserRestController {
             )
     })
     @GetMapping(value = "/advanceQuerySearch")
-    public ResponseEntity<ApiResponseDto<List<User>>> advanceQuerySearch(
+    public ResponseEntity<ApiResponseDto<List<com.mergetechng.jobs.entities.User>>> advanceQuerySearch(
             @RequestParam(value = "query", required = false) String query,
             @RequestParam(value = "filterAnd", required = false) String filterAnd,
             @RequestParam(value = "filterOr", required = false) String filterOr
     ) throws BadRequestException {
-        ApiResponseDto<List<User>> apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<List<com.mergetechng.jobs.entities.User>> apiResponseDto = ApiResponseUtil.process(
                 null,
                 "400",
                 "ADVANCE_SEARCH",
@@ -362,7 +362,7 @@ public class JobUserRestController {
             List<FilterCondition> queryFilterAndCondition = filterBuilderService.createFilterCondition(filterAnd);
             List<FilterCondition> queryFilterOrCondition = filterBuilderService.createFilterCondition(filterOr);
             Query mongoQuery = filterCriteriaBuilder.addCondition(queryFilterAndCondition, queryFilterOrCondition);
-            List<User> pageableUsers = iUser.getAllWithoutPageable(mongoQuery);
+            List<com.mergetechng.jobs.entities.User> pageableUsers = iUser.getAllWithoutPageable(mongoQuery);
             apiResponseDto.setData(pageableUsers);
             return ResponseEntity.ok().body(apiResponseDto);
         } catch (Exception e) {
@@ -373,7 +373,7 @@ public class JobUserRestController {
     }
 
 
-    @Operation(description = "User Advance search")
+    @Operation(description = "IUser Advance search")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
@@ -389,13 +389,13 @@ public class JobUserRestController {
             )
     })
     @GetMapping(value = "/advancePageableQuerySearch")
-    public ResponseEntity<ApiResponseDto<Page<User>>> advancePageableQuerySearch(
+    public ResponseEntity<ApiResponseDto<Page<com.mergetechng.jobs.entities.User>>> advancePageableQuerySearch(
             @RequestParam(value = "filterAnd", required = false) String filterAnd,
             @RequestParam(value = "filterOr", required = false) String filterOr,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "orders", required = false) String orders,
             @RequestParam(value = "size", required = false) Integer size) {
-        ApiResponseDto<Page<User>> apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<Page<com.mergetechng.jobs.entities.User>> apiResponseDto = ApiResponseUtil.process(
                 null,
                 "400",
                 "ADVANCE_SEARCH",
@@ -407,7 +407,7 @@ public class JobUserRestController {
             List<FilterCondition> queryFilterAndCondition = filterBuilderService.createFilterCondition(filterAnd);
             List<FilterCondition> queryFilterOrCondition = filterBuilderService.createFilterCondition(filterOr);
             Query mongoQuery = filterCriteriaBuilder.addCondition(queryFilterAndCondition, queryFilterOrCondition);
-            Page<User> pageableUsers = iUser.getAllWithPageable(mongoQuery, pageable);
+            Page<com.mergetechng.jobs.entities.User> pageableUsers = iUser.getAllWithPageable(mongoQuery, pageable);
             apiResponseDto.setData(pageableUsers);
             return ResponseEntity.ok().body(apiResponseDto);
         } catch (Exception e) {
@@ -514,7 +514,7 @@ public class JobUserRestController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "User with username deleted successfully",
+                    description = "IUser with username deleted successfully",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             )
@@ -531,7 +531,7 @@ public class JobUserRestController {
                 null);
         try {
             if (iUser.deleteUser(usernameOrEmailOrUserId)) {
-                apiResponseDto.setMessage(true + "- User successfully deleted from the system");
+                apiResponseDto.setMessage(true + "- IUser successfully deleted from the system");
                 apiResponseDto.setStatusCode("200");
                 apiResponseDto.setData(true);
                 return ResponseEntity.ok(apiResponseDto);

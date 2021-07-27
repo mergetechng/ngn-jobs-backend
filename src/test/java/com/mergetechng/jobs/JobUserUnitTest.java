@@ -13,7 +13,6 @@ import com.mergetechng.jobs.services.JobsUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.After;
 import org.junit.Test;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

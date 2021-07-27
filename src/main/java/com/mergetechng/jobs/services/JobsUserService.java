@@ -1,5 +1,6 @@
 package com.mergetechng.jobs.services;
 
+import com.mergetechng.jobs.api.IAdvanceSearch;
 import com.mergetechng.jobs.api.IUser;
 import com.mergetechng.jobs.commons.dto.UserAccountUpdateDto;
 import com.mergetechng.jobs.commons.dto.UserDto;
@@ -31,10 +32,9 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 @Service
-public class JobsUserService implements IUser {
+public class JobsUserService implements IUser, IAdvanceSearch<User> {
     private static final Logger LOGGER = LoggerFactory.getLogger(JobsUserService.class);
     @Autowired
     private EmailService emailService;
@@ -55,7 +55,7 @@ public class JobsUserService implements IUser {
 
 
     public void logInUser(String username) {
-        Optional<User> userOptional = Optional.ofNullable(this.userRepository.findByUsername(username));
+        Optional<com.mergetechng.jobs.entities.User> userOptional = Optional.ofNullable(this.userRepository.findByUsername(username));
         if (userOptional.isPresent()) {
             userOptional.get().setOnline(true);
             this.userRepository.save(userOptional.get());
@@ -66,16 +66,16 @@ public class JobsUserService implements IUser {
         this.userRepository = userRepository;
     }
 
-    public User getUserByUsername(String username) {
+    public com.mergetechng.jobs.entities.User getUserByUsername(String username) {
         return this.userRepository.findByUsernameOrEmailOrId(username, null, null);
     }
 
-    public List<User> getUserByFirstNameAndLastName(String firstName, String lastName) {
+    public List<com.mergetechng.jobs.entities.User> getUserByFirstNameAndLastName(String firstName, String lastName) {
         return this.userRepository.findByFirstNameAndLastName(firstName, lastName);
     }
 
     @Override
-    public boolean createNewUser(User user) throws Exception {
+    public boolean createNewUser(com.mergetechng.jobs.entities.User user) throws Exception {
         LOGGER.info("Username: {}", user.getUsername());
         LOGGER.info("Email: {}", user.getEmail());
         LOGGER.info("Password: {}", user.getPassword());
@@ -95,13 +95,13 @@ public class JobsUserService implements IUser {
             userRepository.insert(user);
             addUserToGroup(user, GroupEnum.JOB_APPLICANT_GROUP.name());
             sendUserEmailVerification(user.getEmail());
-            LOGGER.info("Created new User: {}", user.toString());
+            LOGGER.info("Created new IUser: {}", user.toString());
             return true;
         }
         return false;
     }
 
-    private void addUserToGroup(User user, String groupName) {
+    private void addUserToGroup(com.mergetechng.jobs.entities.User user, String groupName) {
         if (groupRepository.findById(groupName).isPresent()) {
             LOGGER.info("The Group name is present " + groupName);
             user.setGroupId(List.of(groupRepository.findById(groupName).get()));
@@ -123,13 +123,13 @@ public class JobsUserService implements IUser {
     }
 
     @Override
-    public void updateUser(User user) {
+    public void updateUser(com.mergetechng.jobs.entities.User user) {
         if (userExists(user.getUsername(), user.getEmail())) {
             user.setDateModified(new Date());
             userRepository.save(user);
             return;
         }
-        throw new UserNotFoundException("User with username " + user.getUsername() + " not found");
+        throw new UserNotFoundException("IUser with username " + user.getUsername() + " not found");
     }
 
     @Override
@@ -140,32 +140,32 @@ public class JobsUserService implements IUser {
     @Override
     public String disabledUser(String username) {
         if (userExists(username, "")) {
-            User user = getUserWithUsername(username);
+            com.mergetechng.jobs.entities.User user = getUserWithUsername(username);
             if (Objects.nonNull(user)) {
                 user.setEnabled(false);
                 updateUser(user);
                 return "Username successfully disabled";
             }
         }
-        throw new UserNotFoundException("User with username " + username + " not found");
+        throw new UserNotFoundException("IUser with username " + username + " not found");
     }
 
     @Override
     public String enableUser(String username) {
         if (userExists(username, "")) {
-            User user = getUserWithUsername(username);
+            com.mergetechng.jobs.entities.User user = getUserWithUsername(username);
             if (Objects.nonNull(user)) {
                 user.setEnabled(true);
                 updateUser(user);
                 return "Username successfully enabled";
             }
         }
-        throw new UserNotFoundException("User with username " + username + "not found");
+        throw new UserNotFoundException("IUser with username " + username + "not found");
     }
 
     @Override
     public String updateBasicAccountInformation(UserAccountUpdateDto userAccountUpdateDto, String usernameOrEmailOrUserId) throws UserAlreadyExistsException {
-        User user = getUser(usernameOrEmailOrUserId);
+        com.mergetechng.jobs.entities.User user = getUser(usernameOrEmailOrUserId);
         if (Objects.nonNull(user)) {
             user.setEmail(userAccountUpdateDto.getEmail());
             /*send email verification link to the new email*/
@@ -177,18 +177,18 @@ public class JobsUserService implements IUser {
                 throw new UserAlreadyExistsException("Username " + userAccountUpdateDto.getUsername() + " already exist");
             }
             updateUser(user);
-            return "User basic information updated successfully";
+            return "IUser basic information updated successfully";
         }
         throw new UserAccountUpdateException("Failed to update user basic information");
     }
 
     @Override
-    public User getUser(String uei) throws UserNotFoundException {
-        Optional<User> optionalUser = Optional.ofNullable(this.userRepository.findByUsernameOrEmailOrId(uei, uei, uei));
+    public com.mergetechng.jobs.entities.User getUser(String uei) throws UserNotFoundException {
+        Optional<com.mergetechng.jobs.entities.User> optionalUser = Optional.ofNullable(this.userRepository.findByUsernameOrEmailOrId(uei, uei, uei));
         if (optionalUser.isPresent()) {
             return optionalUser.get();
         }
-        throw new UserNotFoundException("User with key " + uei + " not found");
+        throw new UserNotFoundException("IUser with key " + uei + " not found");
     }
 
     @Override
@@ -218,14 +218,14 @@ public class JobsUserService implements IUser {
 
     /**
      * @param email The user email address
-     * @param token The User token
+     * @param token The IUser token
      * @return
      * @throws UserTokenException    This is thrown when the user token does not exists
      * @throws UserNotFoundException This is thrown when the user is not found
      */
     @Override
     public boolean verifyUserEmail(String email, String token) throws ResourceNotFoundException, UserNotFoundException, UserTokenException {
-        User user = getUser(email);
+        com.mergetechng.jobs.entities.User user = getUser(email);
         if (!validateToken(token, email)) {
             throw new ResourceNotFoundException("The token " + token + " was not found");
         } else {
@@ -241,7 +241,7 @@ public class JobsUserService implements IUser {
     @Override
     public boolean forgotPassword(String emailOrUsername) throws Exception {
         try {
-            User user = getUser(emailOrUsername);
+            com.mergetechng.jobs.entities.User user = getUser(emailOrUsername);
             if (user != null) {
                 String token = RandomStringUtils.randomAlphanumeric(500);
                 storeToken(user.getEmail(), token, DateUtils.addDays(new Date(), 10));
@@ -251,7 +251,7 @@ public class JobsUserService implements IUser {
                         + "?email=" + user.getEmail() + "&"
                         + "token=" + token;
                 emailService.sendSimpleMessage(
-                        "User Account Forget Password-"
+                        "IUser Account Forget Password-"
                         , emailText,
                         null,
                         3,
@@ -278,7 +278,7 @@ public class JobsUserService implements IUser {
      * @param username The username to search from with
      * @return
      */
-    public User getUserWithUsername(String username) {
+    public com.mergetechng.jobs.entities.User getUserWithUsername(String username) {
         return Optional.ofNullable(userRepository.findByUsernameOrEmailOrId(username, null, null)).orElse(null);
     }
 
@@ -288,16 +288,16 @@ public class JobsUserService implements IUser {
      */
     @Override
     public boolean sendUserEmailVerification(String uei) throws Exception {
-        Optional<User> optionalUser = Optional.ofNullable(userRepository.findByUsernameOrEmailOrId(uei, uei, uei));
+        Optional<com.mergetechng.jobs.entities.User> optionalUser = Optional.ofNullable(userRepository.findByUsernameOrEmailOrId(uei, uei, uei));
         if (optionalUser.isPresent()) {
             if (!optionalUser.get().getIsEmailVerified()) {
                 LOGGER.info("Yes I was able to run this...");
                 String token = RandomStringUtils.randomAlphanumeric(500);
-                User user = optionalUser.get();
+                com.mergetechng.jobs.entities.User user = optionalUser.get();
                 storeToken(user.getEmail(), token, DateUtils.addDays(new Date(), 10));
                 CompletableFuture<String> completableFuture =
                         emailService.sendSimpleMessage(
-                                "Ng-Jobs: New User Email Verification",
+                                "Ng-Jobs: New IUser Email Verification",
                                 "Hello " + uei + "!\nKindly find your Email Verification Link below \n"
                                         + System.getenv("VERIFICATION_BASE_URL")
                                         + "?email=" + user.getEmail() + "&"
@@ -320,15 +320,15 @@ public class JobsUserService implements IUser {
                 }
             } else if (optionalUser.get().getIsEmailVerified()) {
                 LOGGER.info(String.format("Account %s already verified", uei));
-                throw new UserAccountAlreadyVerifiedException("User account is already verified. No link sent");
+                throw new UserAccountAlreadyVerifiedException("IUser account is already verified. No link sent");
             }
         }
-        throw new UserNotFoundException(String.format("User credential %s not found", uei));
+        throw new UserNotFoundException(String.format("IUser credential %s not found", uei));
     }
 
     @Override
     public boolean updateUserPassword(UserUpdatePasswordDto passwordUpdate, String usernameOrEmailOrUserId) throws PasswordMismatchedException, UserNotFoundException {
-        User user = getUser(usernameOrEmailOrUserId);
+        com.mergetechng.jobs.entities.User user = getUser(usernameOrEmailOrUserId);
         LOGGER.info("RAW PASSWORD : {}", passwordUpdate.getOldPassword());
         LOGGER.info("ENCODED PASSWORD : {}", user.getPassword());
         LOGGER.info("PASSWORD MATCHED: {}", passwordEncoder.matches(passwordUpdate.getOldPassword(), user.getPassword()));
@@ -350,23 +350,8 @@ public class JobsUserService implements IUser {
 
 
     @Override
-    public Page<User> getAllWithPageable(Query query , Pageable pageable) {
-        return PageableExecutionUtils.getPage(
-                mongoTemplate.find(query, User.class),
-                pageable,
-                () -> mongoTemplate.count(query.skip(0).limit(0), User.class)
-        );
-    }
-
-    @Override
-    public List<User> getAllWithoutPageable(Query query) {
-        return mongoTemplate.find(query, User.class);
-    }
-
-
-    @Override
     public boolean resetUserPassword(String token, UserResetPasswordDto userResetPasswordDto) throws UserNotFoundException, PasswordMismatchedException {
-        User user = getUser(userResetPasswordDto.getUsername());
+        com.mergetechng.jobs.entities.User user = getUser(userResetPasswordDto.getUsername());
         if (userResetPasswordDto.getConfirmPassword().equals(userResetPasswordDto.getNewPassword())) {
             user.setPassword(passwordEncoder.encode(userResetPasswordDto.getNewPassword()));
             user.setDateModified(new Date());
@@ -382,7 +367,7 @@ public class JobsUserService implements IUser {
     @Override
     public boolean logoutUser(String username) {
         if (userExists(username, "")) {
-            User user = getUserWithUsername(username);
+            com.mergetechng.jobs.entities.User user = getUserWithUsername(username);
             if (Objects.nonNull(user)) {
                 user.setStatus(StatusEnum.OFFLINE.name());
                 updateUser(user);
@@ -417,5 +402,19 @@ public class JobsUserService implements IUser {
         tokenToEmailMap.setExpiryDate(expiryDate);
         tokenToEmailMapRepository.save(tokenToEmailMap);
         LOGGER.info("Created token for email: {} ; token {}; updateTime : {}", email, token, new Date());
+    }
+
+    @Override
+    public Page<User> getAllWithPageable(Query query , Pageable pageable) {
+        return PageableExecutionUtils.getPage(
+                mongoTemplate.find(query, User.class),
+                pageable,
+                () -> mongoTemplate.count(query.skip(0).limit(0), User.class)
+        );
+    }
+
+    @Override
+    public List<User> getAllWithoutPageable(Query query) {
+        return mongoTemplate.find(query, User.class);
     }
 }

@@ -1,6 +1,6 @@
 //package com.mergetechng.jobs;
 //
-//import com.mergetechng.jobs.entities.User;
+//import com.mergetechng.jobs.entities.IUser;
 //import com.mergetechng.jobs.repositories.UserRepository;
 //import com.mergetechng.jobs.services.JobsUserService;
 //import lombok.extern.slf4j.Slf4j;

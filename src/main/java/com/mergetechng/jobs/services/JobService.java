@@ -6,6 +6,7 @@ import com.mergetechng.jobs.entities.Job;
 import com.mergetechng.jobs.entities.JobApplicant;
 import com.mergetechng.jobs.exceptions.JobApplicantNotFoundException;
 import com.mergetechng.jobs.exceptions.JobNotExistsException;
+import com.mergetechng.jobs.exceptions.UserAccountAlreadyVerifiedException;
 import com.mergetechng.jobs.repositories.JobApplicantRepository;
 import com.mergetechng.jobs.repositories.JobRepository;
 import com.mergetechng.jobs.repositories.UserRepository;
@@ -120,11 +121,14 @@ public class JobService implements IJobService {
     }
 
     @Override
-    public boolean createNewJob(Job job, String userName) {
-        if (userRepository.existsByUsernameOrEmail(userName, null) && userRepository.findByUsername(userName).isEmailVerified()) {
-            throw new UsernameNotFoundException("Can't create Job because user is unverified");
+    public boolean createNewJob(Job job, String userName) throws UserAccountAlreadyVerifiedException {
+        LOGGER.info("USERNAME : {}", userName);
+        if (!userRepository.existsByUsernameOrEmail(userName, null)) {
+            throw new UsernameNotFoundException("IUser is not found");
+        }if (!userRepository.findByUsername(userName).isEmailVerified()) {
+            throw new UserAccountAlreadyVerifiedException("Account owner not verified");
         } else if (!userRepository.existsByUsernameOrEmail(userName, null)) {
-            throw new UsernameNotFoundException(String.format("User %s is not found", userName));
+            throw new UsernameNotFoundException(String.format("IUser %s is not found", userName));
         }
         job.setJobId(UUID.randomUUID().toString());
         job.setDateCreated(new Date());
@@ -153,7 +157,7 @@ public class JobService implements IJobService {
 
 
     /**
-     * @param jobApplicationId The job application Id to attach the CV or Resume to
+     * @param jobApplicationId       The job application Id to attach the CV or Resume to
      * @param resumeNameOrCvFileName The Resume or CV to be attached
      * @throws JobApplicantNotFoundException The Exception thrown when the Job Applicant is not found
      */
