@@ -5,18 +5,14 @@ import com.mergetechng.jobs.commons.enums.AccountTypeEnum;
 import com.mergetechng.jobs.commons.enums.GroupEnum;
 import com.mergetechng.jobs.commons.enums.RoleEnum;
 import com.mergetechng.jobs.commons.enums.StatusEnum;
-import com.mergetechng.jobs.entities.Group1;
-import com.mergetechng.jobs.entities.Privilege;
-import com.mergetechng.jobs.entities.Role;
-import com.mergetechng.jobs.entities.User;
-import com.mergetechng.jobs.repositories.GroupRepository;
-import com.mergetechng.jobs.repositories.PrivilegeRepository;
-import com.mergetechng.jobs.repositories.RoleRepository;
-import com.mergetechng.jobs.repositories.UserRepository;
+import com.mergetechng.jobs.entities.*;
+import com.mergetechng.jobs.repositories.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.TextIndexDefinition;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -39,6 +35,8 @@ public class JobDBInitializationRunner implements CommandLineRunner {
     private PasswordEncoder passwordEncoder;
     private boolean done;
     private static final String NG_JOB_DEFAULT_ADMIN = "ng_jobs_admin";
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
     public JobDBInitializationRunner() {
         LOGGER.info("Starting the job database initialisation");
@@ -49,6 +47,30 @@ public class JobDBInitializationRunner implements CommandLineRunner {
         LOGGER.info("Starting the command line runner...");
         initGroups();
         createDefaultSuperAdmin();
+        createTextIndexedFields();
+    }
+
+    private void createTextIndexedFields() {
+        LOGGER.info("Creating @TextIndexed for the Job Document");
+        if (mongoTemplate.findAll(Job.class).isEmpty()) {
+            LOGGER.info("...in progress");
+            try {
+                TextIndexDefinition textIndex = new TextIndexDefinition.TextIndexDefinitionBuilder()
+                        .onField("jobTitle", 6F)
+                        .onField("jobDescription", 5F)
+                        .onField("specialism", 4F)
+                        .onField("industry", 3F)
+                        .onField("jobCategory", 2F)
+                        .build();
+                mongoTemplate.indexOps(Job.class).ensureIndex(textIndex);
+                LOGGER.info("Done creating the TextIndex for the Job Entity");
+            } catch (Exception e) {
+                e.printStackTrace();
+                LOGGER.info("Error : {0}", e);
+            }
+        } else {
+            LOGGER.info("Skipped @TextIndexed for the Job Document");
+        }
     }
 
     private void createDefaultSuperAdmin() throws ExecutionException, InterruptedException {
@@ -217,8 +239,8 @@ public class JobDBInitializationRunner implements CommandLineRunner {
                 LOGGER.info("Currently adding this :  {}", _name.get());
                 if (this.privilegeRepository.findById(_name.get()).isEmpty()) {
                     privilegeRepository.insert(privilege);
-                }else {
-                    LOGGER.info("PRIVILEGE with ID : " +  privilegeRepository.findById(_name.get())+" EXISTS already. Skipped");
+                } else {
+                    LOGGER.info("PRIVILEGE with ID : " + privilegeRepository.findById(_name.get()) + " EXISTS already. Skipped");
                 }
             });
             role.setPrivilegeId(privilegeList);
@@ -226,15 +248,15 @@ public class JobDBInitializationRunner implements CommandLineRunner {
             LOGGER.info("Currently adding this :  {}", role.getRoleId());
             if (this.roleRepository.findById(role.getRoleId()).isEmpty()) {
                 roleRepository.insert(role);
-            }else {
-                LOGGER.info("ROLE with ID : " +  role.getRoleId()+" EXISTS already. Skipped");
+            } else {
+                LOGGER.info("ROLE with ID : " + role.getRoleId() + " EXISTS already. Skipped");
             }
         });
         adminGroup.setRoleId(roleList);
         if (this.roleRepository.findById(adminGroup.getGroupId()).isEmpty()) {
             groupRepository.insert(adminGroup);
-        }else {
-            LOGGER.info("GROUP with ID : " +  groupRepository.findById(adminGroup.getGroupId())+" EXISTS already. Skipped");
+        } else {
+            LOGGER.info("GROUP with ID : " + groupRepository.findById(adminGroup.getGroupId()) + " EXISTS already. Skipped");
         }
         LOGGER.info("Created " + adminGroup.getGroupId() + " Group");
     }

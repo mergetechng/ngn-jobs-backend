@@ -106,7 +106,8 @@ public class JobService implements IJobService, IAdvanceSearch<Job> {
     public List<Job> fullTextSearch(String searchPhrase) {
         TextCriteria criteria = TextCriteria
                 .forDefaultLanguage()
-                .matchingPhrase(searchPhrase);
+                .matchingPhrase(searchPhrase)
+                .matching(searchPhrase);
         Query query = TextQuery.queryText(criteria).sortByScore();
         return mongoTemplate.find(query, Job.class);
     }
@@ -125,9 +126,8 @@ public class JobService implements IJobService, IAdvanceSearch<Job> {
 
     @Override
     public boolean createNewJob(Job job, String userName) throws UserAccountAlreadyVerifiedException {
-        LOGGER.info("USERNAME : {}", userName);
         if (!userRepository.existsByUsernameOrEmail(userName, null)) {
-            throw new UsernameNotFoundException("IUser is not found");
+            throw new UsernameNotFoundException("User is not found");
         }if (!userRepository.findByUsername(userName).isEmailVerified()) {
             throw new UserAccountAlreadyVerifiedException("Account owner not verified");
         } else if (!userRepository.existsByUsernameOrEmail(userName, null)) {
@@ -194,7 +194,7 @@ public class JobService implements IJobService, IAdvanceSearch<Job> {
     @Override
     public Page<Job> getAllWithPageable(Query query , Pageable pageable) {
         return PageableExecutionUtils.getPage(
-                mongoTemplate.find(query, Job.class),
+                mongoTemplate.find(query.with(pageable), Job.class),
                 pageable,
                 () -> mongoTemplate.count(query.skip(0).limit(0), Job.class)
         );

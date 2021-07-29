@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -32,6 +33,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 public class JobsUserService implements IUser, IAdvanceSearch<User> {
@@ -316,7 +318,10 @@ public class JobsUserService implements IUser, IAdvanceSearch<User> {
                     return false;
                 } else if (completableFuture.isDone() && !completableFuture.isCompletedExceptionally()) {
                     LOGGER.info("Message from mailer: " + completableFuture.get() + uei);
-                    return true;
+                    /* Use another thread to send the mail again after 60 Secs
+                     *  Try sending for like 10 trials
+                     **/
+                    return true; // this should be logged and can be scheduled for resending again after some time
                 }
             } else if (optionalUser.get().getIsEmailVerified()) {
                 LOGGER.info(String.format("Account %s already verified", uei));
@@ -405,12 +410,14 @@ public class JobsUserService implements IUser, IAdvanceSearch<User> {
     }
 
     @Override
-    public Page<User> getAllWithPageable(Query query , Pageable pageable) {
+    public Page<User> getAllWithPageable(Query query, Pageable pageable) {
         return PageableExecutionUtils.getPage(
-                mongoTemplate.find(query, User.class),
+                mongoTemplate.find(query.with(pageable), User.class)
+                        .stream()
+                        .peek(user -> user.setPassword("********"))
+                        .collect(Collectors.toList()),
                 pageable,
-                () -> mongoTemplate.count(query.skip(0).limit(0), User.class)
-        );
+                () -> mongoTemplate.count(query, User.class));
     }
 
     @Override

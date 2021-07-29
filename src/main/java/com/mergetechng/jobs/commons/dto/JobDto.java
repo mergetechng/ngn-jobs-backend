@@ -58,7 +58,6 @@ public class JobDto {
     @NotNull
     @NotBlank
     private String jobType;
-
     private Date dateCreated;
     private Date dateModified;
     private String modifiedBy;

@@ -29,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -404,12 +405,21 @@ public class JobUserRestController {
                 new Date(),
                 null);
         try {
+            logger.info("PAGE SIZE ::: {}" , size);
+            logger.info("PAGE NUMBER ::: {}" , page);
+
             Pageable pageable = filterBuilderService.getPageable(size, page, orders);
             GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
+
             List<FilterCondition> queryFilterAndCondition = filterBuilderService.createFilterCondition(filterAnd);
             List<FilterCondition> queryFilterOrCondition = filterBuilderService.createFilterCondition(filterOr);
+
+            logger.info(Arrays.toString(queryFilterAndCondition.toArray()));
+            logger.info(Arrays.toString(queryFilterOrCondition.toArray()));
+
             Query mongoQuery = filterCriteriaBuilder.addCondition(queryFilterAndCondition, queryFilterOrCondition);
             Page<com.mergetechng.jobs.entities.User> pageableUsers = iUser.getAllWithPageable(mongoQuery, pageable);
+
             apiResponseDto.setData(pageableUsers);
             return ResponseEntity.ok().body(apiResponseDto);
         } catch (Exception e) {

@@ -43,7 +43,7 @@ public class AccountSettings implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "_id", nullable = false, length = 36)
+    @Column(nullable = false, length = 36)
     private String id;
     @Column(name = "last_login_info", length = 2147483647)
     private String lastLoginInfo;

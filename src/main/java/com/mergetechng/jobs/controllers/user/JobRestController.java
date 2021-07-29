@@ -45,8 +45,6 @@ public class JobRestController {
     @Autowired
     private IJobService iJobService;
     private static final Logger LOGGER = LoggerFactory.getLogger(JobRestController.class);
-    @Value("${amazonProperties.bucketName}")
-    private static String AWS_BASE_BUCKET_URL;
     @Autowired
     private Amazons3ClientService amazons3ClientService;
     @Autowired
@@ -178,8 +176,8 @@ public class JobRestController {
                     }
             )})
     @GetMapping(value = "/fetch", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> getJob(@RequestParam(name = "jobId") String jobIb) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+    public ResponseEntity<ApiResponseDto<Job>> getJob(@RequestParam(name = "jobId") String jobIb) {
+        ApiResponseDto<Job> apiResponseDto = ApiResponseUtil.process(
                 "Failed to update job",
                 "400",
                 "GET_JOB",
@@ -207,18 +205,18 @@ public class JobRestController {
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             )})
-    @GetMapping(value = "/search-jobs", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> fullTextSearch(@RequestParam(name = "keyPhrase") String keyPhrase) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+    @GetMapping(value = "/fullTextSearch", produces = {"application/json"})
+    public ResponseEntity<ApiResponseDto<List<Job>>> fullTextSearch(@RequestParam(name = "keyphrase") String keyphrase) {
+        ApiResponseDto<List<Job>> apiResponseDto = ApiResponseUtil.process(
                 "Failed to update job",
                 "400",
                 "GET_JOBS",
                 new Date(),
                 null);
         try {
-            List<Job> searchJobs = iJobService.fullTextSearch(keyPhrase);
+            List<Job> searchJobs = iJobService.fullTextSearch(keyphrase);
             apiResponseDto.setStatusCode("200");
-            apiResponseDto.setMessage("Successfully fetch the jobs with key" + keyPhrase);
+            apiResponseDto.setMessage("Successfully fetch the jobs with key" + keyphrase);
             apiResponseDto.setData(searchJobs);
             return ResponseEntity.ok().body(apiResponseDto);
         } catch (Exception e) {
@@ -238,14 +236,14 @@ public class JobRestController {
                     }
             )})
     @GetMapping(value = "/{jobId}/applicants/", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> pageableFetchApplicants(
+    public ResponseEntity<ApiResponseDto<Page<Job>>> pageableFetchApplicants(
             @RequestParam(name = "page") Integer page,
             @RequestParam(name = "size") Integer size,
             @RequestParam(name = "orders") String orders,
             @RequestParam(name = "filterAnd") String filterAnd,
             @RequestParam(name = "filerOr") String filerOr
     ) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<Page<Job>> apiResponseDto = ApiResponseUtil.process(
                 "Failed fetch applicants",
                 "400",
                 "GET_JOB",
@@ -273,18 +271,19 @@ public class JobRestController {
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             )})
-    @GetMapping(value = " /{jobId}/applicants/{applicantId}", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> getSingleInfoApplicantForTheJob(
-            @PathParam(value = "jobId") String jobId,
-            @PathParam(value = "jobApplicationId") String jobApplicationId) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+    @GetMapping(value = "/{jobId}/applicant/{applicantId}", produces = {"application/json"})
+    public ResponseEntity<ApiResponseDto<JobApplicant>> getSingleInfoApplicantForTheJob(
+            @PathVariable(value = "jobId") String jobId,
+            @PathVariable(value = "applicantId") String applicantId) {
+        ApiResponseDto<JobApplicant> apiResponseDto = ApiResponseUtil.process(
                 "Failed fetch applicants",
                 "400",
                 RequestActionEnum.GET_JOB.name(),
                 new Date(),
                 null);
         try {
-            JobApplicant jobApplicant = iJobService.getSingleJobApplicant(jobId, jobApplicationId);
+            LOGGER.info("JOB ID {}" , jobId);
+            JobApplicant jobApplicant = iJobService.getSingleJobApplicant(jobId, applicantId);
             apiResponseDto.setStatusCode("200");
             apiResponseDto.setMessage("Successfully fetch the jobs");
             apiResponseDto.setData(jobApplicant);
@@ -335,18 +334,18 @@ public class JobRestController {
                     description = "Successfully downloaded the CV",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
             )})
-    @GetMapping(value = " /job-cv-resume/", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> jobCVResume(
-            @RequestParam(value = "jobId", required = false) String jobId,
+    @GetMapping(value = "/{jobId}/cv-resume/{cvAction}/", produces = {"application/json"})
+    public ResponseEntity<ApiResponseDto<String>> jobCVResume(
+            @PathVariable(value = "jobId", required = false) String jobId,
             @RequestParam(value = "uploadedFileIdOrFileName", required = false) String uploadedFileIdOrFileName,
-            @RequestParam(value = "cvAction") String cvAction,
+            @PathVariable(value = "cvAction") String cvAction,
             @RequestParam(value = "resumeNameOrCvFileNameOrUploadedDocumentId", required = false) String resumeNameOrCvFileNameOrUploadedDocumentId,
             @RequestParam(value = "jobApplicationId", required = false) String jobApplicationId,
             HttpServletResponse httpServletResponse,
             MultipartFile multipartFile
     ) {
         String message = "Operation not allowed. Required query params not matched";
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 message,
                 "400",
                 RequestActionEnum.JOB_CV_RESUME_DEFAULT.name(),
