@@ -376,7 +376,7 @@ public class JobUserRestController {
     }
 
 
-    @Operation(description = "IUser Advance search")
+    @Operation(description = "User Advance search")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",

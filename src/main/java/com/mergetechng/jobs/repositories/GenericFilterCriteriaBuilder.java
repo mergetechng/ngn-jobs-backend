@@ -66,7 +66,6 @@ public class GenericFilterCriteriaBuilder {
         } else if (!criteriaOrClause.isEmpty()) {
             return new Query(criteria.orOperator(criteriaOrClause.toArray(new Criteria[0])));
         } else {
-            LOGGER.info("OKAY OOOOOOOOOOOOOOOOOOOOOOOOOO");
             return new Query();
         }
     }

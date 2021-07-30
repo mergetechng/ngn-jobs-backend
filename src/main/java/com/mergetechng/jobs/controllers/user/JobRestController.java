@@ -576,9 +576,9 @@ public class JobRestController {
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
             ),
     })
-    @PutMapping(value = "/{jobId}/cv-resume", produces = {"application/json"})
+    @PutMapping(value = "/cv-resume/attach", produces = {"application/json"})
     public ResponseEntity<ApiResponseDto<String>> attachApplicantCVResumeToJob(
-            @PathVariable(value = "resumeNameOrCvFileNameOrUploadedDocumentId", required = false) String resumeNameOrCvFileNameOrUploadedDocumentId,
+            @RequestParam(value = "cvResumeURLOrUploadDocumentIdOrFileName", required = false) String cvResumeURLOrUploadDocumentIdOrFileName,
             @RequestParam(value = "jobApplicationId", required = false) String jobApplicationId) {
         ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "Failed attach applicant CV/Resume",
@@ -589,20 +589,20 @@ public class JobRestController {
         String message;
         try {
             apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_ATTACH.name());
-            if (ObjectUtils.isNotEmpty(jobApplicationId) && ObjectUtils.isNotEmpty(resumeNameOrCvFileNameOrUploadedDocumentId)) {
-                iJobService.attachCVToJobApplication(jobApplicationId, resumeNameOrCvFileNameOrUploadedDocumentId);
-                message = String.format("Successfully attached CV to %s", jobApplicationId);
+            if (ObjectUtils.isNotEmpty(jobApplicationId) && ObjectUtils.isNotEmpty(cvResumeURLOrUploadDocumentIdOrFileName)) {
+                iJobService.attachCVToJobApplication(jobApplicationId, cvResumeURLOrUploadDocumentIdOrFileName);
+                message = String.format("Successfully attached %s to jobApplicationId:%s", cvResumeURLOrUploadDocumentIdOrFileName, jobApplicationId);
                 apiResponseDto.setStatusCode("200");
                 apiResponseDto.setMessage(message);
                 apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_ATTACH.name());
                 LOGGER.info(message);
                 return ResponseEntity.ok().body(apiResponseDto);
             } else {
-                message = "Oops! Can't attach CV/Resume. jobApplicationId & jobApplicationId are required to complete this.";
+                message = "Oops! Can't attach CV/Resume. jobApplicationId & cvResumeURLOrUploadDocumentIdOrFileName are required to complete this.";
+                LOGGER.info(message);
                 apiResponseDto.setStatusCode("400");
                 apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_ATTACH.name());
                 apiResponseDto.setMessage(message);
-                LOGGER.info(message);
                 return ResponseEntity.badRequest().body(apiResponseDto);
             }
         } catch (Exception e) {

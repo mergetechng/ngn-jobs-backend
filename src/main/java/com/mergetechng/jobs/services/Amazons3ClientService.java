@@ -82,7 +82,7 @@ public class Amazons3ClientService {
             fileUrl = String.format(AMAZON_S3_DOCUMENT_UPLOAD_URL_TEMPLATE, fileName);
             resumeOrCVUploadHelper(fileName, file, fileUrl);
             boolean deleteOperation = file.delete();
-            jobService.attachCVToJobApplication(jobApplicationId, fileName);
+            jobService.attachCVToJobApplicationAfters3Upload(jobApplicationId, fileName);
             LOGGER.info("\nFile Name : {} \n Date: {} By : {} \n Temp Deleted : {}", fileName, new Date(), iAuthenticationFacadeService.getAuthentication().getName(), deleteOperation);
         } catch (AmazonServiceException ase) {
             LOGGER.info("Caught an AmazonServiceException from GET requests, rejected reasons:");
@@ -104,7 +104,7 @@ public class Amazons3ClientService {
      * @throws UnsupportedOperationException The Exception Returned when LOCKED file is attempted to be deleted
      */
     public boolean deleteFileFromS3Bucket(@NotEmpty @NotNull @NotBlank String jobApplicationId, @NotEmpty @NotNull @NotBlank String userUploadDocumentId) throws UnsupportedOperationException {
-        Optional<UserUploadDocument> userUploadDocumentOptional = userUploadedDocumentRepository.findByIdOrFileName(userUploadDocumentId);
+        Optional<UserUploadDocument> userUploadDocumentOptional = userUploadedDocumentRepository.findByIdOrFileName(userUploadDocumentId,userUploadDocumentId);
         Optional<Job> optionalJob = Optional.ofNullable(jobService.getJob(jobApplicationId));
         if (userUploadDocumentOptional.isPresent() && optionalJob.isPresent()) {
             UserUploadDocument userUploadDocument = userUploadDocumentOptional.get();
@@ -114,6 +114,7 @@ public class Amazons3ClientService {
                 String fileName = userUploadDocument.getFileName();
                 s3client.deleteObject(new DeleteObjectRequest(bucketName + "/", fileName));
                 userUploadedDocumentRepository.deleteById(userUploadDocument.getId());
+                LOGGER.info("FileName : {} Deleted Successfully @ {}",fileName, new Date().toString());
                 return true;
             }
         }
@@ -132,6 +133,7 @@ public class Amazons3ClientService {
         String username = iAuthenticationFacadeService.getAuthentication().getName();
         UserUploadDocument userUploadDocument = new UserUploadDocument();
         userUploadDocument.setUsername(username);
+        userUploadDocument.setFileName(fileName);
         userUploadDocument.setDocumentUrl(fileURL);
         userUploadDocument.setDateCreated(new Date());
         userUploadDocument.setId(UUID.randomUUID().toString());
@@ -162,7 +164,7 @@ public class Amazons3ClientService {
         LOGGER.info("Downloading {} from S3 bucket {}...\n", uploadedFilePrefix, bucketName);
         final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build();
         try {
-            Optional<UserUploadDocument> userUploadDocumentOptional = userUploadedDocumentRepository.findByIdOrFileName(uploadedFileIdOrFileName);
+            Optional<UserUploadDocument> userUploadDocumentOptional = userUploadedDocumentRepository.findByIdOrFileName(uploadedFileIdOrFileName,uploadedFileIdOrFileName);
             if (userUploadDocumentOptional.isPresent()) {
                 UserUploadDocument userUploadDocument = userUploadDocumentOptional.get();
                 S3Object o = s3.getObject(bucketName, userUploadDocument.getFileName());
