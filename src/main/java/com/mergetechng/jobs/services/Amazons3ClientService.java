@@ -201,5 +201,4 @@ public class Amazons3ClientService {
         }
         return new Object[]{};
     }
-//    /{jobId}/job-cv-resume/attach/applicantId=val
 }
