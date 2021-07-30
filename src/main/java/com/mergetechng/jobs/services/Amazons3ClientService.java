@@ -1,6 +1,7 @@
 package com.mergetechng.jobs.services;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.*;
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotBlank;
@@ -10,11 +11,13 @@ import javax.validation.constraints.NotNull;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
+import com.mergetechng.jobs.commons.EnvironmentVariables;
 import com.mergetechng.jobs.commons.enums.DocumentAccessLevelEnum;
 import com.mergetechng.jobs.commons.enums.DocumentStateEnum;
 import com.mergetechng.jobs.entities.Job;
@@ -22,6 +25,7 @@ import com.mergetechng.jobs.entities.UserUploadDocument;
 import com.mergetechng.jobs.exceptions.JobApplicantNotFoundException;
 import com.mergetechng.jobs.repositories.JobApplicantRepository;
 import com.mergetechng.jobs.repositories.UserUploadedDocumentRepository;
+import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.apache.tomcat.util.http.fileupload.FileUploadException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +41,6 @@ public class Amazons3ClientService {
     private String endpointUrl;
     @Value("${amazonProperties.bucketName}")
     private String bucketName;
-    @Value("${amazonProperties.accessKey}")
-    private String accessKey;
-    @Value("${amazonProperties.secretKey}")
-    private String secretKey;
     @Value("${amazonProperties.uploaded_file_prefix}")
     private String uploadedFilePrefix;
     @Autowired
@@ -49,7 +49,7 @@ public class Amazons3ClientService {
     private IAuthenticationFacadeService iAuthenticationFacadeService;
     @Autowired
     private JobApplicantRepository jobApplicantRepository;
-    private final String AMAZON_S3_DOCUMENT_UPLOAD_URL_TEMPLATE = bucketName + "." + endpointUrl + "/%s";
+    private String AMAZON_S3_DOCUMENT_UPLOAD_URL_TEMPLATE;
     @Autowired
     private JobService jobService;
 
@@ -57,37 +57,43 @@ public class Amazons3ClientService {
 
     @PostConstruct
     private void initializeAmazon() {
-        AWSCredentials credentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
+        AWSCredentials credentials = new BasicAWSCredentials(
+                EnvironmentVariables.AMAZON_PROPERTIES_ACCESS_KEY,
+                EnvironmentVariables.AMAZON_PROPERTIES_SECRET_KEY);
         this.s3client = AmazonS3ClientBuilder
                 .standard()
-                .withRegion(Regions.DEFAULT_REGION)
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .withRegion(Regions.US_EAST_2)
                 .build();
+        this.AMAZON_S3_DOCUMENT_UPLOAD_URL_TEMPLATE = this.bucketName + "." + endpointUrl + "/%s";
     }
 
     /**
      * @param multipartFile    The MultipartFile to be uploaded to the Amazon S3 bucket
      * @param jobApplicationId This will be used to attach the uploaded Resume or CV
      * @return String
-     * @throws IOException The Exception thrown
+     * @throws JobApplicantNotFoundException The Exception thrown
      */
-    public String uploadFileToAmazonS3ObjectBucket(@NotNull MultipartFile multipartFile, @NotNull @NotEmpty String jobApplicationId) throws JobApplicantNotFoundException {
+    public String uploadFileToAmazonS3ObjectBucket(@NotNull MultipartFile multipartFile, @NotNull @NotEmpty String jobApplicationId) throws JobApplicantNotFoundException, IOException, AmazonClientException, AmazonServiceException {
         String fileUrl = "";
         try {
             File file = convertMultiPartToFile(multipartFile);
             String fileName = generateFileName(multipartFile);
             fileUrl = String.format(AMAZON_S3_DOCUMENT_UPLOAD_URL_TEMPLATE, fileName);
-            resumeOrCVUploadHelper(fileName, file , fileUrl);
+            resumeOrCVUploadHelper(fileName, file, fileUrl);
             boolean deleteOperation = file.delete();
             jobService.attachCVToJobApplication(jobApplicationId, fileName);
-            LOGGER.info("File Name : {} \n Date: {} By : {} \n Temp Deleted : {}", fileName, new Date(), iAuthenticationFacadeService.getAuthentication().getName(), deleteOperation);
+            LOGGER.info("\nFile Name : {} \n Date: {} By : {} \n Temp Deleted : {}", fileName, new Date(), iAuthenticationFacadeService.getAuthentication().getName(), deleteOperation);
         } catch (AmazonServiceException ase) {
             LOGGER.info("Caught an AmazonServiceException from GET requests, rejected reasons:");
             LOGGER.info("Error Message: {} \n HTTP Status Code: {}\n  AWS Error Code:  {}\n Error Type: {}\n Request ID: {}\n " + ase.getMessage(), ase.getStatusCode(), ase.getErrorCode(), ase.getErrorType(), ase.getRequestId());
         } catch (AmazonClientException ace) {
             LOGGER.info("Caught an AmazonClientException: ");
             LOGGER.info("Error Message: " + ace.getMessage());
+            throw new AmazonClientException("Error Message: " + ace.getMessage());
         } catch (IOException ioe) {
             LOGGER.info("IOE Error Message: " + ioe.getMessage());
+            throw new IOException("Error Message: " + ioe.getMessage());
         }
         return fileUrl;
     }
@@ -97,7 +103,7 @@ public class Amazons3ClientService {
      * @return java.lang.Boolean
      * @throws UnsupportedOperationException The Exception Returned when LOCKED file is attempted to be deleted
      */
-    public boolean deleteFileFromS3Bucket(@NotEmpty @NotNull @NotBlank String jobApplicationId , @NotEmpty @NotNull @NotBlank String userUploadDocumentId) throws UnsupportedOperationException {
+    public boolean deleteFileFromS3Bucket(@NotEmpty @NotNull @NotBlank String jobApplicationId, @NotEmpty @NotNull @NotBlank String userUploadDocumentId) throws UnsupportedOperationException {
         Optional<UserUploadDocument> userUploadDocumentOptional = userUploadedDocumentRepository.findByIdOrFileName(userUploadDocumentId);
         Optional<Job> optionalJob = Optional.ofNullable(jobService.getJob(jobApplicationId));
         if (userUploadDocumentOptional.isPresent() && optionalJob.isPresent()) {
@@ -116,29 +122,24 @@ public class Amazons3ClientService {
 
 
     /**
-     * @param fileName The file name to be uploaded to the Amazon S3 Bucket
+     * @param fileName               The file name to be uploaded to the Amazon S3 Bucket
      * @param convertedMultipartFile The Convert {@link MultipartFile} to {@link File} to be uploaded
      * @return java.lang.Void
      */
-    private void resumeOrCVUploadHelper(@NotEmpty @NotNull String fileName, @NotNull File convertedMultipartFile, String fileURL) throws FileUploadException {
+    private void resumeOrCVUploadHelper(@NotEmpty @NotNull String fileName, @NotNull File convertedMultipartFile, String fileURL) throws IOException {
         LOGGER.info("Uploading {} to S3 bucket {}...\n", fileName, bucketName);
-        final AmazonS3 s3 = AmazonS3ClientBuilder.standard().withRegion(Regions.DEFAULT_REGION).build();
-        try {
-            String username = iAuthenticationFacadeService.getAuthentication().getName();
-            UserUploadDocument userUploadDocument = new UserUploadDocument();
-            userUploadDocument.setUserId(UUID.randomUUID().toString());
-            userUploadDocument.setDocumentUrl(fileURL);
-            userUploadDocument.setDateCreated(new Date());
-            userUploadDocument.setUserId(username);
-            userUploadDocument.setDocumentState(DocumentStateEnum.OPEN.name());
-            userUploadDocument.setAccessLevel(DocumentAccessLevelEnum.PRIVATE.name());
-            userUploadDocument.setCreatedBy(username);
-            userUploadedDocumentRepository.insert(userUploadDocument);
-            s3.putObject(bucketName, fileName, convertedMultipartFile);
-        } catch (AmazonServiceException e) {
-            LOGGER.error(e.getErrorMessage());
-        }
-        throw new FileUploadException("Failed to upload Resume or CV");
+        s3client.putObject(bucketName, fileName, convertedMultipartFile);
+        String username = iAuthenticationFacadeService.getAuthentication().getName();
+        UserUploadDocument userUploadDocument = new UserUploadDocument();
+        userUploadDocument.setUsername(username);
+        userUploadDocument.setDocumentUrl(fileURL);
+        userUploadDocument.setDateCreated(new Date());
+        userUploadDocument.setId(UUID.randomUUID().toString());
+        userUploadDocument.setDocumentState(DocumentStateEnum.OPEN.name());
+        userUploadDocument.setAccessLevel(DocumentAccessLevelEnum.PRIVATE.name());
+        userUploadDocument.setCreatedBy(username);
+        userUploadDocument.setFileMetadata(Map.of("fileContentType", Files.probeContentType(convertedMultipartFile.toPath())));
+        userUploadedDocumentRepository.insert(userUploadDocument);
     }
 
     private String generateFileName(MultipartFile multiPart) {
@@ -166,14 +167,14 @@ public class Amazons3ClientService {
                 UserUploadDocument userUploadDocument = userUploadDocumentOptional.get();
                 S3Object o = s3.getObject(bucketName, userUploadDocument.getFileName());
                 S3ObjectInputStream s3is = o.getObjectContent();
-                FileOutputStream fos = new FileOutputStream(userUploadDocument.getFileName());
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 byte[] read_buf = new byte[1024];
                 int read_len = 0;
                 while ((read_len = s3is.read(read_buf)) > 0) {
-                    fos.write(read_buf, 0, read_len);
+                    byteArrayOutputStream.write(read_buf, 0, read_len);
                 }
                 s3is.close();
-                fos.close();
+                byteArrayOutputStream.close();
 
                 List<String> usersWhoAccessed = userUploadDocument.getUserIdsWhoAccessed();
                 Collections.addAll(usersWhoAccessed, iAuthenticationFacadeService.getAuthentication().getName());
@@ -188,7 +189,7 @@ public class Amazons3ClientService {
                 userUploadDocument.setTotalDownloadCount(userUploadDocument.getTotalDownloadCount() + 1);
                 userUploadedDocumentRepository.save(userUploadDocument);
 
-                return new Object[]{userUploadDocument.getFileName(), fos};
+                return new Object[]{userUploadDocument.getFileName(), byteArrayOutputStream, userUploadDocument.getFileMetadata().get("fileContentType")};
             } else {
                 return new Object[]{};
             }
@@ -201,5 +202,4 @@ public class Amazons3ClientService {
         }
         return new Object[]{};
     }
-//    /{jobId}/job-cv-resume/attach/applicantId=val
 }

@@ -10,6 +10,7 @@ import com.mergetechng.jobs.commons.util.CycleAvoidingMappingContext;
 import com.mergetechng.jobs.entities.Job;
 import com.mergetechng.jobs.entities.JobApplicant;
 import com.mergetechng.jobs.exceptions.BadRequestException;
+import com.mergetechng.jobs.exceptions.UserNotFoundException;
 import com.mergetechng.jobs.repositories.GenericFilterCriteriaBuilder;
 import com.mergetechng.jobs.repositories.JobApplicantRepository;
 import com.mergetechng.jobs.services.*;
@@ -21,13 +22,17 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +40,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.server.PathParam;
+import java.io.FileOutputStream;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -57,7 +63,6 @@ public class JobRestController {
     private JobService jobService;
     @Autowired
     private FilterBuilderService filterBuilderService;
-
 
 
     @Operation(description = "Create new Job")
@@ -86,6 +91,11 @@ public class JobRestController {
             } else {
                 return ResponseEntity.badRequest().body(apiResponseDto);
             }
+        } catch (UserNotFoundException e) {
+            LOGGER.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            apiResponseDto.setData("Not Ok");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(apiResponseDto);
         } catch (Exception e) {
             LOGGER.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
@@ -185,10 +195,17 @@ public class JobRestController {
                 null);
         try {
             Job job = iJobService.getJob(jobIb);
-            apiResponseDto.setStatusCode("200");
-            apiResponseDto.setMessage("Successfully fetch the jobs" + jobIb);
-            apiResponseDto.setData(job.getJobId().equals(jobIb) ? job : null);
-            return ResponseEntity.ok().body(apiResponseDto);
+            if (ObjectUtils.allNotNull(job.getId())) {
+                apiResponseDto.setStatusCode("200");
+                apiResponseDto.setMessage("Successfully fetch the jobs" + jobIb);
+                apiResponseDto.setData(job);
+                return ResponseEntity.ok().body(apiResponseDto);
+            } else {
+                apiResponseDto.setStatusCode("404");
+                apiResponseDto.setMessage("Not found : " + jobIb);
+                apiResponseDto.setData(null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponseDto);
+            }
         } catch (Exception e) {
             LOGGER.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
@@ -282,154 +299,12 @@ public class JobRestController {
                 new Date(),
                 null);
         try {
-            LOGGER.info("JOB ID {}" , jobId);
+            LOGGER.info("JOB ID {}", jobId);
             JobApplicant jobApplicant = iJobService.getSingleJobApplicant(jobId, applicantId);
             apiResponseDto.setStatusCode("200");
             apiResponseDto.setMessage("Successfully fetch the jobs");
             apiResponseDto.setData(jobApplicant);
             return ResponseEntity.ok().body(apiResponseDto);
-        } catch (Exception e) {
-            e.printStackTrace();
-            LOGGER.error("ERROR", e);
-            apiResponseDto.setMessage(e.getMessage());
-            return ResponseEntity.badRequest().body(apiResponseDto);
-        }
-    }
-
-
-    @Operation(description = "Download cv for the applied Job")
-    @ApiResponses(value = {
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "query params values -> jobApplicationId or uploadedFileIdOrFileName does not exist",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "jobId,jobApplicationId or uploadedFileIdOrFileName query params are required",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
-            ),
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully upload CV/Resume",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Oops! Can't attach CV/Resume. jobApplicationId & jobApplicationId are required to complete this.",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
-            ),
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully deleted CV with file name :resumeNameOrCvFileNameOrUploadedDocumentId",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
-            ),
-            @ApiResponse(
-                    responseCode = "400",
-                    description = "Oops! Can't attach CV/Resume. jobApplicationId & jobApplicationId are required to complete this.",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
-            ),
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Successfully downloaded the CV",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
-            )})
-    @GetMapping(value = "/{jobId}/cv-resume/{cvAction}/", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto<String>> jobCVResume(
-            @PathVariable(value = "jobId", required = false) String jobId,
-            @RequestParam(value = "uploadedFileIdOrFileName", required = false) String uploadedFileIdOrFileName,
-            @PathVariable(value = "cvAction") String cvAction,
-            @RequestParam(value = "resumeNameOrCvFileNameOrUploadedDocumentId", required = false) String resumeNameOrCvFileNameOrUploadedDocumentId,
-            @RequestParam(value = "jobApplicationId", required = false) String jobApplicationId,
-            HttpServletResponse httpServletResponse,
-            MultipartFile multipartFile
-    ) {
-        String message = "Operation not allowed. Required query params not matched";
-        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
-                message,
-                "400",
-                RequestActionEnum.JOB_CV_RESUME_DEFAULT.name(),
-                new Date(),
-                null);
-        try {
-            switch (CVEnum.valueOf(cvAction.toUpperCase())) {
-                case DOWNLOAD:
-                    if (ObjectUtils.isNotEmpty(jobId) && ObjectUtils.isNotEmpty(jobApplicationId) && ObjectUtils.isNotEmpty(uploadedFileIdOrFileName)) {
-                        if (Optional.ofNullable(iJobService.getJob(jobApplicationId)).isPresent() && jobApplicantRepository.findById(jobApplicationId).isPresent()) {
-                            final Object[] UPLOAD_RESULT = amazons3ClientService.downloadAmazonS3ObjectDocument(uploadedFileIdOrFileName);
-                            httpServletResponse.setHeader("Content-Disposition", "attachment; filename=\"" + UPLOAD_RESULT[0] + "\"");
-                            httpServletResponse.setStatus(302);
-                            apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_DEFAULT.name());
-//                            httpServletResponse.sendRedirect();
-                            return ResponseEntity.noContent().build();
-                        } else {
-                            message = "query params values -> jobApplicationId or uploadedFileIdOrFileName does not exist";
-                            apiResponseDto.setStatusCode("400");
-                            apiResponseDto.setMessage(message);
-                            apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_DEFAULT.name());
-                            LOGGER.info(message);
-                            return ResponseEntity.badRequest().body(apiResponseDto);
-                        }
-                    } else {
-                        message = "jobId,jobApplicationId or uploadedFileIdOrFileName query params are required";
-                        apiResponseDto.setStatusCode("400");
-                        apiResponseDto.setMessage(message);
-                        apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_DEFAULT.name());
-                        LOGGER.info(message);
-                        return ResponseEntity.badRequest().body(apiResponseDto);
-                    }
-                case UPLOAD:
-                    if (ObjectUtils.isNotEmpty(jobId) && ObjectUtils.isNotEmpty(jobApplicationId)) {
-                        message = "Successfully upload CV/Resume";
-                        final String fileUrl = amazons3ClientService.uploadFileToAmazonS3ObjectBucket(multipartFile, jobApplicationId);
-                        apiResponseDto.setStatusCode("200");
-                        apiResponseDto.setMessage(message);
-                        apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_UPLOAD.name());
-                        apiResponseDto.setData(fileUrl);
-                        LOGGER.info(message);
-                        return ResponseEntity.ok().body(apiResponseDto);
-                    }
-                case DELETE:
-                    apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_DELETE.name());
-                    if (ObjectUtils.isNotEmpty(jobApplicationId) && ObjectUtils.isNotEmpty(resumeNameOrCvFileNameOrUploadedDocumentId)) {
-                        if (amazons3ClientService.deleteFileFromS3Bucket(jobApplicationId, resumeNameOrCvFileNameOrUploadedDocumentId)) {
-                            message = String.format("Successfully deleted CV with file name %s", resumeNameOrCvFileNameOrUploadedDocumentId);
-                            apiResponseDto.setMessage(message);
-                            LOGGER.info(message);
-                            return ResponseEntity.ok().body(apiResponseDto);
-                        } else {
-                            message = String.format("Oops! Could not delete file with %s and job with %s", resumeNameOrCvFileNameOrUploadedDocumentId, jobApplicationId);
-                            apiResponseDto.setMessage(message);
-                            LOGGER.info(message);
-                            return ResponseEntity.badRequest().body(apiResponseDto);
-                        }
-                    } else {
-                        message = "Oops! Can't attach CV/Resume. jobApplicationId & jobApplicationId are required to complete this.";
-                        apiResponseDto.setStatusCode("200");
-                        apiResponseDto.setMessage(message);
-                        LOGGER.info(message);
-                        return ResponseEntity.badRequest().body(apiResponseDto);
-                    }
-                case ATTACH_JOB_CV:
-                    if (ObjectUtils.isNotEmpty(jobApplicationId) && ObjectUtils.isNotEmpty(resumeNameOrCvFileNameOrUploadedDocumentId)) {
-                        iJobService.attachCVToJobApplication(jobApplicationId, resumeNameOrCvFileNameOrUploadedDocumentId);
-                        message = String.format("Successfully attached CV to %s", jobApplicationId);
-                        apiResponseDto.setStatusCode("200");
-                        apiResponseDto.setMessage(message);
-                        apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_ATTACH.name());
-                        LOGGER.info(message);
-                        return ResponseEntity.ok().body(apiResponseDto);
-                    } else {
-                        message = "Oops! Can't attach CV/Resume. jobApplicationId & jobApplicationId are required to complete this.";
-                        apiResponseDto.setStatusCode("400");
-                        apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_ATTACH.name());
-                        apiResponseDto.setMessage(message);
-                        LOGGER.info(message);
-                        return ResponseEntity.badRequest().body(apiResponseDto);
-                    }
-                default:
-                    return ResponseEntity.badRequest().body(apiResponseDto);
-            }
         } catch (Exception e) {
             e.printStackTrace();
             LOGGER.error("ERROR", e);
@@ -472,6 +347,8 @@ public class JobRestController {
             List<FilterCondition> queryFilterOrCondition = filterBuilderService.createFilterCondition(filterOr);
             Query mongoQuery = filterCriteriaBuilder.addCondition(queryFilterAndCondition, queryFilterOrCondition);
             List<com.mergetechng.jobs.entities.Job> pageableUsers = jobService.getAllWithoutPageable(mongoQuery);
+            apiResponseDto.setStatusCode("200");
+            apiResponseDto.setMessage("Ok");
             apiResponseDto.setData(pageableUsers);
             return ResponseEntity.ok().body(apiResponseDto);
         } catch (Exception e) {
@@ -519,6 +396,215 @@ public class JobRestController {
             Page<com.mergetechng.jobs.entities.Job> pageableUsers = jobService.getAllWithPageable(mongoQuery, pageable);
             apiResponseDto.setData(pageableUsers);
             return ResponseEntity.ok().body(apiResponseDto);
+        } catch (Exception e) {
+            LOGGER.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(apiResponseDto);
+        }
+    }
+
+
+
+    @Operation(description = "Download Applicant Application CV")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400", description = "Failed to download file", content = @Content),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully downloaded the CV",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
+            )})
+    @GetMapping(value = "/{jobId}/cv-resume/download", produces =MediaType.ALL_VALUE)
+    public ResponseEntity<Object> downloadJobApplicantCVResume(
+            @PathVariable(value = "jobId", required = false) String jobId,
+            @RequestParam(value = "uploadedFileIdOrFileName", required = false) String uploadedFileIdOrFileName,
+            @RequestParam(value = "jobApplicationId", required = false) String jobApplicationId) {
+        ApiResponseDto<FileOutputStream> apiResponseDto = ApiResponseUtil.process(
+                "Failed download file",
+                "400",
+                RequestActionEnum.GET_JOB.name(),
+                new Date(),
+                null);
+        String message;
+        try {
+            if (ObjectUtils.isNotEmpty(jobId) && ObjectUtils.isNotEmpty(jobApplicationId) && ObjectUtils.isNotEmpty(uploadedFileIdOrFileName)) {
+                if (Optional.ofNullable(iJobService.getJob(jobApplicationId)).isPresent() && jobApplicantRepository.findById(jobApplicationId).isPresent()) {
+                    final Object[] UPLOAD_RESULT = amazons3ClientService.downloadAmazonS3ObjectDocument(uploadedFileIdOrFileName);
+                    apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_DEFAULT.name());
+                    ByteArrayOutputStream byteArrayOutputStream =  (ByteArrayOutputStream) UPLOAD_RESULT[1];
+                    return ResponseEntity
+                            .ok()
+                            .contentType(new MediaType((String)UPLOAD_RESULT[2]))
+                            .header("Content-Disposition", "attachment; filename=\"" + UPLOAD_RESULT[0] + "\"")
+                            .body(byteArrayOutputStream.toByteArray());
+                } else {
+                    message = "query params values -> jobApplicationId or uploadedFileIdOrFileName does not exist";
+                    apiResponseDto.setStatusCode("400");
+                    apiResponseDto.setMessage(message);
+                    apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_DEFAULT.name());
+                    LOGGER.info(message);
+                    return ResponseEntity.badRequest().body(apiResponseDto);
+                }
+            } else {
+                message = "jobId,jobApplicationId or uploadedFileIdOrFileName query params are required";
+                apiResponseDto.setStatusCode("400");
+                apiResponseDto.setMessage(message);
+                apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_DEFAULT.name());
+                LOGGER.info(message);
+                return ResponseEntity.badRequest().body(apiResponseDto);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(apiResponseDto);
+        }
+    }
+
+
+    @Operation(description = "Download Applicant Application CV")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400", description = "Failed to upload file", content = @Content),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully upload CV/Resume",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
+            )
+    })
+    @PostMapping(value = "/{jobId}/cv-resume", produces = {"application/json"})
+    public ResponseEntity<ApiResponseDto<String>> uploadApplicantCVResume(
+            @PathVariable(value = "jobId", required = false) String jobId,
+            @RequestParam(value = "jobApplicationId", required = false) String jobApplicationId,
+            @RequestParam("file") MultipartFile multipartFile) {
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
+                "Failed to upload cv/resume",
+                "400",
+                RequestActionEnum.JOB_CV_RESUME_UPLOAD.name(),
+                new Date(),
+                null);
+        String message;
+        try {
+            if (ObjectUtils.isNotEmpty(jobId) && ObjectUtils.isNotEmpty(jobApplicationId) && ObjectUtils.isNotEmpty(multipartFile)) {
+                message = "Successfully upload CV/Resume";
+                final String fileUrl = amazons3ClientService.uploadFileToAmazonS3ObjectBucket(multipartFile, jobApplicationId);
+                apiResponseDto.setStatusCode("200");
+                apiResponseDto.setMessage(message);
+                apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_UPLOAD.name());
+                apiResponseDto.setData(fileUrl);
+                LOGGER.info(message);
+                return ResponseEntity.ok().body(apiResponseDto);
+            } else {
+                message = "jobId,file(multipart) and jobApplicationId query params are required";
+                apiResponseDto.setStatusCode("400");
+                apiResponseDto.setMessage(message);
+                apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_DEFAULT.name());
+                LOGGER.info(message);
+                return ResponseEntity.badRequest().body(apiResponseDto);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(apiResponseDto);
+        }
+    }
+
+    @Operation(description = "Download Applicant Application CV")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "400", description = "Failed to delete CV/Resume", content = @Content),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully deleted CV with file name :resumeNameOrCvFileNameOrUploadedDocumentId",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
+            ),
+    })
+    @DeleteMapping(value = "/{jobId}/cv-resume", produces = {"application/json"})
+    public ResponseEntity<ApiResponseDto<String>> deleteApplicantCVResume(
+            @PathVariable(value = "resumeNameOrCvFileNameOrUploadedDocumentId", required = false) String resumeNameOrCvFileNameOrUploadedDocumentId,
+            @RequestParam(value = "jobApplicationId", required = false) String jobApplicationId) {
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
+                "Failed delete applicant CV/Resume",
+                "400",
+                RequestActionEnum.GET_JOB.name(),
+                new Date(),
+                null);
+        String message;
+        try {
+            apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_DELETE.name());
+            if (ObjectUtils.isNotEmpty(jobApplicationId) && ObjectUtils.isNotEmpty(resumeNameOrCvFileNameOrUploadedDocumentId)) {
+                if (amazons3ClientService.deleteFileFromS3Bucket(jobApplicationId, resumeNameOrCvFileNameOrUploadedDocumentId)) {
+                    message = String.format("Successfully deleted CV with file name %s", resumeNameOrCvFileNameOrUploadedDocumentId);
+                    apiResponseDto.setMessage(message);
+                    LOGGER.info(message);
+                    return ResponseEntity.ok().body(apiResponseDto);
+                } else {
+                    message = String.format("Oops! Could not delete file with %s and job with %s", resumeNameOrCvFileNameOrUploadedDocumentId, jobApplicationId);
+                    apiResponseDto.setMessage(message);
+                    LOGGER.info(message);
+                    return ResponseEntity.badRequest().body(apiResponseDto);
+                }
+            } else {
+                message = "Oops! Can't delete CV/Resume. jobApplicationId & resumeNameOrCvFileNameOrUploadedDocumentId are required to complete this.";
+                apiResponseDto.setStatusCode("200");
+                apiResponseDto.setMessage(message);
+                LOGGER.info(message);
+                return ResponseEntity.badRequest().body(apiResponseDto);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            LOGGER.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(apiResponseDto);
+        }
+    }
+
+
+    @Operation(description = "Attach Applicant Application CV/Resume to Job Applied")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Oops! Can't attach CV/Resume. jobApplicationId & jobApplicationId are required to complete this.",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Oops! Can't attach CV/Resume. jobApplicationId & jobApplicationId are required to complete this.",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
+            ),
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully deleted CV with file name :resumeNameOrCvFileNameOrUploadedDocumentId",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))}
+            ),
+    })
+    @PutMapping(value = "/{jobId}/cv-resume", produces = {"application/json"})
+    public ResponseEntity<ApiResponseDto<String>> attachApplicantCVResumeToJob(
+            @PathVariable(value = "resumeNameOrCvFileNameOrUploadedDocumentId", required = false) String resumeNameOrCvFileNameOrUploadedDocumentId,
+            @RequestParam(value = "jobApplicationId", required = false) String jobApplicationId) {
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
+                "Failed attach applicant CV/Resume",
+                "400",
+                RequestActionEnum.GET_JOB.name(),
+                new Date(),
+                null);
+        String message;
+        try {
+            apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_ATTACH.name());
+            if (ObjectUtils.isNotEmpty(jobApplicationId) && ObjectUtils.isNotEmpty(resumeNameOrCvFileNameOrUploadedDocumentId)) {
+                iJobService.attachCVToJobApplication(jobApplicationId, resumeNameOrCvFileNameOrUploadedDocumentId);
+                message = String.format("Successfully attached CV to %s", jobApplicationId);
+                apiResponseDto.setStatusCode("200");
+                apiResponseDto.setMessage(message);
+                apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_ATTACH.name());
+                LOGGER.info(message);
+                return ResponseEntity.ok().body(apiResponseDto);
+            } else {
+                message = "Oops! Can't attach CV/Resume. jobApplicationId & jobApplicationId are required to complete this.";
+                apiResponseDto.setStatusCode("400");
+                apiResponseDto.setAction(RequestActionEnum.JOB_CV_RESUME_ATTACH.name());
+                apiResponseDto.setMessage(message);
+                LOGGER.info(message);
+                return ResponseEntity.badRequest().body(apiResponseDto);
+            }
         } catch (Exception e) {
             LOGGER.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());

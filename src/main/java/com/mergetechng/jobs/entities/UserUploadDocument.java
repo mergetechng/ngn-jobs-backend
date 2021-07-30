@@ -5,6 +5,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Document
 public class UserUploadDocument {
@@ -18,10 +19,8 @@ public class UserUploadDocument {
     @Column(name = "file_name", nullable = false)
     private String fileName;
     @Basic(optional = false)
-    @Column(name = "user_id", nullable = false, length = 36)
-    @JoinColumn(name = "user_file_upload", referencedColumnName = "id", nullable = false)
-    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private String userId;
+    @Column(name = "username", nullable = false, length = 36)
+    private String username;
     @Basic(optional = false)
     @Column(name = "document_url", nullable = false)
     private String documentUrl;
@@ -36,7 +35,7 @@ public class UserUploadDocument {
     private String documentState;
     @Basic(optional = false)
     @Column(name = "file_metadata", nullable = false)
-    private String fileMetadata;
+    private Map<String,String> fileMetadata;
     @Basic(optional = false)
     @Column(name = "document_type", nullable = false, length = 200)
     private String documentType;
@@ -91,12 +90,12 @@ public class UserUploadDocument {
         this.fileName = fileName;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public String getDocumentUrl() {
@@ -131,11 +130,11 @@ public class UserUploadDocument {
         this.documentState = documentState;
     }
 
-    public String getFileMetadata() {
+    public Map<String, String> getFileMetadata() {
         return fileMetadata;
     }
 
-    public void setFileMetadata(String fileMetadata) {
+    public void setFileMetadata(Map<String, String> fileMetadata) {
         this.fileMetadata = fileMetadata;
     }
 

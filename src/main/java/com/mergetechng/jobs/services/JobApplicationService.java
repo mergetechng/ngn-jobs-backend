@@ -7,6 +7,7 @@ import com.mergetechng.jobs.entities.JobApplicant;
 import com.mergetechng.jobs.exceptions.*;
 import com.mergetechng.jobs.repositories.JobApplicationRepository;
 import com.mergetechng.jobs.services.api.IJobApplicationService;
+import org.apache.commons.lang3.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,18 +29,22 @@ public class JobApplicationService implements IJobApplicationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(JobApplicationController.class);
 
     @Override
-    public boolean apply(String jobApplicationId) throws NgJobApplicationClosedException, NgJobTotalAllowedApplicantsExceededException, NgJobApplicationSuspendedException {
-        Optional<Job> optionalJob = Optional.ofNullable(jobService.getJob(jobApplicationId));
+    public boolean apply(String jobId) throws NgJobApplicationClosedException, NgJobTotalAllowedApplicantsExceededException, NgJobApplicationSuspendedException {
+        Optional<Job> optionalJob = Optional.ofNullable(jobService.getJob(jobId));
         if (optionalJob.isPresent()) {
             Job fetchedJob = optionalJob.get();
-            if (fetchedJob.getJobStatus().equals(JobStatusEnum.ACTIVE.name())) {
+            if (ObjectUtils.isNotEmpty(fetchedJob) && fetchedJob.getJobStatus().equals(JobStatusEnum.ACTIVE.name())) {
                 String username = iAuthenticationFacadeService.getAuthentication().getName();
+                Optional<JobApplicant> jobApplicantOptional = jobApplicationRepository.findByApplicantUsernameAndJobId(username , jobId);
+                if (jobApplicantOptional.isPresent()){
+                    throw new UnsupportedOperationException("Already applied. Can't apply twice");
+                }
                 JobApplicant jobApplicant = new JobApplicant();
                 jobApplicant.setId(UUID.randomUUID().toString());
                 jobApplicant.setDateCreated(new Date());
-                jobApplicant.setOwnedByUsername(username);
+                jobApplicant.setApplicantUsername(username);
                 jobApplicant.setCreatedBy(username);
-                jobApplicant.setJobId(jobApplicationId);
+                jobApplicant.setJobId(jobId);
                 jobApplicationRepository.insert(jobApplicant);
                 return true;
             } else if (fetchedJob.getJobStatus().equals(JobStatusEnum.CLOSED.name())) {
@@ -63,6 +68,7 @@ public class JobApplicationService implements IJobApplicationService {
         } else return false;
     }
 
+    @Deprecated
     @Override
     public Pageable fetchApplicantsWithAdvanceFilterSearch(String applicantId) {
         return null;

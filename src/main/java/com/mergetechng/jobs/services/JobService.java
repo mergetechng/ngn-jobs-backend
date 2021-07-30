@@ -2,6 +2,7 @@ package com.mergetechng.jobs.services;
 
 
 import com.mergetechng.jobs.api.IAdvanceSearch;
+import com.mergetechng.jobs.commons.enums.JobStatusEnum;
 import com.mergetechng.jobs.commons.util.JWTUtil;
 import com.mergetechng.jobs.entities.Job;
 import com.mergetechng.jobs.entities.JobApplicant;
@@ -9,6 +10,7 @@ import com.mergetechng.jobs.exceptions.JobApplicantNotFoundException;
 import com.mergetechng.jobs.exceptions.JobNotExistsException;
 import com.mergetechng.jobs.exceptions.UserAccountAlreadyVerifiedException;
 import com.mergetechng.jobs.repositories.JobApplicantRepository;
+import com.mergetechng.jobs.repositories.JobApplicationRepository;
 import com.mergetechng.jobs.repositories.JobRepository;
 import com.mergetechng.jobs.repositories.UserRepository;
 import com.mergetechng.jobs.services.api.IJobService;
@@ -48,7 +50,7 @@ public class JobService implements IJobService, IAdvanceSearch<Job> {
     @Autowired
     private IAuthenticationFacadeService iAuthenticationFacadeService;
     @Autowired
-    private JobApplicantRepository jobApplicantRepository;
+    private JobApplicationRepository jobApplicationRepository;
 
 
     public JobService() {
@@ -72,7 +74,7 @@ public class JobService implements IJobService, IAdvanceSearch<Job> {
 
     @Override
     public boolean updateJob(Job job) throws JobNotExistsException {
-        Optional<Job> jobOptional = jobRepository.findById(job.getJobId());
+        Optional<Job> jobOptional = jobRepository.findById(job.getId());
         if (jobOptional.isPresent()) {
             Job newJobUpdate = jobOptional.get();
             newJobUpdate.setDateModified(new Date());
@@ -115,8 +117,8 @@ public class JobService implements IJobService, IAdvanceSearch<Job> {
 
     @Override
     public Job getJob(String jobId) {
-        Optional<Job> job = jobRepository.findById(jobId);
-        return job.orElseGet(Job::new);
+        Optional<Job> optionalJob = jobRepository.findById(jobId);
+        return optionalJob.orElse(null);
     }
 
     @Override
@@ -133,7 +135,8 @@ public class JobService implements IJobService, IAdvanceSearch<Job> {
         } else if (!userRepository.existsByUsernameOrEmail(userName, null)) {
             throw new UsernameNotFoundException(String.format("IUser %s is not found", userName));
         }
-        job.setJobId(UUID.randomUUID().toString());
+        job.setId(UUID.randomUUID().toString());
+        job.setJobStatus(JobStatusEnum.ACTIVE.name());
         job.setDateCreated(new Date());
         job.setCreatedBy(userName);
         jobRepository.insert(job);
@@ -149,8 +152,8 @@ public class JobService implements IJobService, IAdvanceSearch<Job> {
     @Override
     public JobApplicant getSingleJobApplicant(String jobId, String jobApplicationId) throws JobNotExistsException {
         if (jobExists(jobId)) {
-            Optional<JobApplicant> jobApplicant = jobApplicantRepository.findById(jobApplicationId);
-            if (jobApplicant.isPresent() && jobApplicant.get().getJobId().equals(jobId)) {
+            Optional<JobApplicant> jobApplicant = jobApplicationRepository.findById(jobApplicationId);
+            if (jobApplicant.isPresent() && jobApplicant.get().getId().equals(jobId)) {
                 return jobApplicant.get();
             }
             throw new JobApplicantNotFoundException("Job applicant with id " + jobApplicationId + " not found");
@@ -166,18 +169,21 @@ public class JobService implements IJobService, IAdvanceSearch<Job> {
      */
     @Override
     public void attachCVToJobApplication(@NotNull @NotEmpty String jobApplicationId, @NotNull @NotEmpty String resumeNameOrCvFileName) throws JobApplicantNotFoundException {
-        JobApplicant jobApplicant = jobApplicantRepository.findByJobId(jobApplicationId);
-        if (ObjectUtils.isNotEmpty(jobApplicant)) {
+        String username = iAuthenticationFacadeService.getAuthentication().getName();
+        LOGGER.info("JOB APPLICANT ID ::: {}", jobApplicationId);
+        Optional<JobApplicant> optionalJobApplicant = jobApplicationRepository.findById(jobApplicationId);
+        if (optionalJobApplicant.isPresent()) {
+            JobApplicant jobApplicant = optionalJobApplicant.get();
             jobApplicant.setResumeDocumentUrl(resumeNameOrCvFileName);
             jobApplicant.setDateModified(new Date());
-            jobApplicant.setModifiedBy(iAuthenticationFacadeService.getAuthentication().getName());
-            jobApplicant.setResumeDocumentUrl(resumeNameOrCvFileName);
-            jobApplicantRepository.save(jobApplicant);
-            LOGGER.info(String.format("Successfully Attached resumeNameOrCvFileName to %s jobApplicationId", jobApplicationId));
-            return;
+            jobApplicant.setModifiedBy(username);
+            jobApplicationRepository.save(jobApplicant);
+            LOGGER.info("Successfully Attached resumeNameOrCvFileName to {} jobApplicationId", jobApplicationId);
+        }else {
+            String message = String.format("Job Applicant: %s with jobApplicationId: %s Not Found",username , jobApplicationId );
+            LOGGER.info(message);
+            throw new JobApplicantNotFoundException(message);
         }
-        LOGGER.info(String.format("Job Application with jobApplicationId: %s Not Found", jobApplicationId));
-        throw new JobApplicantNotFoundException(String.format("Job Application with jobApplicationId: %s Not Found", jobApplicationId));
     }
 
     @Override

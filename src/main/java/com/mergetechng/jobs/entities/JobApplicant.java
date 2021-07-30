@@ -34,9 +34,6 @@ public class JobApplicant implements Serializable {
     @Column(name = "id", nullable = false, length = 36)
     private String id;
     @Basic(optional = false)
-    @Column(name = "job_id", nullable = false, length = 36)
-    private String jobId;
-    @Basic(optional = false)
     @Column(name = "date_created", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateCreated;
@@ -51,11 +48,12 @@ public class JobApplicant implements Serializable {
     private String modifiedBy;
 //    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
 //    @ManyToOne(optional = false)
-    private String ownedByUsername;
+    private String applicantUsername;
     @Column(name = "resume_or_cv_document_file_name")
     private String resumeDocumentFileName;
     @Column(name = "cover_letter_document_url")
     private String coverLetterDocumentUrl;
+    private String jobId;
 //    @ManyToOne(optional = false , cascade = CascadeType.ALL , fetch = FetchType.LAZY)
 //    private Job job;
 
@@ -77,9 +75,16 @@ public class JobApplicant implements Serializable {
         this.resumeDocumentFileName = resumeDocumentFileName;
     }
 
-    public JobApplicant(String id, String jobId, Date dateCreated, String createdBy, String modifiedBy) {
-        this.id = id;
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
         this.jobId = jobId;
+    }
+
+    public JobApplicant(String id, Date dateCreated, String createdBy, String modifiedBy) {
+        this.id = id;
         this.dateCreated = dateCreated;
         this.createdBy = createdBy;
         this.modifiedBy = modifiedBy;
@@ -126,12 +131,12 @@ public class JobApplicant implements Serializable {
         this.modifiedBy = modifiedBy;
     }
 
-    public String getOwnedByUsername() {
-        return ownedByUsername;
+    public String getApplicantUsername() {
+        return applicantUsername;
     }
 
-    public void setOwnedByUsername(String userId) {
-        this.ownedByUsername = userId;
+    public void setApplicantUsername(String userId) {
+        this.applicantUsername = userId;
     }
 
     @Override
@@ -147,14 +152,6 @@ public class JobApplicant implements Serializable {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getJobId() {
-        return jobId;
-    }
-
-    public void setJobId(String jobId) {
-        this.jobId = jobId;
     }
 
     public String getResumeDocumentUrl() {

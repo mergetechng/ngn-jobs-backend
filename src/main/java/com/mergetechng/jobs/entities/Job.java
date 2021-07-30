@@ -137,9 +137,6 @@ public class Job {
         this.jobApplicants = jobApplicants;
     }
 
-    public String getJobId() {
-        return id;
-    }
 
     public Job(String id) {
         this.id = id;
@@ -167,12 +164,7 @@ public class Job {
         this.jobType = jobType;
     }
 
-    public Job() {
-    }
-
-    public void setJobId(String id) {
-        this.id = id;
-    }
+    public Job() { }
 
     public String getJobTitle() {
         return jobTitle;

@@ -74,6 +74,7 @@ public class JobDBInitializationRunner implements CommandLineRunner {
     }
 
     private void createDefaultSuperAdmin() throws ExecutionException, InterruptedException {
+        LOGGER.info("JOB_ADMIN_PASSWORD :::: {}" , System.getenv("JOB_ADMIN_PASSWORD"));
         if (this.userRepository.findByUsername(NG_JOB_DEFAULT_ADMIN) == null) {
             List<String> groups = List.of(
                     GroupEnum.SUPER_ADMIN_GROUP.name(),

@@ -61,9 +61,9 @@ public class JobApplicationController {
             )
     })
     @PutMapping(value = "/apply", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> applyForJobApplication(
+    public ResponseEntity<ApiResponseDto<String>> applyForJobApplication(
             @RequestParam(value = "jobId") String jobId) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "Error Occurred",
                 "400",
                 RequestActionEnum.JOB_APPLICATION_APPLY.name(),
@@ -75,15 +75,11 @@ public class JobApplicationController {
                 apiResponseDto.setStatusCode("200");
                 return ResponseEntity.ok(apiResponseDto);
             } else {
-                apiResponseDto.setMessage(String.format("Failed to applied for the Job with jobId: %s", jobId));
+                apiResponseDto.setMessage(String.format("Not Found jobId: %s", jobId));
                 apiResponseDto.setStatusCode("400");
                 return ResponseEntity.badRequest().body(apiResponseDto);
             }
-        } catch (NgJobApplicationClosedException
-                | NgJobExpiredException
-                | NgJobApplicationException | NgJobTotalAllowedApplicantsExceededException
-                | NgJobApplicationSuspendedException e
-        ) {
+        } catch (Exception e) {
             LOGGER.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
             return ResponseEntity.badRequest().body(apiResponseDto);
