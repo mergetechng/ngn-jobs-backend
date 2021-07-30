@@ -1,20 +1,17 @@
 package com.mergetechng.jobs.controllers.user;
 
 
-import com.mergetechng.jobs.api.IUser;
 import com.mergetechng.jobs.commons.dto.ApiResponseDto;
 import com.mergetechng.jobs.commons.dto.FilterCondition;
 import com.mergetechng.jobs.commons.dto.UserAccountUpdateDto;
 import com.mergetechng.jobs.commons.dto.UserDto;
 import com.mergetechng.jobs.commons.util.ApiResponseUtil;
 import com.mergetechng.jobs.commons.util.CycleAvoidingMappingContext;
-import com.mergetechng.jobs.commons.util.PageResponse;
 import com.mergetechng.jobs.entities.User;
-import com.mergetechng.jobs.exceptions.BadRequestException;
-import com.mergetechng.jobs.exceptions.UserNotFoundException;
-import com.mergetechng.jobs.exceptions.UserTokenException;
+import com.mergetechng.jobs.exceptions.*;
 import com.mergetechng.jobs.repositories.GenericFilterCriteriaBuilder;
 import com.mergetechng.jobs.services.FilterBuilderService;
+import com.mergetechng.jobs.services.JobsUserService;
 import com.mergetechng.jobs.services.api.JobApiGeneralMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -26,11 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -40,7 +39,7 @@ import java.util.Objects;
 public class JobUserRestController {
 
     @Autowired
-    private IUser iUser;
+    private JobsUserService iUser;
     private static final Logger logger = LoggerFactory.getLogger(JobUserRestController.class);
 
     @Autowired
@@ -57,8 +56,8 @@ public class JobUserRestController {
                     }
             )})
     @DeleteMapping(value = "/remove/{usernameOrEmailOrId}", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> searchUserWithUsername(@PathVariable(name = "username") String usernameOrEmailOrId) throws Exception {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+    public ResponseEntity<ApiResponseDto<Boolean>> searchUserWithUsername(@PathVariable(name = "username") String usernameOrEmailOrId) throws Exception {
+        ApiResponseDto<Boolean> apiResponseDto = ApiResponseUtil.process(
                 "Failed to delete user",
                 "400",
                 "DELETE_USER",
@@ -68,13 +67,15 @@ public class JobUserRestController {
             if (!iUser.userExists(usernameOrEmailOrId, "")) {
                 apiResponseDto.setStatusCode("200");
                 apiResponseDto.setMessage("Successfully deleted the user with credential: " + usernameOrEmailOrId);
-                apiResponseDto.setData(null);
+                apiResponseDto.setData(true);
                 return ResponseEntity.ok().body(apiResponseDto);
             } else {
+                apiResponseDto.setData(false);
                 return ResponseEntity.badRequest().body(apiResponseDto);
             }
         } catch (Exception e) {
             logger.error("ERROR", e);
+            apiResponseDto.setData(false);
             apiResponseDto.setMessage(e.getMessage());
             return ResponseEntity.badRequest().body(apiResponseDto);
         }
@@ -96,10 +97,10 @@ public class JobUserRestController {
             )
     })
     @GetMapping(value = "/exists", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> userExists(
+    public ResponseEntity<ApiResponseDto<Boolean>> userExists(
             @Parameter(description = "The username to search")
             @RequestParam(value = "username") String username) throws Exception {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<Boolean> apiResponseDto = ApiResponseUtil.process(
                 "Username is NOT available to be used",
                 "400",
                 "search existing username",
@@ -109,9 +110,10 @@ public class JobUserRestController {
             if (!iUser.userExists(username, "")) {
                 apiResponseDto.setStatusCode("200");
                 apiResponseDto.setMessage("Username is available to used");
-                apiResponseDto.setData(null);
+                apiResponseDto.setData(true);
                 return ResponseEntity.ok().body(apiResponseDto);
             } else {
+                apiResponseDto.setData(false);
                 return ResponseEntity.badRequest().body(apiResponseDto);
             }
         } catch (Exception e) {
@@ -125,7 +127,7 @@ public class JobUserRestController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "User disabled successfully",
+                    description = "IUser disabled successfully",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ),
@@ -137,10 +139,10 @@ public class JobUserRestController {
             )
     })
     @PutMapping(value = "/disable", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> disableUser(
+    public ResponseEntity<ApiResponseDto<Boolean>> disableUser(
             @Parameter(description = "The username to be disabled")
             @RequestParam(value = "username") String username) throws Exception {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<Boolean> apiResponseDto = ApiResponseUtil.process(
                 "username was unable to be disabled",
                 "400",
                 "DISABLE_USER",
@@ -150,10 +152,12 @@ public class JobUserRestController {
             String message = iUser.disabledUser(username);
             apiResponseDto.setMessage(message);
             apiResponseDto.setStatusCode("200");
+            apiResponseDto.setData(true);
             return ResponseEntity.ok(apiResponseDto);
         } catch (Exception e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
+            apiResponseDto.setData(false);
             return ResponseEntity.badRequest().body(apiResponseDto);
         }
     }
@@ -163,7 +167,7 @@ public class JobUserRestController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "User basic information Successfully Updated",
+                    description = "IUser basic information Successfully Updated",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ),
@@ -175,12 +179,12 @@ public class JobUserRestController {
             )
     })
     @PutMapping(value = "/update", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> updateUser(
+    public ResponseEntity<ApiResponseDto<String>> updateUser(
             @Parameter(description = "The username to be disabled")
             @RequestBody UserAccountUpdateDto userAccountUpdateDto,
             @Parameter(description = "The usernameOrEmailOrUserId to be updated")
             @RequestParam String usernameOrEmailOrUserId) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "Failed to update user basic Information",
                 "400",
                 "UPDATE_USER",
@@ -190,6 +194,7 @@ public class JobUserRestController {
             String message = iUser.updateBasicAccountInformation(userAccountUpdateDto, usernameOrEmailOrUserId);
             apiResponseDto.setMessage(message);
             apiResponseDto.setStatusCode("200");
+            apiResponseDto.setMessage("Ok");
             return ResponseEntity.ok(apiResponseDto);
         } catch (Exception e) {
             logger.error("ERROR", e);
@@ -203,7 +208,7 @@ public class JobUserRestController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "User logout successfully",
+                    description = "IUser logout successfully",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ),
@@ -215,10 +220,10 @@ public class JobUserRestController {
             )
     })
     @PutMapping(value = "/logout", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> logoutUser(
+    public ResponseEntity<ApiResponseDto<String>> logoutUser(
             @Parameter(description = "The username to be disabled")
             @RequestParam(value = "username") String username) throws Exception {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "user does not exists",
                 "400",
                 "LOGOUT_USER",
@@ -226,8 +231,9 @@ public class JobUserRestController {
                 null);
         try {
             boolean isLoggedOut = iUser.logoutUser(username);
-            apiResponseDto.setMessage("User is logged out ->" + isLoggedOut);
+            apiResponseDto.setMessage("IUser is logged out ->" + isLoggedOut);
             apiResponseDto.setStatusCode("200");
+            apiResponseDto.setData("Ok");
             return ResponseEntity.ok(apiResponseDto);
         } catch (Exception e) {
             logger.error("ERROR", e);
@@ -241,7 +247,7 @@ public class JobUserRestController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "User logout successfully",
+                    description = "IUser logout successfully",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ),
@@ -253,10 +259,10 @@ public class JobUserRestController {
             )
     })
     @GetMapping(value = "/search", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> getUser(
+    public ResponseEntity<ApiResponseDto<UserDto>> getUser(
             @Parameter(description = "The username to get")
             @RequestParam(value = "usernameOrEmailOrUserId") String usernameOrEmailOrUserId) throws Exception {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<UserDto> apiResponseDto = ApiResponseUtil.process(
                 "user does not exists",
                 "400",
                 "SEARCH_USER",
@@ -271,53 +277,97 @@ public class JobUserRestController {
         } catch (UserNotFoundException e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
+            apiResponseDto.setData(null);
             return ResponseEntity.badRequest().body(apiResponseDto);
         }
     }
 
 
-    @Deprecated
-    @Operation(description = "Logout user with the provided username")
+//    @Deprecated
+//    @Operation(description = "Logout user with the provided username")
+//    @ApiResponses(value = {
+//            @ApiResponse(
+//                    responseCode = "200",
+//                    description = "IUser logout successfully",
+//                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
+//                    }
+//            ),
+//            @ApiResponse(
+//                    responseCode = "400",
+//                    description = "Username does exists and can not be logout",
+//                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
+//                    }
+//            )
+//    })
+//    @GetMapping(value = "/filter-search", produces = {"application/json"})
+//    public ResponseEntity<ApiResponseDto> filterSearchUsers(
+//            @Parameter(description = "The field to search")
+//            @RequestParam String searchBy,
+//            @Parameter(description = "The limits of data to be returned")
+//            @RequestParam Integer limit,
+//            @Parameter(description = "The starting point where the data will start from")
+//            @RequestParam Integer offset,
+//            @Parameter(description = "The Operation eg whereEquals, whereGreaterThan etc")
+//            @RequestParam(required = false) String operation,
+//            @Parameter(description = "The operation argument value")
+//            @RequestParam(required = false) String operationValue,
+//            @Parameter(description = "The field to the compared with operator value")
+//            @RequestParam String order) {
+//        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+//                "user does not exists",
+//                "400",
+//                "FILTER_SEARCH",
+//                new Date(),
+//                null);
+//        try {
+//            List<UserDto> result = iUser.filterSearchUser(searchBy, limit, offset, operation, operationValue, order);
+//            if (Objects.nonNull(result)) apiResponseDto.setMessage("IUser(s) gotten successfully");
+//            apiResponseDto.setData(result);
+//            apiResponseDto.setStatusCode("200");
+//            return ResponseEntity.ok(apiResponseDto);
+//        } catch (Exception e) {
+//            logger.error("ERROR", e);
+//            apiResponseDto.setMessage(e.getMessage());
+//            return ResponseEntity.badRequest().body(apiResponseDto);
+//        }
+//    }
+
+
+    @Operation(description = "Pageable Advance search")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "User logout successfully",
+                    description = "Advance search completed successfully",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ),
             @ApiResponse(
                     responseCode = "400",
-                    description = "Username does exists and can not be logout",
+                    description = "Pageable Advance search completed with BadRequest",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             )
     })
-    @GetMapping(value = "/filter-search", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> filterSearchUsers(
-            @Parameter(description = "The field to search")
-            @RequestParam String searchBy,
-            @Parameter(description = "The limits of data to be returned")
-            @RequestParam Integer limit,
-            @Parameter(description = "The starting point where the data will start from")
-            @RequestParam Integer offset,
-            @Parameter(description = "The Operation eg whereEquals, whereGreaterThan etc")
-            @RequestParam(required = false) String operation,
-            @Parameter(description = "The operation argument value")
-            @RequestParam(required = false) String operationValue,
-            @Parameter(description = "The field to the compared with operator value")
-            @RequestParam String order) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
-                "user does not exists",
+    @GetMapping(value = "/advanceQuerySearch")
+    public ResponseEntity<ApiResponseDto<List<com.mergetechng.jobs.entities.User>>> advanceQuerySearch(
+            @RequestParam(value = "query", required = false) String query,
+            @RequestParam(value = "filterAnd", required = false) String filterAnd,
+            @RequestParam(value = "filterOr", required = false) String filterOr
+    ) throws BadRequestException {
+        ApiResponseDto<List<com.mergetechng.jobs.entities.User>> apiResponseDto = ApiResponseUtil.process(
+                null,
                 "400",
-                "FILTER_SEARCH",
+                "ADVANCE_SEARCH",
                 new Date(),
                 null);
         try {
-            List<UserDto> result = iUser.filterSearchUser(searchBy, limit, offset, operation, operationValue, order);
-            if (Objects.nonNull(result)) apiResponseDto.setMessage("User(s) gotten successfully");
-            apiResponseDto.setData(result);
-            apiResponseDto.setStatusCode("200");
-            return ResponseEntity.ok(apiResponseDto);
+            GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
+            List<FilterCondition> queryFilterAndCondition = filterBuilderService.createFilterCondition(filterAnd);
+            List<FilterCondition> queryFilterOrCondition = filterBuilderService.createFilterCondition(filterOr);
+            Query mongoQuery = filterCriteriaBuilder.addCondition(queryFilterAndCondition, queryFilterOrCondition);
+            List<com.mergetechng.jobs.entities.User> pageableUsers = iUser.getAllWithoutPageable(mongoQuery);
+            apiResponseDto.setData(pageableUsers);
+            return ResponseEntity.ok().body(apiResponseDto);
         } catch (Exception e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
@@ -326,65 +376,65 @@ public class JobUserRestController {
     }
 
 
-    /**
-     * @param page      page number
-     * @param size      size count
-     * @param filterOr  string filter or conditions
-     * @param filterAnd string filter and conditions
-     * @param orders    string orders
-     * @return PageResponse<User>
-     */
-    @GetMapping(value = "/page")
-    public ResponseEntity<PageResponse<User>> getSearchCriteriaPage(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "20") int size,
-            @RequestParam(value = "filterOr", required = false) String filterOr,
-            @RequestParam(value = "filterAnd", required = false) String filterAnd,
-            @RequestParam(value = "orders", required = false) String orders) throws BadRequestException {
-
-        PageResponse<User> response = new PageResponse<>();
-
-        org.springframework.data.domain.Pageable pageable = filterBuilderService.getPageable(size, page, orders);
-        GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
-
-
-        List<FilterCondition> andConditions = filterBuilderService.createFilterCondition(filterAnd);
-        List<FilterCondition> orConditions = filterBuilderService.createFilterCondition(filterOr);
-
-        Query query = filterCriteriaBuilder.addCondition(andConditions, orConditions);
-        Page<User> pg = iUser.getPage(query, pageable);
-        response.setPageStats(pg, pg.getContent());
-
-        return new ResponseEntity<>(response, HttpStatus.OK);
-    }
-
-    /**
-     * @param filterOr  string filter or conditions
-     * @param filterAnd string filter and conditions
-     * @return list of Users
-     */
-    @GetMapping()
-    public ResponseEntity<List<User>> getAllSearchCriteria(
-            @RequestParam(value = "filterOr", required = false) String filterOr,
-            @RequestParam(value = "filterAnd", required = false) String filterAnd) throws BadRequestException {
-
-        GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
-
-        List<FilterCondition> andConditions = filterBuilderService.createFilterCondition(filterAnd);
-        List<FilterCondition> orConditions = filterBuilderService.createFilterCondition(filterOr);
-
-        Query query = filterCriteriaBuilder.addCondition(andConditions, orConditions);
-        List<User> employees = iUser.getAll(query);
-
-        return new ResponseEntity<>(employees, HttpStatus.OK);
-    }
-
-
-    @Operation(description = "Validate the forgot password token using the email address attached to the link")
+    @Operation(description = "User Advance search")
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = true + "-The token is valid and can be used.",
+                    description = "Advance search completed successfully",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
+                    }
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Advance search completed with BadRequest",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
+                    }
+            )
+    })
+    @GetMapping(value = "/advancePageableQuerySearch")
+    public ResponseEntity<ApiResponseDto<Page<com.mergetechng.jobs.entities.User>>> advancePageableQuerySearch(
+            @RequestParam(value = "filterAnd", required = false) String filterAnd,
+            @RequestParam(value = "filterOr", required = false) String filterOr,
+            @RequestParam(value = "page", required = false) Integer page,
+            @RequestParam(value = "orders", required = false) String orders,
+            @RequestParam(value = "size", required = false) Integer size) {
+        ApiResponseDto<Page<com.mergetechng.jobs.entities.User>> apiResponseDto = ApiResponseUtil.process(
+                null,
+                "400",
+                "ADVANCE_SEARCH",
+                new Date(),
+                null);
+        try {
+            logger.info("PAGE SIZE ::: {}" , size);
+            logger.info("PAGE NUMBER ::: {}" , page);
+
+            Pageable pageable = filterBuilderService.getPageable(size, page, orders);
+            GenericFilterCriteriaBuilder filterCriteriaBuilder = new GenericFilterCriteriaBuilder();
+
+            List<FilterCondition> queryFilterAndCondition = filterBuilderService.createFilterCondition(filterAnd);
+            List<FilterCondition> queryFilterOrCondition = filterBuilderService.createFilterCondition(filterOr);
+
+            logger.info(Arrays.toString(queryFilterAndCondition.toArray()));
+            logger.info(Arrays.toString(queryFilterOrCondition.toArray()));
+
+            Query mongoQuery = filterCriteriaBuilder.addCondition(queryFilterAndCondition, queryFilterOrCondition);
+            Page<com.mergetechng.jobs.entities.User> pageableUsers = iUser.getAllWithPageable(mongoQuery, pageable);
+
+            apiResponseDto.setData(pageableUsers);
+            return ResponseEntity.ok().body(apiResponseDto);
+        } catch (Exception e) {
+            logger.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.badRequest().body(apiResponseDto);
+        }
+    }
+
+
+    @Operation(description = "Validate the email confirmation token using the email address attached to the link")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = true + "-> token valid",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ),
@@ -395,14 +445,14 @@ public class JobUserRestController {
                     }
             )
     })
-    @GetMapping(value = "/token/validate", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> validateToken(
+    @GetMapping(value = "/email-token/validate", produces = {"application/json"})
+    public ResponseEntity<ApiResponseDto<String>> validateToken(
             @Parameter(description = "The token attached to the link")
             @RequestParam(value = "token") String token,
             @Parameter(description = "The token email")
             @RequestParam(value = "email") String email
     ) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 false + "- The token is invalid.",
                 "400",
                 "VALIDATE_TOKEN",
@@ -413,6 +463,7 @@ public class JobUserRestController {
             if (iUser.validateToken(token, email)) {
                 apiResponseDto.setMessage(true + "-> token valid");
                 apiResponseDto.setStatusCode("200");
+                apiResponseDto.setData("Ok");
                 return ResponseEntity.ok(apiResponseDto);
             } else {
                 return ResponseEntity.badRequest().body(apiResponseDto);
@@ -441,13 +492,13 @@ public class JobUserRestController {
             )
     })
     @PutMapping(value = "/verify-account-email", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> verifyUserAccountEmail(
+    public ResponseEntity<ApiResponseDto<String>> verifyUserAccountEmail(
             @Parameter(description = "The email attached to the link")
             @RequestParam(value = "email") String email,
             @Parameter(description = "The token attached to the link")
             @RequestParam(value = "token") String token
     ) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 false + "-The user account email failed to be verified. Ensure link is still valid",
                 "400",
                 "VERIFY_USER_EMAIL_ACCOUNT",
@@ -455,8 +506,9 @@ public class JobUserRestController {
                 null);
         try {
             if (iUser.verifyUserEmail(email, token)) {
-                apiResponseDto.setMessage(true + "-The user account is verified and account is enabled");
+                apiResponseDto.setMessage(true + "- The user account is verified and account is enabled");
                 apiResponseDto.setStatusCode("200");
+                apiResponseDto.setData("Ok");
                 return ResponseEntity.ok(apiResponseDto);
             } else {
                 return ResponseEntity.badRequest().body(apiResponseDto);
@@ -474,16 +526,16 @@ public class JobUserRestController {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "User with username deleted successfully",
+                    description = "IUser with username deleted successfully",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
                     }
             )
     })
     @DeleteMapping(value = "/delete", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> deleteUserByUsername(
+    public ResponseEntity<ApiResponseDto<Boolean>> deleteUserByUsername(
             @Parameter(description = "The username to be deleted")
             @RequestParam() String usernameOrEmailOrUserId) throws Exception {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<Boolean> apiResponseDto = ApiResponseUtil.process(
                 "usernameOrEmailOrUserId does not exists",
                 "400",
                 "DELETE_USER",
@@ -491,8 +543,9 @@ public class JobUserRestController {
                 null);
         try {
             if (iUser.deleteUser(usernameOrEmailOrUserId)) {
-                apiResponseDto.setMessage(true + "- User successfully deleted from the system");
+                apiResponseDto.setMessage(true + "- IUser successfully deleted from the system");
                 apiResponseDto.setStatusCode("200");
+                apiResponseDto.setData(true);
                 return ResponseEntity.ok(apiResponseDto);
             } else {
                 return ResponseEntity.badRequest().body(apiResponseDto);
@@ -500,6 +553,7 @@ public class JobUserRestController {
         } catch (Exception e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
+            apiResponseDto.setData(false);
             return ResponseEntity.badRequest().body(apiResponseDto);
         }
     }
@@ -518,10 +572,10 @@ public class JobUserRestController {
             }
     )})
     @GetMapping(value = "/forgot-password-link", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> forgotPasswordUsingEmailOrUsername(
+    public ResponseEntity<ApiResponseDto<String>> forgotPasswordUsingEmailOrUsername(
             @Parameter(description = "The username or email address search and send forgot password link to")
             @RequestParam String emailOrUsername) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "Email or Username does not exists",
                 "400",
                 "CREATE_FORGOT_PASSWORD_LINK",
@@ -556,10 +610,10 @@ public class JobUserRestController {
             }
     )})
     @GetMapping(value = "/email-confirmation-link", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> sendEmailConfirmationLink(
+    public ResponseEntity<ApiResponseDto<String>> sendEmailConfirmationLink(
             @Parameter(description = "The username or email address search and send confirmation mail link to")
             @RequestParam String emailOrUsername) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
                 "Email or Username does not exists, no link sent",
                 "400",
                 "SEND_EMAIL_CONFIRMATION",
@@ -570,12 +624,25 @@ public class JobUserRestController {
                 apiResponseDto.setMessage("Mail has be sent to your email address");
                 apiResponseDto.setStatusCode("200");
                 return ResponseEntity.ok(apiResponseDto);
+            } else {
+                return ResponseEntity.badRequest().body(apiResponseDto);
             }
+        } catch (UserAccountAlreadyVerifiedException e) {
+            logger.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiResponseDto);
+        } catch (UserNotFoundException e) {
+            logger.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(apiResponseDto);
+        } catch (EmailVerificationLinkSendingFailedException e) {
+            logger.error("ERROR", e);
+            apiResponseDto.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(apiResponseDto);
         } catch (Exception e) {
             logger.error("ERROR", e);
             apiResponseDto.setMessage(e.getMessage());
-            return ResponseEntity.badRequest().body(apiResponseDto);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(apiResponseDto);
         }
-        return ResponseEntity.badRequest().body(apiResponseDto);
     }
 }

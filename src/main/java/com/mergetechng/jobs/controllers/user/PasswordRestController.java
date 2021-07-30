@@ -56,7 +56,7 @@ public class PasswordRestController {
     public ResponseEntity<ApiResponseDto> updateUserPassword(
             @Parameter(description = "The password update body")
             @RequestBody UserUpdatePasswordDto userUpdatePasswordDto,
-            @Parameter(description = "User email, username or userId")
+            @Parameter(description = "IUser email, username or userId")
             @RequestParam(value = "usernameOrEmailOrUserId") String usernameOrEmailOrUserId) {
         ApiResponseDto responseDto = ApiResponseUtil.process(
                 "Bad Request",
@@ -88,19 +88,19 @@ public class PasswordRestController {
                     }
             ), @ApiResponse(
             responseCode = "400",
-            description = "User with eui does not exists | Token Validation Error | Confirm password & new password mismatched! ",
+            description = "IUser with eui does not exists | Token Validation Error | Confirm password & new password mismatched! ",
             content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ApiResponseDto.class))
             }
     )
     })
     @PutMapping(value = "/reset")
-    public ResponseEntity<ApiResponseDto> resetUserPassword(
+    public ResponseEntity<ApiResponseDto<String>> resetUserPassword(
             @Parameter(description = "The password reset body")
             @RequestBody UserResetPasswordDto userResetPasswordDto,
-            @Parameter(description = "User email, username or userId")
+            @Parameter(description = "IUser email, username or userId")
             @RequestParam(name = "token") String token
     ) {
-        ApiResponseDto responseDto = ApiResponseUtil.process(
+        ApiResponseDto<String> responseDto = ApiResponseUtil.process(
                 "Invalid token!",
                 "400",
                 "PASSWORD_RESET",
@@ -116,8 +116,23 @@ public class PasswordRestController {
                         responseDto.setStatusCode("200");
                         responseDto.setData("Password reset");
                         return ResponseEntity.ok(responseDto);
+                    } else {
+                        responseDto.setMessage("Failed to update password");
+                        responseDto.setStatusCode("400");
+                        responseDto.setData(null);
+                        return ResponseEntity.ok(responseDto);
                     }
+                } else {
+                    responseDto.setMessage("Token is not valid to reset password");
+                    responseDto.setStatusCode("400");
+                    responseDto.setData(null);
+                    return ResponseEntity.ok(responseDto);
                 }
+            }else {
+                responseDto.setMessage(String.format("IUser %s is not found", userResetPasswordDto.getUsername()));
+                responseDto.setStatusCode("400");
+                responseDto.setData(null);
+                return ResponseEntity.ok(responseDto);
             }
         } catch (PasswordMismatchedException | UserNotFoundException | UserTokenException e) {
             logger.error("ERROR", e);

@@ -1,6 +1,5 @@
 package com.mergetechng.jobs.entities;
 
-import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.TextScore;
 
@@ -8,9 +7,7 @@ import javax.persistence.*;
 import java.util.Date;
 import java.util.List;
 
-@Document()
-@Entity
-@Table()
+@Document(value = "job")
 public class Job {
     private static final long serialVersionUID = 1L;
     @Id
@@ -18,12 +15,12 @@ public class Job {
     @Column(name = "id", nullable = false, length = 36)
     private String id;
 
-    @TextIndexed(weight = 5)
+//    @TextIndexed(weight = 5)
     @Basic(optional = false)
-    @Column(name = "job_type", nullable = false)
+    @Column(name = "job_title", nullable = false)
     private String jobTitle;
 
-    @TextIndexed(weight = 4)
+//    @TextIndexed(weight = 4)
     @Basic(optional = false)
     @Column(nullable = false, length = 10000)
     private String jobDescription;
@@ -36,7 +33,7 @@ public class Job {
     @Column(nullable = false)
     private Float offeredSalary;
 
-    @TextIndexed(weight = 3)
+//    @TextIndexed()
     @Basic(optional = false)
     @Column(nullable = false)
     private String specialims;
@@ -45,7 +42,7 @@ public class Job {
     @Column(nullable = false)
     private String experience;
 
-    @TextIndexed(weight = 2)
+//    @TextIndexed(weight = 2)
     @Basic(optional = false)
     @Column(nullable = false)
     private String industry;
@@ -85,13 +82,18 @@ public class Job {
     @Column(nullable = false)
     private String career_type;
 
+//    @TextIndexed(weight = 3)
     @Basic(optional = false)
-    @Column(nullable = false , name = "job_category")
+    @Column(nullable = false, name = "job_category")
     private String jobCategory;
 
     @Basic(optional = false)
     @Column(nullable = false)
     private String jobType;
+
+    @Basic(optional = false)
+    @Column(nullable = false)
+    private String jobStatus;
 
     @Basic(optional = false)
     @Column(name = "date_created", nullable = false)
@@ -114,10 +116,10 @@ public class Job {
     private String jobPostCode;
 
     @TextScore
-    private Float  textScore;
+    private Float textScore;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "", fetch = FetchType.LAZY)
-    private List<JobApplicant> jobApplicants ;
+    private List<JobApplicant> jobApplicants;
 
     public String getId() {
         return id;
@@ -135,9 +137,6 @@ public class Job {
         this.jobApplicants = jobApplicants;
     }
 
-    public String getJobId() {
-        return id;
-    }
 
     public Job(String id) {
         this.id = id;
@@ -165,12 +164,7 @@ public class Job {
         this.jobType = jobType;
     }
 
-    public Job() {
-    }
-
-    public void setJobId(String id) {
-        this.id = id;
-    }
+    public Job() { }
 
     public String getJobTitle() {
         return jobTitle;
@@ -348,11 +342,11 @@ public class Job {
         this.createdBy = createdBy;
     }
 
-    public Float  getTextScore() {
+    public Float getTextScore() {
         return textScore;
     }
 
-    public void setTextScore(Float  textScore) {
+    public void setTextScore(Float textScore) {
         this.textScore = textScore;
     }
 
@@ -366,6 +360,14 @@ public class Job {
 
     public String getJobPostCode() {
         return jobPostCode;
+    }
+
+    public String getJobStatus() {
+        return jobStatus;
+    }
+
+    public void setJobStatus(String jobStatus) {
+        this.jobStatus = jobStatus;
     }
 
     public void setJobPostCode(String jobPostCode) {

@@ -58,20 +58,21 @@ public class JobDto {
     @NotNull
     @NotBlank
     private String jobType;
-
     private Date dateCreated;
     private Date dateModified;
     private String modifiedBy;
     private String createdBy;
     private Float  textScore;
+    private String jobStatus;
+
 
     public JobDto(){}
 
-    public String getJobId() {
+    public String getId() {
         return id;
     }
 
-    public void setJobId(String jobId) {
+    public void setId(String jobId) {
         this.id = jobId;
     }
 
@@ -253,6 +254,14 @@ public class JobDto {
 
     public Float getTextScore() {
         return textScore;
+    }
+
+    public String getJobStatus() {
+        return jobStatus;
+    }
+
+    public void setJobStatus(String jobStatus) {
+        this.jobStatus = jobStatus;
     }
 
     public void setTextScore(Float textScore) {

@@ -5,8 +5,9 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-
+import org.springframework.data.mongodb.core.mapping.Field;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Date;
@@ -16,7 +17,7 @@ import javax.persistence.*;
  * @author @keemsisi
  */
 @Entity
-@Document
+@Document(collection = "user")
 @Table(catalog = "ngn_jobs", schema = "POSTGRES", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"email"})})
 @NamedQueries({
@@ -39,117 +40,124 @@ public class User implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
     @Basic(optional = false)
-    @Column(name = "id", nullable = false, length = 36)
     private String id;
     @Basic(optional = false)
-    @Column(nullable = false, length = 36 , name = "username")
+    @Field(  name = "username")
+    @Indexed(unique = true)
     private String username;
     @Basic(optional = false)
-    @Column(nullable = false, name = "password")
+    @Field( name = "password")
     private String password;
-    @Column(nullable = false, name = "firstname")
+    @Field( name = "firstname")
     private String firstName;
-    @Column(nullable = false, name = "lastname")
+    @Field( name = "lastname")
     private String lastName;
-    @Column(nullable = false, name = "gender")
+    @Field( name = "gender")
     private String gender;
-    @Column(nullable = false, name = "nationality")
+    @Field( name = "nationality")
     private String nationality;
-    @Column(nullable = false, name = "location")
+    @Field( name = "location")
     private String location;
-    @Column(nullable = false, name = "former_job_role")
+    @Field( name = "former_job_role")
     private String formerJobRole;
     @Basic(optional = false)
-    @Column(name = "date_registered", nullable = false, length = 250)
+    @Field(name = "date_registered")
     private String dateRegistered;
-    @Column(name = "last_login")
+    @Field(name = "last_login")
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastLogin;
     @Basic(optional = false)
-    @Column(name = "last_login_info", nullable = false)
+    @Field(name = "last_login_info")
     private String lastLoginInfo;
     @Basic(optional = false)
-    @Column(name = "date_created", nullable = false)
+    @Field(name = "date_created")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateCreated;
-    @Column(name = "date_modified")
+    @Field(name = "date_modified")
     @Temporal(TemporalType.TIMESTAMP)
     private Date dateModified;
-    @Column(name = "modified_by", length = 250)
+    @Field(name = "modified_by")
     private String modifiedBy;
     @Basic(optional = false)
-    @Column(name = "created_by", nullable = false, length = 250)
+    @Field(name = "created_by")
     private String createdBy;
-    @Column(name = "user_image_url", length = 2147483647)
+    @Field(name = "user_image_url")
     private String userImageUrl;
     @Basic(optional = false)
-    @Column(nullable = false, length = 250)
+    @Field( name = "email")
+    @Indexed(unique = true)
     private String email;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+//    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<JobApplicant> jobApplicantList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Education> educationList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<JobAlertSubcription> jobAlertSubcriptionList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<AccountSettings> accountSettingsList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<ActivityLog> activityLogList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "userCvId")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Certification> certificationList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Reference> referenceList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<UserLocationInterest> userLocationInterestList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Organization> organizationList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Publication> publicationList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Skill> skillList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<UserCv> userCvList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<WorkExperience> workExperienceList;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id")
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Hobby> hobbyList;
-    @Column(name = "online", nullable = false)
+    @Field(name = "online")
     private boolean online;
-    @Column(name = "account_non_expired", nullable = false)
+    @Field(name = "account_non_expired")
     private boolean accountNonExpired;
-    @Column(name = "id", nullable = false)
+    @Field(name = "id")
     private boolean isEnabled;
-    @Column(name = "email_verified", nullable = false)
+    @Field(name = "email_verified")
     private boolean emailVerified;
-    @Column(name = "credential_non_expired", nullable = false)
+    @Field(name = "credential_non_expired")
     private boolean getCredentialNonExpired;
-    @Column(name = "account_non_locked", nullable = false)
+    @Field(name = "account_non_locked")
     private boolean accountNonLocked;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "id", fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL)
     private List<Group1> groupId;
+    @OneToMany(cascade = CascadeType.ALL)
+    private List<Privilege> privilegeId;
+    @OneToMany(cascade = CascadeType.ALL , fetch = FetchType.LAZY)
+    private List<Role> roleId;
     @Basic(optional = false)
-    @Column(nullable = false, length = 250)
+    @Field( )
     private String accountType; // Job Seeker | JobEmployer or Admin
     @Basic(optional = false)
-    @Column(nullable = false, length = 250)
+    @Field( )
     private String registrationMode;
     @Basic(optional = false)
-    @Column(nullable = false, length = 250)
+    @Field( )
     private String status;
     @Basic(optional = false)
-    @Column(nullable = false, length = 250)
+    @Field( )
+    @Indexed(unique = true)
     private String phone;
     @Basic(optional = false)
-    @Column(nullable = false, length = 250)
+    @Field( )
     private String companyName; // for job employer
     @Basic(optional = false)
-    @Column(nullable = false, length = 250)
+    @Field()
     private String companyAddress; // for job employer
     @Basic(optional = false)
-    @Column(nullable = false, length = 250)
+    @Field()
     private String companyIndustry; // for job employer
     @Basic(optional = false)
-    @Column(nullable = false, length = 250)
+    @Field( )
     private String companyCategory; // for job employer
 
 
@@ -184,6 +192,7 @@ public class User implements Serializable {
         this.getCredentialNonExpired = getCredentialNonExpired;
         this.accountNonLocked = accountNonLocked;
     }
+
 
     public String getUserId() {
         return id;

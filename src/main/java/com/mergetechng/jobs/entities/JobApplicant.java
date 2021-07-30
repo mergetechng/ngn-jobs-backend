@@ -21,7 +21,7 @@ import javax.persistence.*;
 @NamedQueries({
     @NamedQuery(name = "JobApplicantDto.findAll", query = "SELECT j FROM JobApplicantDto j"),
     @NamedQuery(name = "JobApplicantDto.findByJobApplicantId", query = "SELECT j FROM JobApplicantDto j WHERE j.id = :id"),
-    @NamedQuery(name = "JobApplicantDto.findByJobCapaignId", query = "SELECT j FROM JobApplicantDto j WHERE j.jobCapaignId = :jobCapaignId"),
+    @NamedQuery(name = "JobApplicantDto.findByjobCampaignId", query = "SELECT j FROM JobApplicantDto j WHERE j.jobCampaignId = :jobCampaignId"),
     @NamedQuery(name = "JobApplicantDto.findByDateCreated", query = "SELECT j FROM JobApplicantDto j WHERE j.dateCreated = :dateCreated"),
     @NamedQuery(name = "JobApplicantDto.findByDateModified", query = "SELECT j FROM JobApplicantDto j WHERE j.dateModified = :dateModified"),
     @NamedQuery(name = "JobApplicantDto.findByCreatedBy", query = "SELECT j FROM JobApplicantDto j WHERE j.createdBy = :createdBy"),
@@ -33,9 +33,6 @@ public class JobApplicant implements Serializable {
     @Basic(optional = false)
     @Column(name = "id", nullable = false, length = 36)
     private String id;
-    @Basic(optional = false)
-    @Column(name = "job_id", nullable = false, length = 36)
-    private String jobId;
     @Basic(optional = false)
     @Column(name = "date_created", nullable = false)
     @Temporal(TemporalType.TIMESTAMP)
@@ -49,15 +46,18 @@ public class JobApplicant implements Serializable {
     @Basic(optional = false)
     @Column(name = "modified_by", nullable = false)
     private String modifiedBy;
-    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
-    @ManyToOne(optional = false)
-    private User userId;
+//    @JoinColumn(name = "user_id", referencedColumnName = "user_id", nullable = false)
+//    @ManyToOne(optional = false)
+    private String applicantUsername;
     @Column(name = "resume_or_cv_document_file_name")
     private String resumeDocumentFileName;
     @Column(name = "cover_letter_document_url")
     private String coverLetterDocumentUrl;
-    @ManyToOne(optional = false , cascade = CascadeType.ALL , fetch = FetchType.LAZY)
-    private Job job;
+    private String jobId;
+//    @ManyToOne(optional = false , cascade = CascadeType.ALL , fetch = FetchType.LAZY)
+//    private Job job;
+
+
 
 
     public JobApplicant() {
@@ -67,9 +67,24 @@ public class JobApplicant implements Serializable {
         this.id = id;
     }
 
-    public JobApplicant(String id, String jobId, Date dateCreated, String createdBy, String modifiedBy) {
-        this.id = id;
+    public String getResumeDocumentFileName() {
+        return resumeDocumentFileName;
+    }
+
+    public void setResumeDocumentFileName(String resumeDocumentFileName) {
+        this.resumeDocumentFileName = resumeDocumentFileName;
+    }
+
+    public String getJobId() {
+        return jobId;
+    }
+
+    public void setJobId(String jobId) {
         this.jobId = jobId;
+    }
+
+    public JobApplicant(String id, Date dateCreated, String createdBy, String modifiedBy) {
+        this.id = id;
         this.dateCreated = dateCreated;
         this.createdBy = createdBy;
         this.modifiedBy = modifiedBy;
@@ -83,13 +98,6 @@ public class JobApplicant implements Serializable {
         this.id = id;
     }
 
-    public String getJobCapaignId() {
-        return jobId;
-    }
-
-    public void setJobCapaignId(String jobCapaignId) {
-        this.jobId = jobCapaignId;
-    }
 
     public Date getDateCreated() {
         return dateCreated;
@@ -123,12 +131,12 @@ public class JobApplicant implements Serializable {
         this.modifiedBy = modifiedBy;
     }
 
-    public User getUserId() {
-        return userId;
+    public String getApplicantUsername() {
+        return applicantUsername;
     }
 
-    public void setUserId(User userId) {
-        this.userId = userId;
+    public void setApplicantUsername(String userId) {
+        this.applicantUsername = userId;
     }
 
     @Override
@@ -146,14 +154,6 @@ public class JobApplicant implements Serializable {
         this.id = id;
     }
 
-    public String getJobId() {
-        return jobId;
-    }
-
-    public void setJobId(String jobId) {
-        this.jobId = jobId;
-    }
-
     public String getResumeDocumentUrl() {
         return resumeDocumentFileName;
     }
@@ -168,14 +168,6 @@ public class JobApplicant implements Serializable {
 
     public void setCoverLetterDocumentUrl(String coverLetterDocumentUrl) {
         this.coverLetterDocumentUrl = coverLetterDocumentUrl;
-    }
-
-    public Job getJob() {
-        return job;
-    }
-
-    public void setJob(Job job) {
-        this.job = job;
     }
 
     @Override

@@ -51,26 +51,27 @@ public class LoginAuthenticationController {
                     }
             )})
     @PostMapping(value = "/authenticate", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> createAuthenticationTokenForUser(@RequestBody AuthenticationLoginDto userAuthenticationLogin) throws Exception {
+    public ResponseEntity<ApiResponseDto<String>> createAuthenticationTokenForUser(@RequestBody AuthenticationLoginDto userAuthenticationLogin) throws Exception {
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
+                "Failed to generate token",
+                "400",
+                "CREATE_AUTH_TOKEN",
+                new Date(),
+                null);
         try {
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userAuthenticationLogin.getUsername(), userAuthenticationLogin.getPassword()));
             Map<String, Object> claims = new HashMap<>();
             claims.put("username", userAuthenticationLogin.getUsername());
             String token = jwtUtil.generateToken(jobsUserDetailsService.loadUserByUsername(userAuthenticationLogin.getUsername()), claims);
-            ApiResponseDto apiResponseDto = ApiResponseUtil.process(
-                    "token generated successfully",
-                    "200",
-                    "authentication",
-                    new Date(),
-                    token);
             jobsUserService.logInUser(userAuthenticationLogin.getUsername());
+
+            apiResponseDto.setData(token);
+            apiResponseDto.setMessage("Token Generated Successfully");
+            apiResponseDto.setStatusCode("200");
             return ResponseEntity.ok(apiResponseDto);
         } catch (Exception exception) {
             logger.error("Username: " + userAuthenticationLogin.getUsername() + " tried accessing with wrong credential", exception);
-            if (exception instanceof DisabledException) jobsUserService.logoutUser(userAuthenticationLogin.getUsername());
-            return ResponseEntity
-                    .badRequest()
-                    .body(ApiResponseUtil.process(exception.getMessage(), "400", "authentication", new Date(), null));
+            return ResponseEntity.badRequest().body(apiResponseDto);
         }
     }
 }

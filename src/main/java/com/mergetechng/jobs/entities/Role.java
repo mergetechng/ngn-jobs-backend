@@ -52,6 +52,15 @@ public class Role implements Serializable {
 //    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY )
 //    private Group1 groupId;
 
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public Role() {
     }
 
@@ -152,5 +161,5 @@ public class Role implements Serializable {
     public String toString() {
         return "Role[ id=" + id + " ]";
     }
-    
+
 }

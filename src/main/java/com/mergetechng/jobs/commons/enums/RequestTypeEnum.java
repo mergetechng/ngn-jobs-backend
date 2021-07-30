@@ -1,6 +1,6 @@
 package com.mergetechng.jobs.commons.enums;
 
-public enum RequestType {
+public enum RequestTypeEnum {
     GET,
     POST,
     DELETE,

@@ -5,6 +5,7 @@
  */
 package com.mergetechng.jobs.entities;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import javax.persistence.*;
@@ -53,6 +54,14 @@ public class Group1 implements Serializable {
 
 
     public Group1() {
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Group1(String id) {

@@ -1,7 +1,14 @@
 package com.mergetechng.jobs.commons.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.mergetechng.jobs.entities.*;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+
+import javax.persistence.CascadeType;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import java.util.Date;
+import java.util.List;
 
 public class UserDto {
     private String userId;
@@ -28,6 +35,9 @@ public class UserDto {
     private boolean isEnabled;
     private boolean getCredentialNonExpired;
     private boolean accountNonLocked;
+    private List<Group1> groupId;
+    private List<Privilege> privilegeId;
+    private List<Role> roleId;
 
     public String getUserId() {
         return userId;
@@ -35,6 +45,30 @@ public class UserDto {
 
     public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public List<Group1> getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(List<Group1> groupId) {
+        this.groupId = groupId;
+    }
+
+    public List<Privilege> getPrivilegeId() {
+        return privilegeId;
+    }
+
+    public void setPrivilegeId(List<Privilege> privilegeId) {
+        this.privilegeId = privilegeId;
+    }
+
+    public List<Role> getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(List<Role> roleId) {
+        this.roleId = roleId;
     }
 
     public String getUsername() {

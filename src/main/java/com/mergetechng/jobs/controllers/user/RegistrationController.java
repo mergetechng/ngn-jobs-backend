@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 
 @RestController
-@RequestMapping("/user/")
+@RequestMapping("/user")
 public class RegistrationController {
     @Autowired
     private IUser iUser;
@@ -29,13 +29,13 @@ public class RegistrationController {
 
     @Operation(description = "Authenticate a user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User authenticated successfully",
+            @ApiResponse(responseCode = "200", description = "IUser authenticated successfully",
                     content = {
                             @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ApiResponseDto.class))
                     }
             ),
-            @ApiResponse(responseCode = "400", description = "User failed to be authenticated",
+            @ApiResponse(responseCode = "400", description = "IUser failed to be authenticated",
                     content = {
                             @Content(mediaType = "application/json",
                                     schema = @Schema(implementation = ApiResponseDto.class))
@@ -43,9 +43,9 @@ public class RegistrationController {
             ),
     })
     @PostMapping(value = "/create", produces = {"application/json"})
-    public ResponseEntity<ApiResponseDto> createNewUser(@Parameter(description = "New User Object") @RequestBody NewJobSeekerDto newJobSeekerDto) {
-        ApiResponseDto apiResponseDto = ApiResponseUtil.process(
-                "User failed to be authenticated",
+    public ResponseEntity<ApiResponseDto<String>> createNewUser(@Parameter(description = "New IUser Object") @RequestBody NewJobSeekerDto newJobSeekerDto) {
+        ApiResponseDto<String> apiResponseDto = ApiResponseUtil.process(
+                "IUser failed to be authenticated",
                 "400",
                 "create new user",
                 new Date(),
@@ -53,7 +53,7 @@ public class RegistrationController {
         try {
             boolean isCreated = iUser.createNewUser(JobApiGeneralMapper.INSTANCE.NewJobSeekerDtoToUser(newJobSeekerDto, new CycleAvoidingMappingContext()));
             if (isCreated) {
-                apiResponseDto.setMessage("User Created successfully");
+                apiResponseDto.setMessage("IUser Created successfully");
                 apiResponseDto.setStatusCode("200");
                 apiResponseDto.setData(null);
                 apiResponseDto.setResponseDate(new Date());
