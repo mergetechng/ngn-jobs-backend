@@ -186,11 +186,11 @@ public class Amazons3ClientService {
                 Collections.addAll(usersWhoAccessed, username);
                 userUploadDocument.setUserIdsWhoDownload(usersWhoDownloaded);
 
-
                 userUploadDocument.setLastAccessDate(new Date());
                 userUploadDocument.setLastDownloadDate(new Date());
                 userUploadDocument.setTotalDownloadCount(usersWhoDownloaded.size() + 1);
                 userUploadedDocumentRepository.save(userUploadDocument);
+                LOGGER.info("Downloading Completed {} from S3 bucket {}...\n", uploadedFilePrefix, bucketName);
 
                 return new Object[]{userUploadDocument.getFileName(), byteArrayOutputStream, userUploadDocument.getFileMetadata().get("fileContentType")};
             } else {
