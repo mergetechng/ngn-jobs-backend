@@ -163,25 +163,26 @@ public class JobService implements IJobService, IAdvanceSearch<Job> {
 
     /**
      * @param jobApplicationId                        The job application Id to attach the CV or Resume to
-     * @param cvResumeURLOrUploadDocumentIdOrFileName The Resume or CV to be attached
+     * @param credential This could be documentURL, fileName or id
      * @throws JobApplicantNotFoundException The Exception thrown when the Job Applicant is not found
      */
     @Override
-    public void attachCVToJobApplication(@NotNull @NotEmpty String jobApplicationId, @NotNull @NotEmpty String cvResumeURLOrUploadDocumentIdOrFileName) throws JobApplicantNotFoundException {
+    public void attachCVToJobApplication(@NotNull @NotEmpty String jobApplicationId, @NotNull @NotEmpty String credential) throws JobApplicantNotFoundException {
         String username = iAuthenticationFacadeService.getAuthentication().getName();
         Optional<JobApplicant> optionalJobApplicant = jobApplicationRepository.findById(jobApplicationId);
-        Optional<UserUploadDocument> userUploadDocumentOptional = userUploadedDocumentRepository.findByIdOrFileName(cvResumeURLOrUploadDocumentIdOrFileName, cvResumeURLOrUploadDocumentIdOrFileName);
+        Optional<UserUploadDocument> userUploadDocumentOptional = userUploadedDocumentRepository.findByIdOrFileNameOrDocumentUrl(credential, credential,credential);
         if (userUploadDocumentOptional.isPresent()) {
             if (optionalJobApplicant.isPresent()) {
-                uploadedDocumentAttachmentHelper(optionalJobApplicant.get(), cvResumeURLOrUploadDocumentIdOrFileName, username);
-                LOGGER.info("CV/Resume with {} is attached successfully to Job Applicant Id: {}",cvResumeURLOrUploadDocumentIdOrFileName, jobApplicationId);
+                uploadedDocumentAttachmentHelper(optionalJobApplicant.get(), credential, username);
+                LOGGER.info("CV/Resume with {} is attached successfully to Job Applicant Id: {}",credential, jobApplicationId);
             } else
                 throw new JobApplicantNotFoundException("Job Applicant with jobApplicationId:" + jobApplicationId + "Not Found");
         } else {
-            throw new UserUploadedDocumentNotFoundException(cvResumeURLOrUploadDocumentIdOrFileName + "Not Found");
+            throw new UserUploadedDocumentNotFoundException("CV/Resume "+credential + "Not Found");
         }
     }
 
+    @Override
     public void attachCVToJobApplicationAfters3Upload(@NotNull @NotEmpty String jobApplicationId, @NotNull @NotEmpty String documentURL) throws JobApplicantNotFoundException {
         String username = iAuthenticationFacadeService.getAuthentication().getName();
         LOGGER.info("JOB APPLICANT ID ::: {}", jobApplicationId);

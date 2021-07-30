@@ -1,9 +1,7 @@
 package com.mergetechng.jobs.services.api;
 
-import com.mergetechng.jobs.commons.dto.JobDto;
 import com.mergetechng.jobs.entities.Job;
 import com.mergetechng.jobs.entities.JobApplicant;
-import com.mergetechng.jobs.entities.User;
 import com.mergetechng.jobs.exceptions.JobApplicantNotFoundException;
 import com.mergetechng.jobs.exceptions.JobNotExistsException;
 import com.mergetechng.jobs.exceptions.UserAccountAlreadyVerifiedException;
@@ -41,4 +39,7 @@ public interface IJobService {
     List<JobApplicant> getJobApplicants(String jobId) throws JobNotExistsException;
 
     void attachCVToJobApplication(@NotNull @NotEmpty String jobApplicationId, @NotNull @NotEmpty String resumeNameOrCvFileName) throws JobApplicantNotFoundException;
+
+    void attachCVToJobApplicationAfters3Upload(@NotNull @NotEmpty String jobApplicationId, @NotNull @NotEmpty String documentURL) throws JobApplicantNotFoundException;
+
 }
